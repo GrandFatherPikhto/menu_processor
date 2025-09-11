@@ -1,0 +1,116 @@
+{
+  "menu_name": "system_menu",
+  "author": "Embedded Team",
+  "version": "1.0",
+  "variables": {
+    "temperature": {"type": "float", "default": 22.5, "min": 10.0, "max": 30.0, "step": 0.5},
+    "light_enabled": {"type": "bool", "default": true},
+    "fan_speed": {"type": "uint8_t", "default": 3, "min": 0, "max": 5, "step": 1},
+    "contrast": {"type": "uint8_t", "default": 50, "min": 0, "max": 100, "step": 5},
+    "ch_hi_enable": { "type" : "bool", "default": false },
+    "ch_lo_enable": { "type" : "bool", "default": false }
+  },
+  "callbacks": [
+    "show_system_info",
+    "reset_settings",
+    "save_config"
+  ],
+  "menu_structure": [
+    {
+      "id": "main",
+      "title": "Main Menu",
+      "type": "root",
+      "first_child": "system",
+      "next_sibling": null
+    },
+    {
+        "id": "pwm_frequency",
+        "title": "PWM Frequency",
+        "type": "submenu",
+        "first_child": "action_int_factor",
+        "next_sibling": "channel_hi"
+    },
+    {
+        "id": "channel_hi",
+        "title": "HI Channel",
+        "type": "submenu",
+        "first_child": "channel_hi_enable",
+        "next_sibling": "channel_lo"
+    },
+    {
+        "id": "channel_hi_enable",
+        "title" : "Enable",
+        "type" : "action_bool",
+        "first_child": null,
+        "next_sibling": null
+    },
+    {
+        "id": "channel_lo",
+        "title": "LO Channel",
+        "type": "submenu",
+        "first_child": null,
+        "next_sibling": null
+    },
+    {
+      "id": "system",
+      "title": "System Settings",
+      "type": "submenu",
+      "first_child": "display",
+      "next_sibling": "climate"
+    },
+    {
+      "id": "climate",
+      "title": "Climate Control", 
+      "type": "submenu",
+      "first_child": "temperature",
+      "next_sibling": null
+    },
+    {
+      "id": "display",
+      "title": "Display Settings",
+      "type": "submenu",
+      "first_child": "backlight",
+      "next_sibling": null
+    },
+    {
+      "id": "backlight",
+      "title": "Backlight",
+      "type": "action_bool",
+      "variable": "light_enabled",
+      "first_child": null,
+      "next_sibling": "contrast"
+    },
+    {
+      "id": "contrast",
+      "title": "Contrast",
+      "type": "action_int",
+      "variable": "contrast",
+      "first_child": null,
+      "next_sibling": null
+    },
+    {
+      "id": "temperature",
+      "title": "Temperature",
+      "type": "action_float",
+      "variable": "temperature",
+      "first_child": null,
+      "next_sibling": "fan"
+    },
+    {
+      "id": "fan",
+      "title": "Fan Speed",
+      "type": "action_int",
+      "variable": "fan_speed",
+      "first_child": null,
+      "next_sibling": null
+    },
+    {
+      "id": "info",
+      "title": "System Info",
+      "type": "action",
+      "callback": "show_system_info",
+      "first_child": null,
+      "next_sibling": null
+    }
+  ]
+}

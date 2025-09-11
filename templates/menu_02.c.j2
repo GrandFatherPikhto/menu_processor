@@ -1,0 +1,100 @@
+/**
+ * @file {{ config.menu_name }}.c
+ * @brief Auto-generated menu implementation for Rotary Encoder
+ * @author {{ config.author }}
+ * @version {{ config.version }}
+ * 
+ * ⚠️ This file is auto-generated. Do not edit manually!
+ */
+
+#include "{{ config.menu_name }}.h"
+#include "lcd1602.h"
+#include <string.h>
+
+// Menu data storage
+static menu_item_data_t s_data[MENU_ID_COUNT] = {
+    {% for item in config.menu_structure %}
+    [MENU_ID_{{ item.id|upper }}] = {
+        {% if item.type == 'action_bool' %}
+        .data.bool_value = {{ config.variables[item.variable].default|lower }},
+        {% elif item.type in ['action_int', 'action_int_factor', 'action_int_step'] %}
+        .data.int_value = {{ config.variables[item.variable].default }},
+        {% elif item.type == 'action_float' %}
+        .data.float_value = {{ config.variables[item.variable].default }},
+        {% else %}
+        .data.int_value = 0,
+        {% endif %}
+        .factor_idx = {{ config.variables[item.variable].get('default_factor_idx', 0) }},
+        .step_idx = {{ config.variables[item.variable].get('default_step_idx', 0) }}
+    },
+    {% endfor %}
+};
+
+// Factor tables
+{% for factor_name, factor_values in config.factors.items() %}
+static const float {{ factor_name }}[] = { {{ factor_values|join(', ') }} };
+{% endfor %}
+
+// Step tables  
+{% for step_name, step_values in config.step_values.items() %}
+static const float {{ step_name }}[] = { {{ step_values|join(', ') }} };
+{% endfor %}
+
+// Navigation table and state
+static const menu_nav_item_t menu_nav_table[] = {
+    {% for item in config.menu_structure %}
+    {
+        .enter_handler = menu_{{ item.id }}_handler,
+        .parent_handler = {% if item.parent %}_menu_{{ item.parent }}_handler{% else %}NULL{% endif %},
+        .first_child_handler = {% if item.first_child %}menu_{{ item.first_child }}_handler{% else %}NULL{% endif %},
+        .next_sibling_handler = {% if item.next_sibling %}menu_{{ item.next_sibling }}_handler{% else %}NULL{% endif %},
+        .prev_sibling_handler = {% if item.prev_sibling %}menu_{{ item.prev_sibling }}_handler{% else %}NULL{% endif %},
+        .title = "{{ item.title }}",
+        .type = MENU_TYPE_{{ item.type|upper }},
+        .id = MENU_ID_{{ item.id|upper }},
+        .data_ptr = &s_data[MENU_ID_{{ item.id|upper }}].data,
+        .min_value = {{ config.variables[item.variable].min if item.variable in config.variables else 0 }},
+        .max_value = {{ config.variables[item.variable].max if item.variable in config.variables else 0 }},
+        .step = {{ config.variables[item.variable].step if item.variable in config.variables else 0 }},
+        {% if item.variable in config.variables and 'factor_table' in config.variables[item.variable] %}
+        .factors = {{ config.variables[item.variable].factor_table }},
+        .factors_count = sizeof({{ config.variables[item.variable].factor_table }}) / sizeof(float),
+        {% else %}
+        .factors = NULL,
+        .factors_count = 0,
+        {% endif %}
+        {% if item.callback %}
+        .action_callback = {{ item.callback }},
+        {% else %}
+        .action_callback = NULL,
+        {% endif %}
+    },
+    {% endfor %}
+};
+
+static const uint16_t menu_nav_table_size = {{ config.menu_structure|length }};
+static menu_state_t current_state = MENU_STATE_NAVIGATION;
+static const menu_nav_item_t* current_menu = NULL;
+
+// Handler functions
+{% for item in config.menu_structure %}
+void menu_{{ item.id }}_handler(void) {
+    for (uint16_t i = 0; i < menu_nav_table_size; i++) {
+        if (menu_nav_table[i].enter_handler == menu_{{ item.id }}_handler) {
+            current_menu = &menu_nav_table[i];
+            break;
+        }
+    }
+}
+{% endfor %}
+
+// API implementation
+menu_item_data_t* menu_get_data(void) {
+    return s_data;
+}
+
+void* menu_get_data_ptr(menu_id_t id) {
+    return &s_data[id].data;
+}
+
+// ... остальная реализация обработчиков событий ...

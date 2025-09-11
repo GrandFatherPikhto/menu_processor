@@ -1,0 +1,59 @@
+{
+  "config" : {
+    "templates" : {
+      "c" : "templates/menu_01.c.j2",
+      "h" : "templates/menu_01.h.j2"
+    },
+    "output" : {
+      "c" : "templates/rotenc_menu_01.c",
+      "h" : "templates/rotenc_menu_01.h"
+    }
+  },
+  "menu": [
+    {
+      "id" : "settings",
+      "title": "Settings",
+      "type": "menu",
+      "children": [
+        {
+          "id": "display_option",
+          "title": "Display",
+          "type": "action_int",
+          "min": 0,
+          "max": 100,
+          "default": 50,
+          "step": 1
+        },
+        {
+          "id" : "sound",
+          "title": "Sound",
+          "type": "action_int_factor",
+          "min": 0,
+          "max": 10,
+          "default": 5,
+          "factors": [1, 10, 100],
+          "default_factor_idx": 0
+        }
+      ]
+    },
+    {
+      "id" : "info",
+      "title": "Info",
+      "type": "menu",
+      "children": [
+        {
+          "id": "version",
+          "title": "Version",
+          "type": "action_callback",
+          "callback": "cb_show_version"
+        }
+      ]
+    },
+    {
+      "id": "start",
+      "title": "Start",
+      "type": "action_bool",
+      "default": false
+    }
+  ]
+}

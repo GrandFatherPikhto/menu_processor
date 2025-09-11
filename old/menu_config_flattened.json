@@ -1,0 +1,73 @@
+[
+  {
+    "id": "root",
+    "title": "ROOT",
+    "type": "root",
+    "first_child": "main"
+  },
+  {
+    "id": "main",
+    "title": "Main",
+    "type": "submenu",
+    "parent": "root",
+    "first_child": "settings"
+  },
+  {
+    "id": "settings",
+    "title": "Settings",
+    "type": "submenu",
+    "parent": "main",
+    "first_child": "display",
+    "next_sibling": "info"
+  },
+  {
+    "id": "info",
+    "title": "Info",
+    "type": "submenu",
+    "parent": "main",
+    "prev_sibling": "settings",
+    "first_child": "version",
+    "next_sibling": "start"
+  },
+  {
+    "id": "start",
+    "title": "Start",
+    "type": "action_bool",
+    "default": false,
+    "parent": "main",
+    "prev_sibling": "info"
+  },
+  {
+    "id": "display",
+    "title": "Display",
+    "type": "action_int",
+    "min": 0,
+    "max": 100,
+    "default": 50,
+    "parent": "settings",
+    "next_sibling": "sound"
+  },
+  {
+    "id": "sound",
+    "title": "Sound",
+    "type": "action_int_factor",
+    "min": 0,
+    "max": 10,
+    "default": 5,
+    "factors": [
+      1,
+      10,
+      100
+    ],
+    "default_factor_idx": 0,
+    "parent": "settings",
+    "prev_sibling": "display"
+  },
+  {
+    "id": "version",
+    "title": "Version",
+    "type": "action_callback",
+    "callback": "cb_show_version",
+    "parent": "info"
+  }
+]

@@ -1,0 +1,90 @@
+{
+  "menu_name": "system_menu",
+  "output": {
+    "header_file": "output/system_menu.h",
+    "source_file": "output/system_menu.c"
+  },
+  "author": "Embedded Team",
+  "version": "1.0",
+  
+  "factors": {
+    "speed_factors": [1, 2, 5, 10],
+    "precision_factors": [0.1, 0.5, 1.0, 2.0]
+  },
+  
+  "step_values": {
+    "temperature_steps": [0.1, 0.5, 1.0, 2.0, 5.0],
+    "volume_steps": [1, 2, 5, 10, 20]
+  },
+  
+  "variables": {
+    "temperature": {
+      "type": "action_float",
+      "default": 22.5,
+      "min": 10.0,
+      "max": 30.0,
+      "step": 0.5
+    },
+    "light_enabled": {
+      "type": "action_bool",
+      "default": true
+    },
+    "fan_speed": {
+      "type": "action_int_factor", 
+      "default": 3,
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "factor_table": "speed_factors",
+      "default_factor_idx": 0
+    }
+  },
+  
+  "menu_structure": [
+    {
+      "id": "root",
+      "title": "Main Menu",
+      "type": "root",
+      "first_child": "system"
+    },
+    {
+      "id": "system",
+      "title": "System Settings",
+      "type": "submenu",
+      "first_child": "display",
+      "next_sibling": "climate"
+    },
+    {
+      "id": "climate",
+      "title": "Climate Control",
+      "type": "submenu",
+      "first_child": "temperature",
+      "next_sibling": null
+    },
+    {
+      "id": "display",
+      "title": "Display Settings",
+      "type": "submenu", 
+      "first_child": "backlight",
+      "next_sibling": null
+    },
+    {
+      "id": "backlight",
+      "title": "Backlight",
+      "type": "action_bool",
+      "variable": "light_enabled"
+    },
+    {
+      "id": "temperature",
+      "title": "Temperature",
+      "type": "action_float",
+      "variable": "temperature"
+    },
+    {
+      "id": "fan_speed",
+      "title": "Fan Speed",
+      "type": "action_int_factor",
+      "variable": "fan_speed"
+    }
+  ]
+}

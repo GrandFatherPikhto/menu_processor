@@ -1,0 +1,72 @@
+{
+  "root": {
+    "id": "root",
+    "title": "ROOT",
+    "type": "root",
+    "first_child": "settings",
+    "next_sibling": null,
+    "prev_sibling": null
+  },
+  "settings": {
+    "id": "settings",
+    "title": "Settings",
+    "type": "menu",
+    "parent": "root",
+    "original_id": "settings",
+    "first_child": "display_option"
+  },
+  "display_option": {
+    "id": "display_option",
+    "title": "Display",
+    "type": "action_int",
+    "parent": "settings",
+    "min": 0,
+    "max": 100,
+    "default": 50,
+    "step": 1,
+    "original_id": "display_option"
+  },
+  "sound": {
+    "id": "sound",
+    "title": "Sound",
+    "type": "action_int_factor",
+    "parent": "settings",
+    "prev_sibling": "display_option",
+    "min": 0,
+    "max": 10,
+    "default": 5,
+    "factors": [
+      1,
+      10,
+      100
+    ],
+    "default_factor_idx": 0,
+    "original_id": "sound"
+  },
+  "info": {
+    "id": "info",
+    "title": "Info",
+    "type": "menu",
+    "parent": "root",
+    "prev_sibling": "settings",
+    "original_id": "info",
+    "first_child": "version"
+  },
+  "version": {
+    "id": "version",
+    "title": "Version",
+    "type": "action_callback",
+    "parent": "info",
+    "callback": "cb_show_version",
+    "original_id": "version"
+  },
+  "start": {
+    "id": "start",
+    "title": "Start",
+    "type": "action_bool",
+    "parent": "root",
+    "prev_sibling": "info",
+    "default": false,
+    "original_id": "start"
+  }
+}

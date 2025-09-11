@@ -1,12 +1,12 @@
 {
   "config" : {
     "templates" : {
-      "c" : "templates/menu_01.c.j2",
-      "h" : "templates/menu_01.h.j2"
+      "c" : "templates/menu.c.j2",
+      "h" : "templates/menu.h.j2"
     },
     "output" : {
-      "c" : "templates/rotenc_menu_01.c",
-      "h" : "templates/rotenc_menu_01.h"
+      "c" : "/home/yevst/Projects/CCPP/STM32/GeneratirveMenu/menu/src/rotenc_menu.c",
+      "h" : "/home/yevst/Projects/CCPP/STM32/GeneratirveMenu/menu/src/include/rotenc_menu.h"
     }
   },
   "menu": [

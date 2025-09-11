@@ -1,0 +1,90 @@
+#ifndef ROTENC_MENU_H
+#define ROTENC_MENU_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+// Состояния меню
+typedef enum {
+    MENU_STATE_NAVIGATION = {{ menu_states.NAVIGATION }},
+    MENU_STATE_EDIT = {{ menu_states.EDIT }}
+} menu_state_t;
+
+// Типы меню
+typedef enum {
+    {% for type_name, type_value in menu_types.items() %}
+    MENU_TYPE_{{ type_name }} = {{ loop.index0 }},
+    {% endfor %}
+    MENU_TYPE_COUNT
+} menu_type_t;
+
+// ID элементов меню
+typedef enum {
+    MENU_ID_ROOT,
+    {% for item_id, item in menu_items.items() %}
+    MENU_ID_{{ item_id.upper() }},
+    {% endfor %}
+    MENU_ID_COUNT
+} menu_id_t;
+
+// Структуры данных
+typedef union {
+    struct {
+        int32_t value;
+        int32_t min;
+        int32_t max;
+        int32_t default_value;
+        int32_t step;
+    } action_int;
+    
+    struct {
+        int32_t value;
+        int32_t min;
+        int32_t max;
+        int32_t default_value;
+        const int32_t *factors;
+        uint8_t factors_count;
+        uint8_t default_factor_idx;
+        uint8_t factor_idx;
+    } action_int_factor;
+    
+    struct {
+        bool value;
+        bool default_value;
+    } action_bool;
+    
+    struct {
+        void (*callback)(int8_t delta);
+    } action_callback;
+    
+    // ... другие типы
+} menu_item_data_t;
+
+typedef struct {
+    menu_id_t id;
+    const char *title;
+    menu_type_t type;
+    menu_id_t parent;
+    menu_id_t first_child;
+    menu_id_t next_sibling;
+    menu_id_t prev_sibling;
+    menu_item_data_t data;
+    void *user_data_ptr;
+} menu_item_t;
+
+typedef struct {
+    menu_item_t items[MENU_ID_COUNT];
+    menu_id_t current_menu;
+    menu_state_t state;
+} menu_data_t;
+
+// Функции API
+menu_data_t *menu_get_data(void);
+void *menu_get_data_ptr(menu_id_t id);
+
+void handle_change_position(int8_t delta);
+void handle_push_button(void);
+void handle_long_push_button(void);
+void handle_double_click_button(void);
+
+#endif // ROTENC_MENU_H

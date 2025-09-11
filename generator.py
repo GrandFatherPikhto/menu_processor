@@ -8,6 +8,7 @@ from jinja2 import Environment, FileSystemLoader, Template
 from collections import deque
 
 import menu_processor
+import menu_generator
 
 
 def main(input_file: str, output_file: str):
@@ -31,6 +32,11 @@ def main(input_file: str, output_file: str):
         print(processor.get_template_path('h'))
         
         print("\n🎉 Обработка завершена успешно!")
+
+        generator = menu_generator.MenuGenerator(processor=processor)
+
+        generator.generate()
+        
     else:
         print("\n💥 Ошибка загрузки файла")    
 

@@ -1,0 +1,109 @@
+#ifndef ROTENC_MENU_H
+#define ROTENC_MENU_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+// Состояния меню
+typedef enum {
+    MENU_STATE_NAVIGATION = {{ menu_states.NAVIGATION }},
+    MENU_STATE_EDIT = {{ menu_states.EDIT }}
+} menu_state_t;
+
+// Типы меню
+typedef enum {
+    {% for type_name, type_value in menu_types.items() %}
+    MENU_TYPE_{{ type_name }} = {{ loop.index0 }},
+    {% endfor %}
+    MENU_TYPE_COUNT
+} menu_type_t;
+
+// ID элементов меню
+typedef enum {
+    MENU_ID_ROOT,
+    {% for item_id, item in menu_items.items() %}
+    MENU_ID_{{ item_id.upper() }},
+    {% endfor %}
+    MENU_ID_COUNT
+} menu_id_t;
+
+// Структуры для НЕИЗМЕНЯЕМЫХ данных конфигурации
+typedef struct {
+    int32_t min;
+    int32_t max;
+    int32_t default_value;
+    int32_t step;
+} action_int_config_t;
+
+typedef struct {
+    int32_t min;
+    int32_t max;
+    int32_t default_value;
+    const int32_t *factors;
+    uint8_t factors_count;
+    uint8_t default_factor_idx;
+} action_int_factor_config_t;
+
+typedef struct {
+    bool default_value;
+} action_bool_config_t;
+
+typedef struct {
+    void (*callback)(int8_t delta);
+} action_callback_config_t;
+
+typedef union {
+    action_int_config_t action_int;
+    action_int_factor_config_t action_int_factor;
+    action_bool_config_t action_bool;
+    action_callback_config_t action_callback;
+} menu_item_config_t;
+
+typedef struct {
+    menu_id_t id;
+    const char *title;
+    menu_type_t type;
+    menu_id_t parent;
+    menu_id_t first_child;
+    menu_id_t next_sibling;
+    menu_id_t prev_sibling;
+    menu_item_config_t config;
+} menu_item_t;
+
+// Структуры для ИЗМЕНЯЕМЫХ данных значений
+typedef struct {
+    int32_t value;
+} action_int_values_t;
+
+typedef struct {
+    int32_t value;
+    uint8_t factor_idx;
+} action_int_factor_values_t;
+
+typedef struct {
+    bool value;
+} action_bool_values_t;
+
+typedef union {
+    action_int_values_t action_int;
+    action_int_factor_values_t action_int_factor;
+    action_bool_values_t action_bool;
+} menu_item_values_t;
+
+typedef struct {
+    menu_item_values_t values[MENU_ID_COUNT];
+    menu_id_t current_menu;
+    menu_state_t state;
+} menu_values_t;
+
+// Функции API
+const menu_item_t *menu_get_config(menu_id_t id);
+menu_values_t *menu_get_values(void);
+void *menu_get_value_ptr(menu_id_t id);
+
+void handle_change_position(int8_t delta);
+void handle_push_button(void);
+void handle_long_push_button(void);
+void handle_double_click_button(void);
+
+#endif // ROTENC_MENU_H

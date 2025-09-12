@@ -19,34 +19,30 @@ class MenuConfig:
 
         if 'includes' in config_data:
             self.includes = config_data['includes'].copy()
-        else:
-            self.includes = None
     
     def validate(self) -> List[str]:
         """Валидация конфигурации"""
         errors = []
         
-        if 'menu_source' not in self.templates:
-            errors.append("Отсутствует шаблон для .c файла меню")
-        if 'menu_header' not in self.templates:
-            errors.append("Отсутствует шаблон для .h файла меню")
+        if 'c' not in self.templates:
+            errors.append("Отсутствует template для .c файла")
+        if 'h' not in self.templates:
+            errors.append("Отсутствует template для .h файла")
         
-        print(self.output_files)
-
-        if 'menu_source' not in self.output_files:
-            errors.append("Отсутствует путь для создания .h файла меню")
-        if 'menu_header' not in self.output_files:
-            errors.append("Отсутствует путь для создания .c файла меню")
+        if 'c' not in self.output_files:
+            errors.append("Отсутствует output файл для .c")
+        if 'h' not in self.output_files:
+            errors.append("Отсутствует output файл для .h")
         
         return errors
     
     def get_template_path(self, file_type: str) -> Optional[str]:
         """Получить путь к шаблону по типу файла"""
-        return self.templates.get(file_type, None)
+        return self.templates.get(file_type)
     
     def get_output_path(self, file_type: str) -> Optional[str]:
         """Получить путь к выходному файлу по типу файла"""
-        return self.output_files.get(file_type, None)
+        return self.output_files.get(file_type)
     
     def get_templates(self) -> Dict[str, str]:
         """Геттер для всех шаблонов"""
@@ -56,10 +52,12 @@ class MenuConfig:
         """Геттер для всех выходных файлов"""
         return self.output_files.copy()
     
-    def get_includes(self) -> List[str] | None:
+    def get_includes(self) -> List[str]:
         """Геттер для includes"""
-        return self.includes
-    
+        if self.includes:
+            return self.includes
+        else: 
+            return []
 
 class MenuError(Exception):
     """Базовое исключение для ошибок меню"""
@@ -75,7 +73,7 @@ class MenuError(Exception):
 class MenuValidator:
     """Класс для валидации структуры меню"""
     
-    VALID_TYPES = {'action_menu', 'action_int', 'action_int_factor', 
+    VALID_TYPES = {'menu', 'action_int', 'action_int_factor', 
                   'action_callback', 'action_bool'}
     
     def __init__(self):
@@ -180,13 +178,11 @@ class MenuValidator:
     
     def _validate_action_callback(self, node: Dict, path: List[str]) -> None:
         """Валидация action_callback"""
-        required_fields = ["display_cb"]
-        for field in required_fields:
-            if field not in node:
-                self.errors.append(MenuError(
-                    f"Для action_callback обязательно поле '{field}'",
-                    path
-                ))
+        if 'callback' not in node:
+            self.errors.append(MenuError(
+                "Для action_callback обязательно поле 'callback'",
+                path
+            ))
     
     def _validate_action_bool(self, node: Dict, path: List[str]) -> None:
         """Валидация action_bool"""
@@ -227,42 +223,7 @@ class MenuFlattener:
                 self._process_tree(root_item, self._auto_root_id, prev_sibling_id)
                 prev_sibling_id = root_item_id
         
-        # Устанавливаем связи next_sibling
-        self._add_next_sibling_links()
-        
-        # ДОБАВЛЕНО: Устанавливаем связи first_sibling и last_sibling
-        self._add_sibling_boundaries()
-        
         return self.flattened
-    
-    def _add_sibling_boundaries(self):
-        """Установка связей first_sibling и last_sibling для всех узлов"""
-        for item_id, item in self.flattened.items():
-            if 'parent' in item and item['parent'] in self.flattened:
-                parent_id = item['parent']
-                parent = self.flattened[parent_id]
-                
-                # Если у родителя есть дети, устанавливаем first_sibling
-                if 'first_child' in parent:
-                    first_child_id = parent['first_child']
-                    item['first_sibling'] = first_child_id
-                    
-                    # Находим last_sibling
-                    last_sibling_id = first_child_id
-                    while (last_sibling_id in self.flattened and 
-                           'next_sibling' in self.flattened[last_sibling_id] and
-                           self.flattened[last_sibling_id]['next_sibling'] is not None):
-                        last_sibling_id = self.flattened[last_sibling_id]['next_sibling']
-                    
-                    item['last_sibling'] = last_sibling_id
-    
-    def _add_next_sibling_links(self):
-        """Установка связей next_sibling на основе prev_sibling"""
-        for item_id, item in self.flattened.items():
-            if 'prev_sibling' in item:
-                prev_id = item['prev_sibling']
-                if prev_id in self.flattened:
-                    self.flattened[prev_id]['next_sibling'] = item_id
     
     def _create_root_node(self, menu_data: List[Dict]) -> None:
         """Создание автоматической root ноды с ссылкой на первый элемент"""
@@ -276,9 +237,7 @@ class MenuFlattener:
             'type': 'root',
             'first_child': first_child_id,
             'next_sibling': None,
-            'prev_sibling': None,
-            'first_sibling': first_child_id,  # ДОБАВЛЕНО
-            'last_sibling': None  # Будет установлено позже
+            'prev_sibling': None
         }
     
     def _process_tree(self, node: Dict, parent_id: str, prev_sibling_id: Optional[str]) -> str:
@@ -363,16 +322,10 @@ class MenuFlattener:
                 'max': node['max'],
                 'default': node['default'],
                 'factors': node['factors'],
-                'factors_count': (len(node.get('factors', []))),
                 'default_factor_idx': node['default_factor_idx']
             }),
             'action_callback': lambda: item.update({
-                'display_cb': node['display_cb'],
-                # **({'change_cb': node['change_cb']} if node.get('change_cb') is not None else {}),
-                'change_cb': node.get('change_cb', None),
-                'enter_cb': node.get('enter_cb', None),
-                'exit_cb' : node.get('exit_cb', None),
-                'click_cb' : node.get('click_cb', None)
+                'callback': node['callback']
             }),
             'action_bool': lambda: item.update({
                 'default': node['default']
@@ -499,7 +452,7 @@ class MenuProcessor:
         if self.config.get_includes():
             return self.config.get_includes()
         else:
-            return []
+            return []           
 
 # Пример использования
 if __name__ == "__main__":
@@ -523,6 +476,9 @@ if __name__ == "__main__":
         # Генерируем выходной файл
         processor.generate_output("output/flattened_menu.json")
 
+        print(processor.get_config().get_template_path('c'))
+        print(processor.get_template_path('h'))
+        
         print("\n🎉 Обработка завершена успешно!")
     else:
         print("\n💥 Ошибка загрузки файла")

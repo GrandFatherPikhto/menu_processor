@@ -28,9 +28,6 @@ def main(input_file: str, output_file: str):
         # Генерируем выходной файл
         processor.generate_output("output/flattened_menu.json")
 
-        print(processor.get_config().get_template_path('c'))
-        print(processor.get_template_path('h'))
-        
         print("\n🎉 Обработка завершена успешно!")
 
         generator = menu_generator.MenuGenerator(processor=processor)

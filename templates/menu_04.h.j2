@@ -51,12 +51,9 @@ static const menu_item_t s_menu_config[MENU_ID_COUNT] = {
                 .min = {{ item.min }},
                 .max = {{ item.max }},
                 .default_value = {{ item.default }},
-                .factor = {
-                    .default_idx = {{ item.default_factor_idx }},
-                    .factors = factors_{{ item_id }},
-                    .count = {{ item.factors_count }},
-                    .default_idx = {{ item.default_factor_idx }}
-                }
+                .factors = factors_{{ item_id }},
+                .factors_count = sizeof(factors_{{ item_id }}) / sizeof(factors_{{ item_id }}[0]),
+                .default_factor_idx = {{ item.default_factor_idx }}
             }
             {% elif item.type == 'action_bool' %}
             .action_bool = {
@@ -64,11 +61,7 @@ static const menu_item_t s_menu_config[MENU_ID_COUNT] = {
             }
             {% elif item.type == 'action_callback' %}
             .action_callback = {
-                .display_cb = {{ item.display_cb }},
-                .change_cb = {{ '0' if item.change_cb == None else item.change_cb }},
-                .enter_cb = {{ '0' if item.enter_cb == None else item.enter_cb }},
-                .exit_cb = {{ '0' if item.exit_cb == None else item.exit_cb }},
-                .click_cb = {{ '0' if item.click_cb == None else item.click_cb }},
+                .callback = NULL
             }
             {% else %}
             // Пустая структура для других типов
@@ -105,7 +98,7 @@ static menu_values_t s_menu_values = {
 
         {% endfor %}
     },
-    .current_menu = MENU_ID_{{ first_menu_id }},
+    .current_menu_id = MENU_ID_{{ first_menu_id }},
     .state = MENU_STATE_NAVIGATION
 };
 
@@ -138,29 +131,35 @@ void *menu_get_value_ptr(menu_id_t id) {
 }
 
 void handle_change_position(int8_t delta) {
-    menu_id_t prev_menu_id = s_menu_values.current_menu;
+    menu_id_t prev_menu_id = s_menu_values.current_menu_id;
 
-    const menu_item_t *current_config = &s_menu_config[s_menu_values.current_menu];
-    menu_item_values_t *current_values = &s_menu_values.values[s_menu_values.current_menu];
+    const menu_item_t *current_config = &s_menu_config[s_menu_values.current_menu_id];
+    menu_item_values_t *current_values = &s_menu_values.values[s_menu_values.current_menu_id];
     
     if (s_menu_values.state == MENU_STATE_NAVIGATION) {
         // Навигация между элементами
         menu_id_t target = delta > 0 ? current_config->next_sibling : current_config->prev_sibling;
         if (target != MENU_ID_COUNT) {
-            s_menu_values.current_menu = target;
+            s_menu_values.current_menu_id = target;
         } else {
             // Зацикливание навигации
             if (delta > 0) {
                 // Ищем первого sibling
-                menu_id_t first_sibling = current_config->first_sibling;
+                menu_id_t first_sibling = current_config->parent != MENU_ID_COUNT ? 
+                    s_menu_config[current_config->parent].first_child : MENU_ID_COUNT;
                 if (first_sibling != MENU_ID_COUNT) {
-                    s_menu_values.current_menu = first_sibling;
+                    s_menu_values.current_menu_id = first_sibling;
                 }
             } else {
                 // Ищем последнего sibling
-                menu_id_t last_sibling = current_config->last_sibling;
+                menu_id_t last_sibling = current_config->parent != MENU_ID_COUNT ? 
+                    s_menu_config[current_config->parent].first_child : MENU_ID_COUNT;
+                while (last_sibling != MENU_ID_COUNT && 
+                       s_menu_config[last_sibling].next_sibling != MENU_ID_COUNT) {
+                    last_sibling = s_menu_config[last_sibling].next_sibling;
+                }
                 if (last_sibling != MENU_ID_COUNT) {
-                    s_menu_values.current_menu = last_sibling;
+                    s_menu_values.current_menu_id = last_sibling;
                 }
             }
             s_menu_values.is_dirty = true;
@@ -177,44 +176,31 @@ void handle_change_position(int8_t delta) {
                 
             case MENU_TYPE_ACTION_INT_FACTOR:
                 current_values->action_int_factor.value += delta *
-                    current_config->config.action_int_factor.factor.factors[current_values->action_int_factor.factor_idx];
+                    current_config->config.action_int_factor.factors[current_values->action_int_factor.factor_idx];
                 current_values->action_int_factor.value = CLAMP(current_values->action_int_factor.value,
                     current_config->config.action_int_factor.min, current_config->config.action_int_factor.max);
                 s_menu_values.is_dirty = true;
                 break;
                 
-            case MENU_TYPE_ACTION_CALLBACK:
-                if (current_config->config.action_callback.change_cb != 0) {
-                    current_config->config.action_callback.change_cb(delta);
-                }
-                break;
+            // ... другие типы
         }
     }
-
-    s_menu_values.is_dirty = true;
 }
 
 void handle_push_button(void) {
-    const menu_item_t *current_config = &s_menu_config[s_menu_values.current_menu];
-    menu_item_values_t *current_values = &s_menu_values.values[s_menu_values.current_menu];
+    const menu_item_t *current_config = &s_menu_config[s_menu_values.current_menu_id];
+    menu_item_values_t *current_values = &s_menu_values.values[s_menu_values.current_menu_id];
     
     if (s_menu_values.state == MENU_STATE_NAVIGATION) {
         if (current_config->first_child != MENU_ID_COUNT) {
             // Переход к ребенку
-            s_menu_values.current_menu = current_config->first_child;
+            s_menu_values.current_menu_id = current_config->first_child;
             s_menu_values.is_dirty = true;
         } else if (current_config->type == MENU_TYPE_ACTION_BOOL ||
-                   current_config->type == MENU_TYPE_ACTION_INT ||
-                   current_config->type == MENU_TYPE_ACTION_INT_FACTOR ||
-                   current_config->type == MENU_TYPE_ACTION_CALLBACK) {
+                   current_config->type == MENU_TYPE_ACTION_INT_FACTOR) {
             // Переход в режим редактирования
             s_menu_values.state = MENU_STATE_EDIT;
             s_menu_values.is_dirty = true;
-            // Оповещаем что вошли в режим редактирования
-            if (current_config->type == MENU_TYPE_ACTION_CALLBACK 
-                && current_config->config.action_callback.enter_cb != 0) {
-                current_config->config.action_callback.enter_cb();
-            }
         }
     } else if (s_menu_values.state == MENU_STATE_EDIT) {
         // Обработка в режиме редактирования
@@ -227,14 +213,8 @@ void handle_push_button(void) {
             case MENU_TYPE_ACTION_INT_FACTOR:
                 current_values->action_int_factor.factor_idx =
                     (current_values->action_int_factor.factor_idx + 1) %
-                    current_config->config.action_int_factor.factor.count;
+                    current_config->config.action_int_factor.factors_count;
                     s_menu_values.is_dirty = true;
-                break;
-            case MENU_TYPE_ACTION_CALLBACK:
-                // Оповещаем что произошёл клик
-                if (current_config->config.action_callback.click_cb != 0) {
-                    current_config->config.action_callback.click_cb();
-                }
                 break;
             default:
                 break;
@@ -243,21 +223,14 @@ void handle_push_button(void) {
 }
 
 void handle_long_push_button(void) {
-    const menu_item_t *current_config = &s_menu_config[s_menu_values.current_menu];
-    menu_item_values_t *current_values = &s_menu_values.values[s_menu_values.current_menu];
-
     if (s_menu_values.state == MENU_STATE_EDIT) {
         // Выход из режима редактирования
         s_menu_values.state = MENU_STATE_NAVIGATION;
-        if (current_config->type == MENU_TYPE_ACTION_CALLBACK 
-            && current_config->config.action_callback.exit_cb != 0) {
-            current_config->config.action_callback.exit_cb();
-        }
     } else {
         // Возврат к родителю
-        const menu_item_t *current_config = &s_menu_config[s_menu_values.current_menu];
+        const menu_item_t *current_config = &s_menu_config[s_menu_values.current_menu_id];
         if (current_config->parent != MENU_ID_COUNT && current_config->parent != MENU_ID_ROOT) {
-            s_menu_values.current_menu = current_config->parent;
+            s_menu_values.current_menu_id = current_config->parent;
         }
     }
     s_menu_values.is_dirty = true;
@@ -266,8 +239,8 @@ void handle_long_push_button(void) {
 void handle_double_click_button(void) {
     if (s_menu_values.state == MENU_STATE_EDIT) {
         // Сброс к значениям по умолчанию
-        const menu_item_t *current_config = &s_menu_config[s_menu_values.current_menu];
-        menu_item_values_t *current_values = &s_menu_values.values[s_menu_values.current_menu];
+        const menu_item_t *current_config = &s_menu_config[s_menu_values.current_menu_id];
+        menu_item_values_t *current_values = &s_menu_values.values[s_menu_values.current_menu_id];
         
         switch (current_config->type) {
             case MENU_TYPE_ACTION_INT:
@@ -275,7 +248,7 @@ void handle_double_click_button(void) {
                 break;
             case MENU_TYPE_ACTION_INT_FACTOR:
                 current_values->action_int_factor.value = current_config->config.action_int_factor.default_value;
-                current_values->action_int_factor.factor_idx = current_config->config.action_int_factor.factor.default_idx;
+                current_values->action_int_factor.factor_idx = current_config->config.action_int_factor.default_factor_idx;
                 break;
             case MENU_TYPE_ACTION_BOOL:
                 current_values->action_bool.value = current_config->config.action_bool.default_value;
@@ -283,56 +256,55 @@ void handle_double_click_button(void) {
         }
     } else {
         // Возврат к первому элементу root
-        s_menu_values.current_menu = s_menu_config[MENU_ID_ROOT].first_child;
+        s_menu_values.current_menu_id = s_menu_config[MENU_ID_ROOT].first_child;
     }
 }
 
 void menu_draw(void) {
-    const menu_item_t *current_config = &s_menu_config[s_menu_values.current_menu];
-    menu_item_values_t *current_values = &s_menu_values.values[s_menu_values.current_menu];
+    const menu_item_t *current_menu = &s_menu_config[s_menu_values.current_menu_id];
+    menu_item_values_t *current_values = &s_menu_values.values[s_menu_values.current_menu_id];
 
     lcd1602_clear();
     
     // Первая строка: заголовок текущего меню
     lcd1602_set_cursor(0, 0);
-    lcd1602_print(current_config->title);
+    lcd1602_print(current_menu->title);
 
     // Вторая строка: значение или навигация
     lcd1602_set_cursor(0, 1);
     
-    switch (current_config->type) {
+    switch (current_menu->type) {
         case MENU_TYPE_ACTION_BOOL:
             lcd1602_print(current_values->action_bool.value ? "ON " : "OFF");
             break;
             
         case MENU_TYPE_ACTION_INT: {
-            const action_int_config_t *config = &current_config->config.action_int;
+            const action_int_config_t *config = &current_menu->config.action_int;
             action_int_values_t *values = &current_values->action_int;
             lcd1602_printf("%d/%d", values->value, config->max);
             break;
         }
             
         case MENU_TYPE_ACTION_INT_FACTOR: {
-            const action_int_factor_config_t *config = &current_config->config.action_int_factor;
+            const action_int_factor_config_t *config = &current_menu->config.action_int_factor;
             action_int_factor_values_t *values = &current_values->action_int_factor;
-            lcd1602_printf("%d (x%d)", values->value, config->factor.factors[values->factor_idx]);
+            int32_t effective_value = values->value * config->factors[values->factor_idx];
+            lcd1602_printf("%d (x%d)", effective_value, config->factors[values->factor_idx]);
             break;
         }
             
         case MENU_TYPE_ACTION_FLOAT: {
-            const action_float_config_t *config = &current_config->config.action_float;
+            const action_float_config_t *config = &current_menu->config.action_float;
             action_float_values_t *values = &current_values->action_float;
             lcd1602_printf("%.1f/%.1f", values->value, config->max);
             break;
         }
             
         case MENU_TYPE_ACTION_CALLBACK:
-            if (current_config->config.action_callback.display_cb) {
-                lcd1602_print(current_config->config.action_callback.display_cb());
-            }
+            lcd1602_print("Press to run");
             break;
             
-        case MENU_TYPE_ACTION_MENU:
+        case MENU_TYPE_MENU:
             // Показываем, что это подменю со стрелкой
             lcd1602_print(">");
             break;

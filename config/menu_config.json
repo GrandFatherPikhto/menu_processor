@@ -1,51 +1,124 @@
 {
   "config" : {
     "templates" : {
-      "c" : "templates/menu.c.j2",
-      "h" : "templates/menu.h.j2"
+      "menu_source" : "templates/menu.c.j2",
+      "menu_header" : "templates/menu.h.j2",
+      "callback_header": "templates/callback.h.j2"
     },
     "output" : {
-      "c" : "/home/yevst/Projects/CCPP/STM32/GeneratirveMenu/menu/src/rotenc_menu.c",
-      "h" : "/home/yevst/Projects/CCPP/STM32/GeneratirveMenu/menu/src/include/rotenc_menu.h"
-    }
+      "menu_source" : "/home/yevst/Projects/CCPP/STM32/GeneratirveMenu/menu/src/rotenc_menu.c",
+      "menu_header" : "/home/yevst/Projects/CCPP/STM32/GeneratirveMenu/menu/src/include/rotenc_menu.h",
+      "callback_header": "/home/yevst/Projects/CCPP/STM32/GeneratirveMenu/menu/src/include/rotenc_callback.h"
+    },
+    "includes" : [
+      "lcd1602.h",
+      "rotenc_callback.h"
+    ]
   },
   "menu": [
     {
       "id" : "settings",
       "title": "Settings",
-      "type": "menu",
+      "type": "action_menu",
       "children": [
         {
-          "id": "display_option",
-          "title": "Display",
-          "type": "action_int",
-          "min": 0,
-          "max": 100,
-          "default": 50,
-          "step": 1
+          "id": "pwm_on",
+          "title": "PWM On/Off",
+          "type": "action_bool",
+          "default": false
         },
         {
-          "id" : "sound",
-          "title": "Sound",
-          "type": "action_int_factor",
-          "min": 0,
-          "max": 10,
-          "default": 5,
-          "factors": [1, 10, 100],
-          "default_factor_idx": 0
+          "id" : "pwm_frequency",
+          "title": "PWM Frequency",
+          "type": "action_callback",
+          "display_cb": "callback_pwm_display",
+          "change_cb": "callback_pwm_change"
+        },
+        {
+          "id" : "hi_channel",
+          "title" : "Hi Channel",
+          "type" : "action_menu",
+          "children" : [
+            {
+              "id" : "hi_delay",
+              "title" : "Delay",
+              "type" : "action_int_factor",
+              "min" : 0,
+              "max" : 100000,
+              "default" : 100,
+              "factors" : [1, 10, 100, 1000],
+              "default_factor_idx" : 2
+            },
+            {
+              "id" : "hi_duration",
+              "title" : "Duration",
+              "type" : "action_int_factor",
+              "min" : 0,
+              "max" : 100000,
+              "default" : 100,
+              "factors" : [1, 10, 100, 1000],
+              "default_factor_idx" : 2
+            },
+            {
+              "id" : "hi_duty",
+              "title" : "PWM Duty",
+              "type" : "action_int",
+              "default" : 45,
+              "min" : 0,
+              "max" : 100,
+              "step" : 1
+            }
+          ]
+        },
+        {
+          "id" : "lo_channel",
+          "title" : "Lo Channel",
+          "type" : "action_menu",
+          "children" : [
+            {
+              "id" : "lo_delay",
+              "title" : "Delay",
+              "type" : "action_int_factor",
+              "min" : 0,
+              "max" : 100000,
+              "default" : 100,
+              "factors" : [1, 10, 100, 1000],
+              "default_factor_idx" : 2
+            },
+            {
+              "id" : "lo_duration",
+              "title" : "Duration",
+              "type" : "action_int_factor",
+              "min" : 0,
+              "max" : 100000,
+              "default" : 100,
+              "factors" : [1, 10, 100, 1000],
+              "default_factor_idx" : 2
+            },
+            {
+              "id" : "lo_duty",
+              "title" : "PWM Duty",
+              "type" : "action_int",
+              "default" : 45,
+              "min" : 0,
+              "max" : 100,
+              "step" : 1
+            }
+          ]
         }
       ]
     },
     {
       "id" : "info",
       "title": "Info",
-      "type": "menu",
+      "type": "action_menu",
       "children": [
         {
           "id": "version",
           "title": "Version",
           "type": "action_callback",
-          "callback": "cb_show_version"
+          "change_cb": "callback_info_change",
+          "display_cb": "callback_info_display"
         }
       ]
     },

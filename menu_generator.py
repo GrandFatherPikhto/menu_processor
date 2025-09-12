@@ -9,7 +9,7 @@ class MenuState(Enum):
 
 class MenuType(Enum):
     ROOT = "root"
-    SUBMENU = "submenu" 
+    SUBMENU = "action_menu" 
     ACTION_BOOL = "action_bool"
     ACTION_INT = "action_int"
     ACTION_INT_FACTOR = "action_int_factor"
@@ -45,10 +45,21 @@ class MenuGenerator:
         template_data = self._prepare_template_data()
         
         # Генерация .h файла
-        self._generate_file('h', template_data)
+        template_path = self.config.get_template_path('menu_header')
+        output_path = self.config.get_output_path('menu_header')
+
+        self._generate_file(template_path, output_path, template_data)
         
         # Генерация .c файла  
-        self._generate_file('c', template_data)
+        template_path = self.config.get_template_path('menu_source')
+        output_path = self.config.get_output_path('menu_source')
+        self._generate_file(template_path, output_path, template_data)
+
+        # Генерация callback .h файла, если он определён
+        template_path = self.config.get_template_path('callback_header')
+        output_path = self.config.get_output_path('callback_header')
+        if template_path and output_path:
+            self._generate_file(template_path, output_path, template_data)
         
         print("✅ Генерация завершена!")
     
@@ -58,6 +69,7 @@ class MenuGenerator:
         menu_items = {k: v for k, v in self.flattened_menu.items() if k != 'root'}
         
         return {
+            'includes' : self.processor.get_includes(),
             'menu_items': menu_items,
             'menu_states': {
                 'NAVIGATION': 0,
@@ -65,7 +77,7 @@ class MenuGenerator:
             },
             'menu_types': {
                 'ROOT': 'root',
-                'MENU': 'submenu',
+                'ACTION_MENU': 'action_menu',
                 'ACTION_BOOL': 'action_bool',
                 'ACTION_INT': 'action_int',
                 'ACTION_INT_FACTOR': 'action_int_factor',
@@ -89,14 +101,8 @@ class MenuGenerator:
             return first_child_id.upper()
         return 'SETTINGS'  # fallback
     
-    def _generate_file(self, file_type: str, template_data: Dict):
+    def _generate_file(self, template_path: str, output_path: str, template_data: Dict):
         """Генерация конкретного файла"""
-        template_path = self.config.get_template_path(file_type)
-        output_path = self.config.get_output_path(file_type)
-        
-        if not template_path or not output_path:
-            print(f"⚠️  Не указаны пути для {file_type} файла")
-            return
         
         try:
             # Загрузка шаблона

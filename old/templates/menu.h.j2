@@ -1,0 +1,85 @@
+/**
+ * @file {{ config.menu_name }}.h
+ * @brief Auto-generated menu system for LCD1602
+ * @author {{ config.author }}
+ * @version {{ config.version }}
+ * 
+ * ⚠️ This file is auto-generated. Do not edit manually!
+ */
+
+#ifndef {{ config.menu_name|upper }}_H
+#define {{ config.menu_name|upper }}_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Menu types
+typedef enum {
+    MENU_TYPE_ROOT,
+    MENU_TYPE_SUBMENU,
+    MENU_TYPE_ACTION,
+    MENU_TYPE_ACTION_BOOL,
+    MENU_TYPE_ACTION_INT,
+    MENU_TYPE_ACTION_FLOAT,
+    MENU_TYPE_BACK
+} menu_type_t;
+
+// Navigation structure
+typedef struct {
+    void (*enter_handler)();
+    void (*parent_handler)();
+    void (*first_child_handler)();
+    void (*next_sibling_handler)();
+    void (*prev_sibling_handler)();
+    const char* title;
+    menu_type_t type;
+    void* data_ptr;
+    union {
+        struct {
+            float min_value;
+            float max_value;
+            float step;
+        } numeric;
+        void (*action_callback)();
+    } config;
+} menu_nav_item_t;
+
+// Menu variables
+{% for var_name, var_config in config.variables.items() %}
+extern {{ var_config.type }} {{ var_name }};
+{% endfor %}
+
+// Handler prototypes
+{% for menu_id in menu_order %}
+void menu_{{ menu_id }}_handler();
+{% endfor %}
+
+// External callbacks
+{% for callback in config.callbacks %}
+extern void {{ callback }}();
+{% endfor %}
+
+// Navigation globals
+extern menu_nav_item_t* current_menu;
+extern const menu_nav_item_t menu_nav_table[];
+extern const uint16_t menu_nav_table_size;
+
+// Public API
+void menu_init();
+void menu_draw();
+void menu_next();
+void menu_prev();
+void menu_enter();
+void menu_back();
+void menu_increment();
+void menu_decrement();
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // {{ config.menu_name|upper }}_H

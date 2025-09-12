@@ -76,7 +76,7 @@ static menu_values_t s_menu_values.
 ```javascript
   "config" : {
     "templates" : {
-      "menu_source" : "templates/menu.c.j2", // Путь к [JINJA2](https://jinja.palletsprojects.com/en/stable/) шаблону файла menu.c. ОБЯЗАТЕЛЬНОЕ поле
+      "menu_source" : "templates/menu.c.j2", // Путь к <a href="https://jinja.palletsprojects.com/en/stable/">JINJA2</a> шаблону файла menu.c. ОБЯЗАТЕЛЬНОЕ поле
       "menu_header" : "templates/menu.h.j2", // Путь к [JINJA2](https://jinja.palletsprojects.com/en/stable/) шаблона файла menu.h. ОБЯЗАТЕЛЬНОЕ поле
       "callback_header": "templates/callback.h.j2" // Путь к [JINJA2](https://jinja.palletsprojects.com/en/stable/) шаблона файла menu.h. необязательное поле. Создаётся, только если указан этот путь и путь к генерируемому файлу
     },

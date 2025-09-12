@@ -2,7 +2,7 @@
 ## Общие представления
 1. Шаблоны template/menu_renc.c.j2 template/menu_renc.h.j2 -- внешние. Не в файле python!
 2. Создаётся два файла (по умолчанию output/menu_renc.c, output/menu_renc.h, renc -- rotary encoder)
-3. При помощи config/menu_config.json программой menu_generator.py с использованием библиотеки jinja2. 
+3. При помощи config/menu_config.json программой menu_generator.py с использованием библиотеки [JINJA2](https://jinja.palletsprojects.com/en/stable/). 
    Объекты меню описываются, как вложенные. Т.е., мы не указываем вручную parent, child, next, prev, e.t.c.
 4. В настройках генератора можно указать путь и имя *.h файла меню и путь и имя *.c файла меню,
    но есть пути и имена по умолчанию (имена не из командной строки!). 
@@ -76,9 +76,9 @@ static menu_values_t s_menu_values.
 ```javascript
   "config" : {
     "templates" : {
-      "menu_source" : "templates/menu.c.j2", // Путь к <a href="https://jinja.palletsprojects.com/en/stable/">JINJA2</a> шаблону файла menu.c. ОБЯЗАТЕЛЬНОЕ поле
-      "menu_header" : "templates/menu.h.j2", // Путь к [JINJA2](https://jinja.palletsprojects.com/en/stable/) шаблона файла menu.h. ОБЯЗАТЕЛЬНОЕ поле
-      "callback_header": "templates/callback.h.j2" // Путь к [JINJA2](https://jinja.palletsprojects.com/en/stable/) шаблона файла menu.h. необязательное поле. Создаётся, только если указан этот путь и путь к генерируемому файлу
+      "menu_source" : "templates/menu.c.j2", // Путь к JINJA2 шаблону файла menu.c. ОБЯЗАТЕЛЬНОЕ поле
+      "menu_header" : "templates/menu.h.j2", // Путь к JINJA2 шаблона файла menu.h. ОБЯЗАТЕЛЬНОЕ поле
+      "callback_header": "templates/callback.h.j2" // Путь к JINJA2 шаблона файла menu.h. необязательное поле. Создаётся, только если указан этот путь и путь к генерируемому файлу
     },
     "output" : {
       "menu_source" : "../src/rotenc_menu.c", // Путь к генерируемому файлу исходного кода меню. ОБЯЗАТЕЛЬНОЕ поле

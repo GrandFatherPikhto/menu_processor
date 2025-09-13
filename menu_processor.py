@@ -1,6 +1,7 @@
 import json
 from collections import deque
-from typing import Dict, List, Optional, Any    
+from typing import Dict, List, Optional, Any
+
 
 from menu_config import MenuConfig
 from menu_error import MenuError

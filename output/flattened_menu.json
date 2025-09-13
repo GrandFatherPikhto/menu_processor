@@ -15,28 +15,16 @@
     "type": "action_menu",
     "parent": "root",
     "original_id": "settings",
-    "first_child": "pwm_on",
+    "first_child": "pwm_frequency",
     "next_sibling": "info",
     "first_sibling": "settings",
     "last_sibling": "start"
-  },
-  "pwm_on": {
-    "id": "pwm_on",
-    "title": "PWM On/Off",
-    "type": "action_bool",
-    "parent": "settings",
-    "default": false,
-    "original_id": "pwm_on",
-    "next_sibling": "pwm_frequency",
-    "first_sibling": "pwm_on",
-    "last_sibling": "lo_channel"
   },
   "pwm_frequency": {
     "id": "pwm_frequency",
     "title": "PWM Frequency",
     "type": "action_callback",
     "parent": "settings",
-    "prev_sibling": "pwm_on",
     "display_cb": "callback_pwm_display",
     "change_cb": "callback_pwm_change",
     "enter_cb": null,
@@ -44,7 +32,7 @@
     "click_cb": null,
     "original_id": "pwm_frequency",
     "next_sibling": "hi_channel",
-    "first_sibling": "pwm_on",
+    "first_sibling": "pwm_frequency",
     "last_sibling": "lo_channel"
   },
   "hi_channel": {
@@ -56,7 +44,7 @@
     "original_id": "hi_channel",
     "first_child": "hi_delay",
     "next_sibling": "lo_channel",
-    "first_sibling": "pwm_on",
+    "first_sibling": "pwm_frequency",
     "last_sibling": "lo_channel"
   },
   "lo_channel": {
@@ -67,7 +55,7 @@
     "prev_sibling": "hi_channel",
     "original_id": "lo_channel",
     "first_child": "lo_delay",
-    "first_sibling": "pwm_on",
+    "first_sibling": "pwm_frequency",
     "last_sibling": "lo_channel"
   },
   "hi_delay": {
@@ -109,6 +97,18 @@
     "factors_count": 4,
     "default_factor_idx": 2,
     "original_id": "hi_duration",
+    "next_sibling": "hi_pwm_on",
+    "first_sibling": "hi_delay",
+    "last_sibling": "hi_duty"
+  },
+  "hi_pwm_on": {
+    "id": "hi_pwm_on",
+    "title": "PWM On/Off",
+    "type": "action_bool",
+    "parent": "hi_channel",
+    "prev_sibling": "hi_duration",
+    "default": false,
+    "original_id": "hi_pwm_on",
     "next_sibling": "hi_duty",
     "first_sibling": "hi_delay",
     "last_sibling": "hi_duty"
@@ -118,7 +118,7 @@
     "title": "PWM Duty",
     "type": "action_int",
     "parent": "hi_channel",
-    "prev_sibling": "hi_duration",
+    "prev_sibling": "hi_pwm_on",
     "min": 0,
     "max": 100,
     "default": 45,
@@ -166,6 +166,18 @@
     "factors_count": 4,
     "default_factor_idx": 2,
     "original_id": "lo_duration",
+    "next_sibling": "lo_pwm_on",
+    "first_sibling": "lo_delay",
+    "last_sibling": "lo_duty"
+  },
+  "lo_pwm_on": {
+    "id": "lo_pwm_on",
+    "title": "PWM On/Off",
+    "type": "action_bool",
+    "parent": "lo_channel",
+    "prev_sibling": "lo_duration",
+    "default": false,
+    "original_id": "lo_pwm_on",
     "next_sibling": "lo_duty",
     "first_sibling": "lo_delay",
     "last_sibling": "lo_duty"
@@ -175,7 +187,7 @@
     "title": "PWM Duty",
     "type": "action_int",
     "parent": "lo_channel",
-    "prev_sibling": "lo_duration",
+    "prev_sibling": "lo_pwm_on",
     "min": 0,
     "max": 100,
     "default": 45,

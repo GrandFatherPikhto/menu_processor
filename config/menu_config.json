@@ -22,12 +22,6 @@
       "type": "action_menu",
       "children": [
         {
-          "id": "pwm_on",
-          "title": "PWM On/Off",
-          "type": "action_bool",
-          "default": false
-        },
-        {
           "id" : "pwm_frequency",
           "title": "PWM Frequency",
           "type": "action_callback",
@@ -58,6 +52,12 @@
               "default" : 100,
               "factors" : [1, 10, 100, 1000],
               "default_factor_idx" : 2
+            },
+            {
+              "id": "hi_pwm_on",
+              "title": "PWM On/Off",
+              "type": "action_bool",
+              "default": false
             },
             {
               "id" : "hi_duty",
@@ -94,6 +94,12 @@
               "default" : 100,
               "factors" : [1, 10, 100, 1000],
               "default_factor_idx" : 2
+            },
+            {
+              "id": "lo_pwm_on",
+              "title": "PWM On/Off",
+              "type": "action_bool",
+              "default": false
             },
             {
               "id" : "lo_duty",

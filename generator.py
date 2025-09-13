@@ -1,14 +1,7 @@
 #!/usr/bin/env python3
-import inspect
-import logging
-import sys
-import json
-import os
-from jinja2 import Environment, FileSystemLoader, Template
-from collections import deque
 
-import menu_processor
-import menu_generator
+from menu_processor import MenuProcessor
+from menu_generator import MenuGenerator
 
 
 def main(input_file: str, output_file: str):
@@ -30,7 +23,7 @@ def main(input_file: str, output_file: str):
 
         print("\n🎉 Обработка завершена успешно!")
 
-        generator = menu_generator.MenuGenerator(processor=processor)
+        generator = MenuGenerator(processor=processor)
 
         generator.generate()
         
@@ -38,7 +31,7 @@ def main(input_file: str, output_file: str):
         print("\n💥 Ошибка загрузки файла")    
 
 if __name__ == "__main__":
-    processor = menu_processor.MenuProcessor()
+    processor = MenuProcessor()
     
     input_file = "config/menu_config.json"
     output_file = "output/menu_config_flattened.json"

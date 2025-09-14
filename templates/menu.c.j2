@@ -455,17 +455,17 @@ static void s_default_menu_draw(void) {
 {% endif %}
 {% if 'action_fixed_ints' in unique_types %}
         case MENU_TYPE_ACTION_FIXED_INTS: {
-            lcd1602_printf("%d", config->action_fixed_ints.values[values->action_fixed_ints.value_idx])
+            lcd1602_printf("%d", config->config.action_fixed_ints.values[values->action_fixed_ints.value_idx]);
         } break;
 {% endif %}
 {% if 'action_fixed_floats' in unique_types %}
         case MENU_TYPE_ACTION_FIXED_FLOATS: {
-            lcd1602_printf("%.2f", config->action_fixed_floats.values[values->action_fixed_floats.value_idx])
+            lcd1602_printf("%.2f", config->config.action_fixed_floats.values[values->action_fixed_floats.value_idx]);
         } break;
 {% endif %}
-{% if 'action_fixed_ints' in unique_types %}
+{% if 'action_fixed_strings' in unique_types %}
         case MENU_TYPE_ACTION_FIXED_STRINGS: {
-            lcd1602_print(config->action_fixed_strings.values[values->action_fixed_strings.value_idx])
+            lcd1602_print(config->config.action_fixed_strings.strings[values->action_fixed_strings.value_idx]);
         } break;
 {% endif %}
 {% if 'action_callback' in unique_types %}            

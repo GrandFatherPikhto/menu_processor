@@ -2,8 +2,7 @@
   "config" : {
     "templates" : {
       "menu_source" : "templates/menu.c.j2",
-      "menu_header" : "templates/menu.h.j2",
-      "callback_header": "templates/callback.h.j2"
+      "menu_header" : "templates/menu.h.j2"
     },
     "output" : {
       "menu_source" : "/home/yevst/Projects/CCPP/STM32/GeneratirveMenu/menu/src/rotenc_menu.c",
@@ -13,7 +12,11 @@
     "includes" : [
       "lcd1602.h",
       "rotenc_callback.h"
-    ]
+    ],
+    "collbacks" : {
+      "event_cb" : "collback_menu_event",
+      "display_cb" : "collback_display_str"
+    }
   },
   "menu": [
     {
@@ -24,9 +27,7 @@
         {
           "id" : "pwm_frequency",
           "title": "PWM Frequency",
-          "type": "action_callback",
-          "display_cb": "callback_pwm_display",
-          "change_cb": "callback_pwm_change"
+          "type": "action_callback"
         },
         {
           "id" : "hi_channel",

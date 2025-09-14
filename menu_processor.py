@@ -111,20 +111,23 @@ class MenuProcessor:
         """Геттер для уплощенного меню"""
         return self.menu_structure.copy()  # Возвращаем копию для безопасности
     
-    def get_template_path(self, file_type: str) -> Optional[str]:
+    def get_template_path(self, name: str) -> Optional[str]:
         """Геттер для пути к шаблону"""
-        return self.config.get_template_path(file_type)
+        return self.config.get_template_path(name)
     
-    def get_output_path(self, file_type: str) -> Optional[str]:
+    def get_output_path(self, name: str) -> Optional[str]:
         """Геттер для пути к выходному файлу"""
-        return self.config.get_output_path(file_type) 
+        return self.config.get_output_path(name) 
 
-    def get_includes(self) -> List[str]:
+    def get_includes(self) -> List[str] | None:
         """Геттер для включаемых файлов"""
-        if self.config.get_includes():
-            return self.config.get_includes()
-        else:
-            return []
+        return self.config.get_includes()
+        
+    def get_callbacks(self) -> List[str] | None:
+        return self.config.get_collbacks()
+    
+    def get_callback(self, name: str) -> Optional[str]:
+        return self.config.get_collback(name)
 
 # Пример использования
 if __name__ == "__main__":

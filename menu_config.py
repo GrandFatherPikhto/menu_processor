@@ -19,6 +19,11 @@ class MenuConfig:
             self.includes = config_data['includes'].copy()
         else:
             self.includes = None
+
+        if 'collbacks' in config_data:
+            self.collbacks = config_data['collbacks'].copy()
+        else:
+            self.collbacks = None
     
     def validate(self) -> List[str]:
         """Валидация конфигурации"""
@@ -57,3 +62,12 @@ class MenuConfig:
     def get_includes(self) -> List[str] | None:
         """Геттер для includes"""
         return self.includes
+    
+    def get_collbacks(self) -> List[str] | None:
+        return self.collbacks
+
+    def get_callback(self, name: str) -> Optional[str]:
+        """Получить путь к шаблону по типу файла"""
+        if self.collbacks == None:
+            return None
+        return self.collbacks.get(name, None)

@@ -3,7 +3,6 @@
 from menu_processor import MenuProcessor
 from menu_generator import MenuGenerator
 
-
 def main(input_file: str, output_file: str):
     if processor.load_menu_file(input_file):
         print("✅ Файл успешно загружен и валидирован")

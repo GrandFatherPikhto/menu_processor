@@ -1,0 +1,8 @@
+[
+    {
+        "key": "ctrl+shift+z", // Задайте вашу желаемую комбинацию клавиш
+        "command": "workbench.action.tasks.runTask",
+        "args": "Run generator.py", // Убедитесь, что значение `args` точно совпадает с `label` вашей задачи в `tasks.json`
+        "when": "editorTextFocus" // Опционально: условие, когда клавиша активна. Например, только когда редактор в фокусе.
+    }    
+]

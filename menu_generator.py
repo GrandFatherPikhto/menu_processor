@@ -3,6 +3,9 @@ import os
 from typing import Dict, List, Any
 from enum import Enum
 
+from menu_config import MenuConfig
+from menu_processor import MenuProcessor
+
 class MenuState(Enum):
     NAVIGATION = 0
     EDIT = 1
@@ -15,8 +18,7 @@ class MenuType(Enum):
     ACTION_INT_FACTOR = "action_int_factor"
     ACTION_CALLBACK = "action_callback"
     ACTION_FLOAT = "action_float"
-    ACTION_INT_STEP = "action_int_step"
-    ACTION_FLOAT_STEP = "action_float_step"
+    ACTION_FLOAT_FACTOR = "action_float_factor"
 
 class MenuGenerator:
     def __init__(self, processor):
@@ -26,9 +28,9 @@ class MenuGenerator:
         Args:
             processor: Экземпляр MenuProcessor с уплощенными данными и конфигурацией
         """
-        self.processor = processor
+        self.processor : 'MenuProcessor' = processor
         self.flattened_menu = processor.get_flattened_menu()
-        self.config = processor.get_config()
+        self.config : 'MenuConfig' = processor.get_config()
         
         # Настройка Jinja2 environment
         self.env = Environment(
@@ -54,12 +56,6 @@ class MenuGenerator:
         template_path = self.config.get_template_path('menu_source')
         output_path = self.config.get_output_path('menu_source')
         self._generate_file(template_path, output_path, template_data)
-
-        # Генерация callback .h файла, если он определён
-        template_path = self.config.get_template_path('callback_header')
-        output_path = self.config.get_output_path('callback_header')
-        if template_path and output_path:
-            self._generate_file(template_path, output_path, template_data)
         
         print("✅ Генерация завершена!")
     
@@ -81,16 +77,17 @@ class MenuGenerator:
                 'ACTION_BOOL': 'action_bool',
                 'ACTION_INT': 'action_int',
                 'ACTION_INT_FACTOR': 'action_int_factor',
-                'ACTION_CALLBACK': 'action_callback',
                 'ACTION_FLOAT': 'action_float',
-                'ACTION_INT_STEP': 'action_int_step',
-                'ACTION_FLOAT_STEP': 'action_float_step'
+                'ACTION_FLOAT_FACTOR': 'action_float_factor',
+                'ACTION_CALLBACK': 'action_callback',
             },
             'first_menu_id': self._get_first_menu_id(),
             'config': {
                 'templates': self.config.get_templates(),
                 'output_files': self.config.get_output_files()
-            }
+            },
+            'event_cb': self.config.get_callback('event_cb'),
+            'display_cb' : self.config.get_callback('display_cb')
         }
     
     def _get_first_menu_id(self):
@@ -119,4 +116,4 @@ class MenuGenerator:
             print(f"✅ Сгенерирован {output_path}")
             
         except Exception as e:
-            print(f"❌ Ошибка генерации {file_type} файла: {e}")
+            print(f"❌ Ошибка генерации {output_path} файла: {e}")

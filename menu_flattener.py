@@ -168,13 +168,19 @@ class MenuFlattener:
                 'factors_count': (len(node.get('factors', []))),
                 'default_factor_idx': node['default_factor_idx']
             }),
-            'action_callback': lambda: item.update({
-                'display_cb': node['display_cb'],
-                # **({'change_cb': node['change_cb']} if node.get('change_cb') is not None else {}),
-                'change_cb': node.get('change_cb', None),
-                'enter_cb': node.get('enter_cb', None),
-                'exit_cb' : node.get('exit_cb', None),
-                'click_cb' : node.get('click_cb', None)
+            'action_float': lambda: item.update({
+                'min': node['min'],
+                'max': node['max'],
+                'default': node['default'],
+                'step': node.get('step', 1)
+            }),
+            'action_float_factor': lambda: item.update({
+                'min': node['min'],
+                'max': node['max'],
+                'default': node['default'],
+                'factors': node['factors'],
+                'factors_count': (len(node.get('factors', []))),
+                'default_factor_idx': node['default_factor_idx']
             }),
             'action_bool': lambda: item.update({
                 'default': node['default']

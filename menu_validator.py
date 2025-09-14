@@ -109,13 +109,14 @@ class MenuValidator:
     
     def _validate_action_callback(self, node: Dict, path: List[str]) -> None:
         """Валидация action_callback"""
-        required_fields = ["display_cb"]
-        for field in required_fields:
-            if field not in node:
-                self.errors.append(MenuError(
-                    f"Для action_callback обязательно поле '{field}'",
-                    path
-                ))
+        pass
+        # required_fields = ["display_cb"]
+        # for field in required_fields:
+        #     if field not in node:
+        #         self.errors.append(MenuError(
+        #             f"Для action_callback обязательно поле '{field}'",
+        #             path
+        #         ))
     
     def _validate_action_bool(self, node: Dict, path: List[str]) -> None:
         """Валидация action_bool"""

@@ -160,3 +160,130 @@ static menu_values_t s_menu_values.
 5. "click_cb" : "callback_engine_click". Прототип такой функции `void (*click_cb)(void);`
 6. "enter_cb" : "callback_engine_enter". Прототип этой функции `void (*enter_cb)(void);`
 7. "exit_cb" : "callback_engine_exit". Прототип этой функции `void (*exit_cb)(void);`
+
+## Добавление нового типа в процессор
+1. Файл [menu_validator.py](menu_validator.py)
+  a. Добавить в `VALID_TYPES` новый тип `action_new_type`
+```python
+    VALID_TYPES = {'action_menu', 'action_int', 'action_int_factor', 
+                  'action_callback', 'action_bool', 
+                  'action_fixed_ints', 'action_fixed_floats', 'action_fixed_strings', 
+                  'action_new_type'}
+```  
+  b. Добавить в `action_new_type` в `type_validators`:
+```python
+    def _validate_type_specific_fields(self, node: Dict, path: List[str]) -> None:
+        """Валидация полей, специфичных для типа"""
+        if 'type' not in node:
+            return
+        
+        type_validators = {
+            'action_int': self._validate_action_int,
+            'action_int_factor': self._validate_action_int_factor,
+            'action_callback': self._validate_action_callback,
+            'action_bool': self._validate_action_bool,
+            'action_fixed_ints': self._validate_action_fixed_ints,
+            'action_fixed_floats': self._validate_action_fixed_floats,
+            'action_fixed_strings': self._validate_action_fixed_strings,
+            'action_new_type': self._validate_action_new_type
+        }
+```
+  c. Создать метод `_validate_action_new_type` и в нём обработку необходимых полей
+```python  
+    def _validate_action_new_type(self, node: Dict, path: List[str]) -> None:
+        """Валидация action_callback"""
+        required_fields = ["field01", "field02"]
+        for field in required_fields:
+            if field not in node:
+                self.errors.append(MenuError(
+                    f"Для action_callback обязательно поле '{field}'",
+                    path
+                ))
+```
+2. В файле [menu_flattener.py](menu_flattener.py)
+  a. В метод `_add_type_specific_fields` дописываем лямбду обработки нужных полей
+     Если поле необязательное, как `field03` в примере, используем оператор "распаковки словаря"
+```python
+    def _add_type_specific_fields(self, item: Dict, node: Dict) -> None:
+        """Добавление полей, специфичных для типа"""
+        type_processors = {
+            'action_int': lambda: item.update({
+                'min': node['min'],
+                'max': node['max'],
+                'default': node['default'],
+                'step': node.get('step', 1)
+            }),
+            'action_int_factor': lambda: item.update({
+                'min': node['min'],
+                'max': node['max'],
+                'default': node['default'],
+                'factors': node['factors'],
+                'factors_count': (len(node.get('factors', []))),
+                'default_factor_idx': node['default_factor_idx']
+            }),
+            'action_float': lambda: item.update({
+                'min': node['min'],
+                'max': node['max'],
+                'default': node['default'],
+                'step': node.get('step', 1)
+            }),
+            'action_float_factor': lambda: item.update({
+                'min': node['min'],
+                'max': node['max'],
+                'default': node['default'],
+                'factors': node['factors'],
+                'factors_count': (len(node.get('factors', []))),
+                'default_factor_idx': node['default_factor_idx']
+            }),
+            'action_bool': lambda: item.update({
+                'default': node['default']
+            }),
+            'action_new_type': lambda: item.update({
+                'filed01': node[field01].upper()
+                **({} if node.get('field03') is None else {'field03': len(node['filed03']) })
+            })
+```  
+3. В файл [menu_generator.py](menu_generator.py) добавить нужный тип:
+```python
+class MenuType(Enum):
+    ROOT = "root"
+    SUBMENU = "action_menu" 
+    ACTION_BOOL = "action_bool"
+    ACTION_INT = "action_int"
+    ACTION_INT_FACTOR = "action_int_factor"
+    ACTION_CALLBACK = "action_callback"
+    ACTION_FLOAT = "action_float"
+    ACTION_FLOAT_FACTOR = "action_float_factor"
+    ACTION_FIXED_INTS = "action_fixed_ints"
+    ACTION_FIXED_FLOATS = "action_fixed_floats"
+    ACTION_FIXED_STRINGS = "action_fixed_strings"
+    ACTION_NEW_TYPE = "action_new_type"
+```
+и не забыть добавить в типы меню:
+```python
+            'menu_types': {
+                'ROOT': 'root',
+                'ACTION_MENU': 'action_menu',
+                'ACTION_BOOL': 'action_bool',
+                'ACTION_INT': 'action_int',
+                'ACTION_INT_FACTOR': 'action_int_factor',
+                'ACTION_FLOAT': 'action_float',
+                'ACTION_FLOAT_FACTOR': 'action_float_factor',
+                'ACTION_FIXED_INTS': 'action_fixed_ints',
+                'ACTION_FIXED_FLOATS': 'action_fixed_floats',
+                'ACTION_FIXED_STRINGS': 'action_fixed_strings',
+                'ACTION_CALLBACK': 'action_callback',
+                'ACTION_NEW_TYPE': 'action_new_type
+            },
+```
+4. Осталось внести добавления в генерацию из шаблонов
+  a. В `menu.c.j2`
+```jinja2  
+  static const menu_item_t s_menu_config[MENU_ID_COUNT] = {
+    ...
+  {% elif item.type == 'action_fixed_ints '%}
+    .action_new_type = {
+      .field01 = {{ item.field01 }},
+      ...
+    }
+  {% endif %}

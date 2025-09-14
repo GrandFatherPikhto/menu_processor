@@ -26,6 +26,29 @@
     "type": "action_callback",
     "parent": "settings",
     "original_id": "pwm_frequency",
+    "next_sibling": "regime",
+    "first_sibling": "pwm_frequency",
+    "last_sibling": "lo_channel"
+  },
+  "regime": {
+    "id": "regime",
+    "title": "Regime",
+    "type": "action_fixed_strings",
+    "parent": "settings",
+    "prev_sibling": "pwm_frequency",
+    "default_idx": 0,
+    "counter": 3,
+    "strings": [
+      "Normal",
+      "Precision",
+      "Super"
+    ],
+    "ids": [
+      1,
+      2,
+      3
+    ],
+    "original_id": "regime",
     "next_sibling": "hi_channel",
     "first_sibling": "pwm_frequency",
     "last_sibling": "lo_channel"
@@ -35,7 +58,7 @@
     "title": "Hi Channel",
     "type": "action_menu",
     "parent": "settings",
-    "prev_sibling": "pwm_frequency",
+    "prev_sibling": "regime",
     "original_id": "hi_channel",
     "first_child": "hi_delay",
     "next_sibling": "lo_channel",

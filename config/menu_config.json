@@ -30,6 +30,14 @@
           "type": "action_callback"
         },
         {
+          "id" : "regime",
+          "title" : "Regime",
+          "type" : "action_fixed_strings",
+          "strings" : ["Normal", "Precision", "Super"],
+          "ids" : [1,2,3],
+          "default_idx": 0
+        },
+        {
           "id" : "hi_channel",
           "title" : "Hi Channel",
           "type" : "action_menu",

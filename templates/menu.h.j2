@@ -10,11 +10,15 @@ typedef enum {
     MENU_EVENT_VALUE_CHANGED       = 0x02,
     MENU_EVENT_ENTER_EDIT          = 0x04,
     MENU_EVENT_EXIT_EDIT           = 0x08,
-    MENU_EVENT_DELTA_CHANGED       = 0x10,
-    MENU_EVENT_BUTTON_PRESS        = 0x20,
-    MENU_EVENT_BUTTON_LONG_PRESS   = 0x40,
-    MENU_EVENT_BUTTON_DOUBLE_CLICK = 0x80
+    MENU_EVENT_FACTOR_CHANGED      = 0x10
 } menu_event_flags_t;
+
+typedef enum {
+    MENU_EVENT_DELTA_CHANGED       = 0x01,
+    MENU_EVENT_BUTTON_PRESS        = 0x02,
+    MENU_EVENT_BUTTON_LONG_PRESS   = 0x04,
+    MENU_EVENT_BUTTON_DOUBLE_CLICK = 0x08
+} control_events_flag_t;
 
 typedef struct menu_data {
     union {
@@ -56,75 +60,110 @@ typedef enum {
     MENU_ID_COUNT
 } menu_id_t;
 
+{% if 'action_int_factor' in unique_types or 'action_float_factor' in unique_types %}
 typedef struct {
     uint8_t index;
     uint8_t default_idx;
     uint8_t count;
     const int32_t *factors;
 } factor_t;
+{% endif %}
 
 // Структуры для НЕИЗМЕНЯЕМЫХ данных конфигурации
+{% if 'action_int' in unique_types %}
 typedef struct {
     int32_t min;
     int32_t max;
     int32_t default_value;
     int32_t step;
 } action_int_config_t;
+{% endif %}
 
+{% if 'action_int_factor' in unique_types %}
 typedef struct {
     int32_t min;
     int32_t max;
     int32_t default_value;
     factor_t factor;
 } action_int_factor_config_t;
+{% endif %}
 
+{% if 'action_float' in unique_types %}
 typedef struct {
     float min;
     float max;
     float default_value;
     float step;
 } action_float_config_t;
+{% endif %}
 
+{% if 'action_float_factor' in unique_types %}
 typedef struct {
     float min;
     float max;
     float default_value;
     factor_t factor;
 } action_float_factor_config_t;
+{% endif %}
 
+{% if 'action_bool' in unique_types %}
 typedef struct {
     bool default_value;
 } action_bool_config_t;
+{% endif %}
 
-/*
+{% if 'action_fixed_ints' in unique_types %}
 typedef struct {
     uint16_t value_id;
     uint16_t default_value_id;
     uint16_t counter;
     const int32_t *values;
 } action_fixed_int_values_config_t;
+{% endif %}
 
+{% if 'action_fixed_floats' in unique_types %}
 typedef struct {
     uint16_t value_id;
     uint16_t default_value_id;
     uint16_t counter;
     const int32_t *values;
 } action_fixed_float_values_config_t;
+{% endif %}
 
+{% if 'action_fixed_strings' in unique_types %}
 typedef struct {
-    uint8_t default_value_id;
+    uint8_t default_idx;
     uint8_t counter;
-    const char *strings;    
-    const uint8_t *values;
+    const char **strings;    
+    const uint8_t *ids;
 } action_fixed_strings_config_t;
-*/
+{% endif %}
 
 typedef union {
+{% if 'action_bool' in unique_types %}
     action_bool_config_t action_bool;
+{% endif %}
+{% if 'action_int' in unique_types %}    
     action_int_config_t action_int;
+{% endif %}
+{% if 'action_int_factor' in unique_types %}    
     action_int_factor_config_t action_int_factor;
+{% endif %}
+{% if 'action_float' in unique_types %}    
     action_float_config_t action_float;
+{% endif %}
+{% if 'action_float_factor' in unique_types %}    
     action_float_factor_config_t action_float_factor;
+{% endif %}
+{% if 'action_fixed_ints' in unique_types %}
+    action_fixed_ints_config_t action_fixed_ints;
+{% endif %}
+{% if 'action_fixed_floats' in unique_types %}
+    action_fixed_floats_config_t action_fixed_floats;
+{% endif %}
+{% if 'action_fixed_strings' in unique_types %}
+    action_fixed_strings_config_t action_fixed_strings;
+{% endif %}
 } menu_item_config_t;
 
 typedef struct {
@@ -141,41 +180,81 @@ typedef struct {
 } menu_item_t;
 
 // Структуры для ИЗМЕНЯЕМЫХ данных значений
+{% if 'action_int' in unique_types %}
 typedef struct {
     int32_t value;
 } action_int_values_t;
-
+{% endif %}
+{% if 'action_int_factor' in unique_types %}
 typedef struct {
     int32_t value;
     uint8_t factor_idx;
 } action_int_factor_values_t;
-
+{% endif %}
+{% if 'action_bool' in unique_types %}
 typedef struct {
     bool value;
 } action_bool_values_t;
-
+{% endif %}
+{% if 'action_float' in unique_types %}
 typedef struct {
     float value;
 } action_float_values_t;
-
+{% endif %}
+{% if 'action_float_factor' in unique_types %}
 typedef struct {
     float value;
     uint8_t factor_idx;
 } action_float_factor_values_t;
-
+{% endif %}
+{% if 'action_fixed_ints' in unique_types %}
+typedef struct {
+    uint8_t value_idx;
+} action_fixed_ints_values_t;
+{% endif %}
+{% if 'action_fixed_floats' in unique_types %}
+typedef struct {
+    uint8_t value_idx;
+} action_fixed_floats_values_t;
+{% endif %}
+{% if 'action_fixed_strings' in unique_types %}
+typedef struct {
+    uint8_t value_idx;
+} action_fixed_strings_values_t;
+{% endif %}
 typedef union {
+{% if 'action_bool' in unique_types %}    
     action_bool_values_t action_bool;
+{% endif %}
+{% if 'action_int' in unique_types %}
     action_int_values_t action_int;
+{% endif %}
+{% if 'action_int_factor' in unique_types %}    
     action_int_factor_values_t action_int_factor;
+{% endif %}
+{% if 'action_float' in unique_types %}    
     action_float_values_t action_float;
+{% endif %}    
+{% if 'action_float_factor' in unique_types %}
     action_float_factor_values_t action_float_factor;
+{% endif %}
+{% if 'action_fixed_ints' in unique_types %}
+    action_fixed_ints_values_t action_fixed_ints;
+{% endif %}
+{% if 'action_fixed_floats' in unique_types %}
+    action_fixed_floats_values_t action_fixed_floats;
+{% endif %}
+{% if 'action_fixed_strings' in unique_types %}
+    action_fixed_strings_values_t action_fixed_strings;
+{% endif %}
 } menu_item_values_t;
 
 typedef struct {
     menu_id_t current;
     menu_id_t previous;
     menu_state_t state;
-    uint8_t event;
+    uint8_t menu_event;
+    uint8_t control_event;
     int8_t delta;
     bool dirty;
 } menu_state_info_t;

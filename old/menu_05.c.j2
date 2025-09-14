@@ -37,16 +37,6 @@ static menu_display_str_cb_t s_display_str_cb = {{ 'NULL' if display_cb == None 
 {% for item_id, item in menu_items.items() if item.type == 'action_int_factor' %}
 static const int32_t factors_{{ item_id }}[] = { {{ item.factors | join(", ") }} };
 {% endfor %}
-{% for item_id, item in menu_items.items() if item.type == 'action_fixed_ints' %}
-static const int32_t fixed_ints_{{ item_id }}[] = { {{ item.values | join(", ") }} };
-{% endfor %}
-{% for item_id, item in menu_items.items() if item.type == 'action_fixed_floats' %}
-static const float fixed_floats_{{ item_id }}[] = { {{ item.values | join(", ") }} };
-{% endfor %}
-{% for item_id, item in menu_items.items() if item.type == 'action_fixed_strings' %}
-static const char *fixed_strings_{{ item_id }}[] = { "{{ item.strings | map('string') | join('", "') }}" };
-static const uint8_t fixed_string_ids_{{ item_id }}[] = { {{ item.ids | join(", ") }} };
-{% endfor %}
 
 // НЕИЗМЕНЯЕМЫЕ данные конфигурации меню
 static const menu_item_t s_menu_config[MENU_ID_COUNT] = {
@@ -74,19 +64,14 @@ static const menu_item_t s_menu_config[MENU_ID_COUNT] = {
         .first_sibling = {% if item.first_sibling %}MENU_ID_{{ item.first_sibling.upper() }}{% else %}MENU_ID_COUNT{% endif %},
         .last_sibling = {% if item.last_sibling %}MENU_ID_{{ item.last_sibling.upper() }}{% else %}MENU_ID_COUNT{% endif %},
         .config = {
-            // {{ item.type }}
-            {% if item.type | trim | lower == 'action_bool' %}
-            .action_bool = {
-                .default_value = {{ 'true' if item.default else 'false' }}
-            }
-            {% elif item.type  | trim | lower == 'action_int' %}
+            {% if item.type == 'action_int' %}
             .action_int = {
                 .min = {{ item.min }},
                 .max = {{ item.max }},
                 .default_value = {{ item.default }},
                 .step = {{ item.step | default(1) }}
             }
-            {% elif item.type | trim | lower == 'action_int_factor' %}
+            {% elif item.type == 'action_int_factor' %}
             .action_int_factor = {
                 .min = {{ item.min }},
                 .max = {{ item.max }},
@@ -98,24 +83,9 @@ static const menu_item_t s_menu_config[MENU_ID_COUNT] = {
                     .default_idx = {{ item.default_factor_idx }}
                 }
             }
-            {% elif item.type  | trim | lower == 'action_fixed_ints' %}
-            .action_fixed_ints = {
-                .values = {{ item.values }},
-                .counter = {{ item.counter }},
-                .default_idx = {{ item.default_idx }}
-            }
-            {% elif item.type  | trim | lower == 'action_fixed_floats' %}
-            .action_fixed_floats = {
-                .values = {{ item.values }},
-                .counter = {{ item.counter }},
-                .default_idx = {{ item.default_idx }}
-            }
-            {% elif item.type  | trim | lower == 'action_fixed_strings' %}
-            .action_fixed_strings = {
-                .ids = fixed_string_ids_{{ item_id }},
-                .strings = fixed_strings_{{ item_id }},
-                .counter = {{ item.counter }},
-                .default_idx = {{ item.default_idx }}
+            {% elif item.type == 'action_bool' %}
+            .action_bool = {
+                .default_value = {{ 'true' if item.default else 'false' }}
             }
             {% else %}
             // Пустая структура для других типов
@@ -145,18 +115,6 @@ static menu_values_t s_menu_values = {
             .action_bool = {
                 .value = {{ 'true' if item.default else 'false' }}
             }
-            {% elif item.type == 'action_fixed_ints' %}
-            .action_fixed_ints = {
-                .value_idx = {{ item.default_idx }}
-            }
-            {% elif item.type == 'action_fixed_floats' %}
-            .action_fixed_floats = {
-                .value_idx = {{ item.default_idx }}
-            }
-            {% elif item.type == 'action_fixed_strings' %}
-            .action_fixed_strings = {
-                .value_idx = {{ item.default_idx }}
-            }
             {% else %}
             .action_int = {0}
             {% endif %}
@@ -169,8 +127,7 @@ static menu_values_t s_menu_values = {
         .previous = MENU_ID_SETTINGS,
         .state = MENU_STATE_NAVIGATION,
         .delta = 0,
-        .menu_event = 0,
-        .control_event = 0,
+        .event = 0,
         .dirty = false
     }
 };
@@ -180,9 +137,6 @@ void s_menu_move_sibling(int8_t delta);
 void s_menu_edit_value(int8_t delta);
 void s_set_menu(menu_id_t menu_id);
 void s_menu_set_state(menu_state_t state);
-void s_call_menu_event_cb(void);
-void s_reset_state_info(void);
-
 {% if 'action_bool' in unique_types %}
 void s_toggle_bool_value(void);
 void s_set_default_bool_value (void);
@@ -199,26 +153,14 @@ void s_set_default_int_factor_value (void);
 void s_change_float_value(void);
 void s_set_default_float_value (void);
 {% endif %}
-{% if 'action_float_factor' in unique_types %}
+{% if 'action_int' in unique_types %}
 void s_change_float_factor_value(void);
 void s_set_default_float_factor_value (void);
 {% endif %}
-{% if 'action_fixed_ints' in unique_types %}
-void s_next_fixed_int(void);
-void s_set_default_fixed_int(void);
-{% endif %}
-{% if 'action_fixed_floats' in unique_types %}
-void s_next_fixed_float(void);
-void s_set_default_fixed_float(void);
-{% endif %}
-{% if 'action_fixed_strings' in unique_types %}
-void s_next_fixed_string(void);
-void s_set_default_fixed_string(void);
-{% endif %}
-{% if 'action_int_factor' in unique_types or 'action_float_factor' in unique_types %}
-int32_t s_get_current_factor(void);
 void s_next_factor_idx (void);
-{% endif %}
+void s_call_menu_event_cb(void);
+int32_t s_get_current_factor(void);
+void s_reset_state_info(void);
 
 // Реализация функций
 const menu_item_t *menu_get_config(menu_id_t id) {
@@ -267,7 +209,7 @@ void *menu_get_value_ptr(menu_id_t id) {
 
 void handle_change_position(int8_t delta) {
     s_reset_state_info();
-    s_menu_values.state_info.control_event |= MENU_EVENT_DELTA_CHANGED;
+    s_menu_values.state_info.event |= MENU_EVENT_DELTA_CHANGED;
     s_menu_values.state_info.delta = delta;
 
     switch(s_menu_values.state_info.state) {
@@ -284,7 +226,7 @@ void handle_push_button(void) {
     s_reset_state_info();
     const menu_item_t *config = menu_get_current_config();
     menu_item_values_t *values = menu_get_current_values();
-    s_menu_values.state_info.control_event |= MENU_EVENT_BUTTON_PRESS;
+    s_menu_values.state_info.event |= MENU_EVENT_BUTTON_PRESS;
 
     if (s_menu_values.state_info.state == MENU_STATE_NAVIGATION) {
         if (config->first_child != MENU_ID_COUNT) {
@@ -306,52 +248,23 @@ void handle_push_button(void) {
 {% if 'action_float_factor' in unique_types %}                
             || config->type == MENU_TYPE_ACTION_FLOAT_FACTOR
 {% endif %}
-{% if 'action_callback' in unique_types %}               
+{% if 'action_callback' in unique_types %}                
             || config->type == MENU_TYPE_ACTION_CALLBACK
-{% endif %}
-{% if 'action_fixed_ints' in unique_types %}
-            || config->type == MENU_TYPE_ACTION_FIXED_INTS
-{% endif %}
-{% if 'action_fixed_floats' in unique_types %}
-            || config->type == MENU_TYPE_ACTION_FIXED_FLOATS
-{% endif %}
-{% if 'action_fixed_strings' in unique_types %}
-            || config->type == MENU_TYPE_ACTION_FIXED_STRINGS
 {% endif %}
             ) {
             // Переход в режим редактирования
-            s_menu_values.state_info.menu_event |= MENU_EVENT_ENTER_EDIT;
+            s_menu_values.state_info.event |= MENU_EVENT_ENTER_EDIT;
             s_menu_set_state(MENU_STATE_EDIT);
         }
     } else if (s_menu_values.state_info.state == MENU_STATE_EDIT) {
         // Обработка в режиме редактирования
         switch (config->type) {
-{% if 'action_bool' in unique_types %}            
             case MENU_TYPE_ACTION_BOOL:
                 s_toggle_bool_value();
                 break;
-{% endif %}
-{% if 'action_fixed_ints' in unique_types %}
-            case MENU_TYPE_ACTION_FIXED_INTS:
-                s_next_fixed_int();
-            break;
-{% endif %}
-{% if 'action_fixed_floats' in unique_types %}
-            case MENU_TYPE_ACTION_FIXED_FLOATS:
-                s_next_fixed_float();
-            break;
-{% endif %}
-{% if 'action_fixed_strings' in unique_types %}
-            case MENU_TYPE_ACTION_FIXED_STRINGS:
-                s_next_fixed_string();
-            break;
-{% endif %}
-{% if 'action_int_factor' in unique_types %}                
+                
             case MENU_TYPE_ACTION_INT_FACTOR:
-{% endif %}
-{% if 'action_float_factor' in unique_types %}
             case MENU_TYPE_ACTION_FLOAT_FACTOR:
-{% endif %}            
                 s_next_factor_idx();
                 break;
             default:
@@ -365,11 +278,11 @@ void handle_long_push_button(void) {
     const menu_item_t *config = menu_get_current_config();
     menu_item_values_t *values = menu_get_current_values();
 
-    s_menu_values.state_info.control_event |= MENU_EVENT_BUTTON_LONG_PRESS;
+    s_menu_values.state_info.event |= MENU_EVENT_BUTTON_LONG_PRESS;
 
     if (s_menu_values.state_info.state == MENU_STATE_EDIT) {
         // Выход из режима редактирования
-        s_menu_values.state_info.menu_event |= MENU_EVENT_EXIT_EDIT;
+        s_menu_values.state_info.event |= MENU_EVENT_EXIT_EDIT;
         s_menu_set_state(MENU_STATE_NAVIGATION);
     } else {
         // Возврат к родителю
@@ -381,7 +294,7 @@ void handle_long_push_button(void) {
 
 void handle_double_click_button(void) {
     s_reset_state_info();
-    s_menu_values.state_info.control_event |= MENU_EVENT_BUTTON_DOUBLE_CLICK;
+    s_menu_values.state_info.event |= MENU_EVENT_BUTTON_DOUBLE_CLICK;
     const menu_item_t *config = menu_get_current_config();
     menu_item_values_t *values = menu_get_current_values();
 
@@ -437,11 +350,9 @@ static void s_default_menu_draw(void) {
             lcd1602_printf("%d/%d", values->action_int.value, config->config.action_int.max);
         } break;
 {% endif %}            
-{% if 'action_int_factor' in unique_types %}
         case MENU_TYPE_ACTION_INT_FACTOR: {
             lcd1602_printf("%d (x%d)", values->action_int_factor.value, s_get_current_factor());
         } break;
-{% endif %}
 {% if 'action_float' in unique_types %}
         case MENU_TYPE_ACTION_FLOAT: {
             lcd1602_printf("%.1f/%.1f", values->action_float.value, config->config.action_float.max);
@@ -452,26 +363,10 @@ static void s_default_menu_draw(void) {
         case MENU_TYPE_ACTION_FLOAT_FACTOR: {
             lcd1602_printf("%.2f (x%d)", values->action_float_factor.value, s_get_current_factor());
         } break;
-{% endif %}
-{% if 'action_fixed_ints' in unique_types %}
-        case MENU_TYPE_ACTION_FIXED_INTS: {
-            lcd1602_printf("%d", config->action_fixed_ints.values[values->action_fixed_ints.value_idx])
-        } break;
-{% endif %}
-{% if 'action_fixed_floats' in unique_types %}
-        case MENU_TYPE_ACTION_FIXED_FLOATS: {
-            lcd1602_printf("%.2f", config->action_fixed_floats.values[values->action_fixed_floats.value_idx])
-        } break;
-{% endif %}
-{% if 'action_fixed_ints' in unique_types %}
-        case MENU_TYPE_ACTION_FIXED_STRINGS: {
-            lcd1602_print(config->action_fixed_strings.values[values->action_fixed_strings.value_idx])
-        } break;
-{% endif %}
-{% if 'action_callback' in unique_types %}            
+{% if 'action_float_factor' in unique_types %}            
         case MENU_TYPE_ACTION_CALLBACK:
             break;
-{% endif %}      
+{% endif %}            
         case MENU_TYPE_ACTION_MENU:
             // Показываем, что это подменю со стрелкой
             lcd1602_print(">");
@@ -525,13 +420,14 @@ bool menu_is_dirty(void)
 bool menu_is_editable(void) {
     return (
         s_menu_values.state_info.state == MENU_STATE_EDIT 
-        && ((s_menu_values.state_info.menu_event & MENU_EVENT_ENTER_EDIT) == 0)
+        && ((s_menu_values.state_info.event & MENU_EVENT_ENTER_EDIT) == 0)
     );
 }
 
 void menu_set_dirty(bool dirty) {
     s_menu_values.state_info.dirty = dirty;
 }
+
 
 void s_menu_move_sibling(int8_t delta) {
     menu_id_t prev_menu_id = s_menu_values.state_info.current;
@@ -572,7 +468,7 @@ void s_menu_edit_value(int8_t delta) {
 
     // Редактирование значения
     switch (config->type) {
-{% if 'action_int' in unique_types %}
+{% if 'action_int' in unique_types %}        
         case MENU_TYPE_ACTION_INT:
             s_change_int_value();
             break;
@@ -595,7 +491,6 @@ void s_menu_edit_value(int8_t delta) {
 {% if 'action_callback' in unique_types %}            
         case MENU_TYPE_ACTION_CALLBACK:
             s_call_menu_event_cb();
-            s_menu_values.state_info.dirty = true;
             break;
 {% endif %}            
         default:
@@ -609,7 +504,7 @@ void s_set_menu(menu_id_t menu_id) {
 
     s_menu_values.state_info.previous = s_menu_values.state_info.current;
     s_menu_values.state_info.current = menu_id;
-    s_menu_values.state_info.menu_event |= MENU_EVENT_ITEM_CHANGED;
+    s_menu_values.state_info.event |= MENU_EVENT_ITEM_CHANGED;
     s_call_menu_event_cb ();
     s_menu_values.state_info.dirty = true;
 }
@@ -629,16 +524,8 @@ void s_toggle_bool_value(void) {
     if (config->type != MENU_TYPE_ACTION_BOOL)
         return; 
 
-    s_menu_values.state_info.menu_event |= MENU_EVENT_VALUE_CHANGED;
+    s_menu_values.state_info.event |= MENU_EVENT_VALUE_CHANGED;
     values->action_bool.value = !values->action_bool.value;
-    s_call_menu_event_cb();
-    s_menu_values.state_info.dirty = true;
-}
-
-void s_set_default_bool_value (void) {
-    menu_item_values_t *values = menu_get_current_values();
-    const menu_item_t *config = menu_get_current_config();
-    values->action_bool.value = config->config.action_bool.default_value;
     s_call_menu_event_cb();
     s_menu_values.state_info.dirty = true;
 }
@@ -652,19 +539,11 @@ void s_change_int_value(void) {
     if (config->type != MENU_TYPE_ACTION_INT)
         return; 
 
-    s_menu_values.state_info.menu_event |= MENU_EVENT_VALUE_CHANGED;
+    s_menu_values.state_info.event |= MENU_EVENT_VALUE_CHANGED;
 
     values->action_int.value += s_menu_values.state_info.delta * config->config.action_int.step;
     values->action_int.value = CLAMP(values->action_int.value,
         config->config.action_int.min, config->config.action_int.max);
-    s_call_menu_event_cb();
-    s_menu_values.state_info.dirty = true;
-}
-
-void s_set_default_int_value (void) {
-    menu_item_values_t *values = menu_get_current_values();
-    const menu_item_t *config = menu_get_current_config();
-    values->action_int.value = config->config.action_int.default_value;
     s_call_menu_event_cb();
     s_menu_values.state_info.dirty = true;
 }
@@ -678,7 +557,7 @@ void s_change_int_factor_value(void) {
     if (config->type != MENU_TYPE_ACTION_INT_FACTOR)
         return;
 
-    s_menu_values.state_info.menu_event |= MENU_EVENT_VALUE_CHANGED;
+    s_menu_values.state_info.event |= MENU_EVENT_VALUE_CHANGED;
 
     int32_t factor = s_get_current_factor();
 
@@ -688,14 +567,6 @@ void s_change_int_factor_value(void) {
     values->action_int.value += s_menu_values.state_info.delta * factor;
     values->action_int.value = CLAMP(values->action_int.value,
         config->config.action_int.min, config->config.action_int.max);
-    s_call_menu_event_cb();
-    s_menu_values.state_info.dirty = true;
-}
-
-void s_set_default_int_factor_value (void) {
-    menu_item_values_t *values = menu_get_current_values();
-    const menu_item_t *config = menu_get_current_config();
-    values->action_int_factor.value = config->config.action_int_factor.default_value;
     s_call_menu_event_cb();
     s_menu_values.state_info.dirty = true;
 }
@@ -709,19 +580,11 @@ void s_change_float_value(void) {
     if (config->type != MENU_TYPE_ACTION_BOOL)
         return; 
 
-    s_menu_values.state_info.menu_event |= MENU_EVENT_VALUE_CHANGED;
+    s_menu_values.state_info.event |= MENU_EVENT_VALUE_CHANGED;
 
     values->action_float.value += s_menu_values.state_info.delta * config->config.action_float.step;
     values->action_float.value = CLAMP(values->action_float.value,
         config->config.action_float.min, config->config.action_float.max);
-    s_call_menu_event_cb();
-    s_menu_values.state_info.dirty = true;
-}
-
-void s_set_default_float_value (void) {
-    menu_item_values_t *values = menu_get_current_values();
-    const menu_item_t *config = menu_get_current_config();
-    values->action_float.value = config->config.action_float.default_value;
     s_call_menu_event_cb();
     s_menu_values.state_info.dirty = true;
 }
@@ -740,11 +603,44 @@ void s_change_float_factor_value(void) {
     if (!factor)
         return;
 
-    s_menu_values.state_info.menu_event |= MENU_EVENT_VALUE_CHANGED;
+    s_menu_values.state_info.event |= MENU_EVENT_VALUE_CHANGED;
 
     values->action_float.value += s_menu_values.state_info.delta * factor;
     values->action_float.value = CLAMP(values->action_float.value,
         config->config.action_float.min, config->config.action_float.max);
+    s_call_menu_event_cb();
+    s_menu_values.state_info.dirty = true;
+}
+{% endif %}
+
+void s_set_default_bool_value (void) {
+    menu_item_values_t *values = menu_get_current_values();
+    const menu_item_t *config = menu_get_current_config();
+    values->action_bool.value = config->config.action_bool.default_value;
+    s_call_menu_event_cb();
+    s_menu_values.state_info.dirty = true;
+}
+
+void s_set_default_int_value (void) {
+    menu_item_values_t *values = menu_get_current_values();
+    const menu_item_t *config = menu_get_current_config();
+    values->action_int.value = config->config.action_int.default_value;
+    s_call_menu_event_cb();
+    s_menu_values.state_info.dirty = true;
+}
+
+void s_set_default_int_factor_value (void) {
+    menu_item_values_t *values = menu_get_current_values();
+    const menu_item_t *config = menu_get_current_config();
+    values->action_int_factor.value = config->config.action_int_factor.default_value;
+    s_call_menu_event_cb();
+    s_menu_values.state_info.dirty = true;
+}
+
+void s_set_default_float_value (void) {
+    menu_item_values_t *values = menu_get_current_values();
+    const menu_item_t *config = menu_get_current_config();
+    values->action_float.value = config->config.action_float.default_value;
     s_call_menu_event_cb();
     s_menu_values.state_info.dirty = true;
 }
@@ -756,74 +652,24 @@ void s_set_default_float_factor_value (void) {
     s_call_menu_event_cb();
     s_menu_values.state_info.dirty = true;
 }
-{% endif %}
 
-{% if 'action_fixed_ints' in unique_types %}
-void s_next_fixed_int(void) {
-
-}
-
-void s_set_default_fixed_int(void) {
-
-}
-{% endif %}
-{% if 'action_fixed_floats' in unique_types %}
-void s_next_fixed_float(void) {
-
-}
-
-void s_set_default_fixed_float(void) {
-
-}
-{% endif %}
-{% if 'action_fixed_strings' in unique_types %}
-void s_next_fixed_string(void) {
-    menu_item_values_t *values = menu_get_current_values();
-    const menu_item_t *config = menu_get_current_config();
-
-    values->action_fixed_strings.value_idx = 
-        (values->action_fixed_strings.value_idx + 1) %
-        config->config.action_fixed_strings.counter;
-    s_call_menu_event_cb();
-    s_menu_values.state_info.dirty = true;
-}
-
-void s_set_default_fixed_string(void) {
-    menu_item_values_t *values = menu_get_current_values();
-    const menu_item_t *config = menu_get_current_config();
-
-    values->action_fixed_strings.value_idx = 
-        config->config.action_fixed_strings.default_idx;
-
-    s_call_menu_event_cb();
-    s_menu_values.state_info.dirty = true;
-}
-{% endif %}
-
-{% if 'action_int_factor' in unique_types or 'action_float_factor' in unique_types %}
 void s_next_factor_idx (void) {
     menu_item_values_t *values = menu_get_current_values();
     const menu_item_t *config = menu_get_current_config();
     switch(config->type) {
-{% if 'action_int_factor' in unique_types %}
         case MENU_TYPE_ACTION_INT_FACTOR:
             values->action_int_factor.factor_idx =
                 (values->action_int_factor.factor_idx + 1) %
                 config->config.action_int_factor.factor.count;
             break;
-{% endif %}
-{% if 'action_float_factor' in unique_types %}            
         case MENU_TYPE_ACTION_FLOAT_FACTOR:
             values->action_float_factor.factor_idx =
                 (values->action_float_factor.factor_idx + 1) %
                 config->config.action_float_factor.factor.count;
             break;
-{% endif %}            
         default:
             break;
     }
-    s_menu_values.state_info.menu_event |= MENU_EVENT_FACTOR_CHANGED;
-    s_call_menu_event_cb();
     s_menu_values.state_info.dirty = true;
 }
 
@@ -832,21 +678,18 @@ int32_t s_get_current_factor(void) {
     const menu_item_t *config = menu_get_current_config();
 
     switch(config->type) {
-{% if 'action_int_factor' in unique_types %}        
         case MENU_TYPE_ACTION_INT_FACTOR:
             return config->config.action_int_factor.factor.factors[values->action_int_factor.factor_idx];
-{% endif %}
-{% if 'action_float_factor' in unique_types %}
+
         case MENU_TYPE_ACTION_FLOAT_FACTOR:
             return config->config.action_float_factor.factor.factors[values->action_float_factor.factor_idx];
-{% endif %}
+
         default:
             return 0;
     }
 
     return 0;
 }
-{% endif %}
 
 void s_call_menu_event_cb(void) {
     if (s_menu_event_cb) {
@@ -856,7 +699,6 @@ void s_call_menu_event_cb(void) {
 }
 
 void s_reset_state_info(void) {
-    s_menu_values.state_info.menu_event = 0;
-    s_menu_values.state_info.control_event = 0;
+    s_menu_values.state_info.event = 0;
     s_menu_values.state_info.delta = 0;
 }

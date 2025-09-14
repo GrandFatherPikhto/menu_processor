@@ -1,4 +1,4 @@
-from jinja2 import Environment, FileSystemLoader, Template
+from jinja2 import Environment, FileSystemLoader, Template, filters
 import os
 from typing import Dict, List, Any
 from enum import Enum
@@ -16,9 +16,12 @@ class MenuType(Enum):
     ACTION_BOOL = "action_bool"
     ACTION_INT = "action_int"
     ACTION_INT_FACTOR = "action_int_factor"
-    ACTION_CALLBACK = "action_callback"
     ACTION_FLOAT = "action_float"
     ACTION_FLOAT_FACTOR = "action_float_factor"
+    ACTION_FIXED_INTS = "action_fixed_ints"
+    ACTION_FIXED_FLOATS = "action_fixed_floats"
+    ACTION_FIXED_STRINGS = "action_fixed_strings"
+    ACTION_CALLBACK = "action_callback"
 
 class MenuGenerator:
     def __init__(self, processor):
@@ -79,6 +82,9 @@ class MenuGenerator:
                 'ACTION_INT_FACTOR': 'action_int_factor',
                 'ACTION_FLOAT': 'action_float',
                 'ACTION_FLOAT_FACTOR': 'action_float_factor',
+                'ACTION_FIXED_INTS': 'action_fixed_ints',
+                'ACTION_FIXED_FLOATS': 'action_fixed_floats',
+                'ACTION_FIXED_STRINGS': 'action_fixed_strings',
                 'ACTION_CALLBACK': 'action_callback',
             },
             'first_menu_id': self._get_first_menu_id(),
@@ -87,7 +93,8 @@ class MenuGenerator:
                 'output_files': self.config.get_output_files()
             },
             'event_cb': self.config.get_callback('event_cb'),
-            'display_cb' : self.config.get_callback('display_cb')
+            'display_cb' : self.config.get_callback('display_cb'),
+            'unique_types' : self.processor.unique_types
         }
     
     def _get_first_menu_id(self):

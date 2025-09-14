@@ -16,6 +16,7 @@ class MenuProcessor:
         self.validator = MenuValidator()
         self.flattener = MenuFlattener()
         self.menu_structure: Dict[str, Dict] = {}
+        self.unique_types = set()
     
     def load_menu_file(self, input_file: str) -> bool:
         """Загрузка и валидация всего файла меню"""
@@ -43,6 +44,8 @@ class MenuProcessor:
             # Уплощаем меню
             menu_items = menu_data.get('menu', [])
             self.menu_structure = self.flattener.flatten(menu_items)
+
+            self.get_unique_types()
             
             return True
             
@@ -102,6 +105,14 @@ class MenuProcessor:
         root = self.menu_structure.get('root')
         if root and 'first_child' in root:
             print(f"   Первый элемент меню: {root['first_child']}")
+
+    def get_unique_types(self):
+        self.unique_types = set()
+        for item_id, item_data in self.menu_structure.items():
+            if 'type' in item_data:
+                self.unique_types.add(item_data['type'])
+            else:
+                print(f"Warning: Item {item_id} missing 'type' field")
 
     def get_config(self) -> MenuConfig:
         """Геттер для конфигурации"""

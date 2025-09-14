@@ -184,6 +184,22 @@ class MenuFlattener:
             }),
             'action_bool': lambda: item.update({
                 'default': node['default']
+            }),
+            'action_fixed_ints': lambda: item.update({
+                'default_idx': node['default_idx'],
+                'counter': len(node['values']),
+                'values': node['values'],
+            }),
+            'action_fixed_floats': lambda: item.update({
+                'default_idx': node['default_idx'],
+                'counter': len(node['values']),
+                'values': node['values'],
+            }),
+            'action_fixed_strings': lambda: item.update({
+                'default_idx': node['default_idx'],
+                'counter': len(node['strings']),
+                'strings': node['strings'],
+                'ids': node['ids'],
             })
         }
         

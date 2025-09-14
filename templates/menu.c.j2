@@ -291,27 +291,10 @@ void handle_double_click_button(void) {
     }
 }
 
-void menu_draw(void) {
-
+static void s_default_menu_draw(void) {
     const menu_item_t *config = menu_get_current_config();
     menu_item_values_t *values = menu_get_current_values();
 
-    lcd1602_clear();
-    
-    // Первая строка: заголовок текущего меню
-    lcd1602_set_cursor(0, 0);
-    lcd1602_print(config->title);
-
-    // Вторая строка: значение или навигация
-    lcd1602_set_cursor(0, 1);
-
-    if (s_display_str_cb) {
-        const char* str = s_display_str_cb(s_menu_values.state_info.current);
-        if (str != 0) {
-            lcd1602_print(str);
-        }
-    }
-    
     switch (config->type) {
         case MENU_TYPE_ACTION_BOOL: {
             lcd1602_print(values->action_bool.value ? "ON " : "OFF");
@@ -345,6 +328,33 @@ void menu_draw(void) {
         default:
             lcd1602_print("");
             break;
+    }
+}
+
+void menu_draw(void) {
+
+    const menu_item_t *config = menu_get_current_config();
+    menu_item_values_t *values = menu_get_current_values();
+
+    lcd1602_clear();
+    
+    // Первая строка: заголовок текущего меню
+    lcd1602_set_cursor(0, 0);
+    lcd1602_print(config->title);
+
+    // Вторая строка: значение или навигация
+    lcd1602_set_cursor(0, 1);
+
+    const char *str = 0;
+
+    if (s_display_str_cb) {
+        str = s_display_str_cb(s_menu_values.state_info.current);
+    }
+
+    if (str != 0) {
+        lcd1602_print(str);
+    } else {
+        s_default_menu_draw();
     }
     
     // Добавляем индикатор состояния редактирования

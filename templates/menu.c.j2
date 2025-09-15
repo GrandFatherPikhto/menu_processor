@@ -513,6 +513,9 @@ void menu_set_dirty(bool dirty) {
     s_menu_values.state_info.dirty = dirty;
 }
 
+/**
+  * Навигация по соседним меню
+  */
 static void s_navigate_sibling(void) {
     if (s_menu_values.state_info.state != MENU_STATE_NAVIGATION)
         return;

@@ -5,9 +5,9 @@
       "menu_header" : "templates/menu.h.j2"
     },
     "output" : {
-      "menu_source" : "/home/yevst/Projects/CCPP/STM32/GeneratirveMenu/menu/src/rotenc_menu.c",
-      "menu_header" : "/home/yevst/Projects/CCPP/STM32/GeneratirveMenu/menu/src/include/rotenc_menu.h",
-      "callback_header": "/home/yevst/Projects/CCPP/STM32/GeneratirveMenu/menu/src/include/rotenc_callback.h"
+      "menu_source" : "../../CCPP/STM32/GeneratirveMenu/menu/src/rotenc_menu.c",
+      "menu_header" : "../../CCPP/STM32/GeneratirveMenu/menu/src/include/rotenc_menu.h",
+      "callback_header": "../../CCPP/STM32/GeneratirveMenu/menu/src/include/rotenc_callback.h"
     },
     "includes" : [
       "lcd1602.h",

@@ -17,6 +17,9 @@ class MenuProcessor:
         self.flattener = MenuFlattener()
         self.menu_structure: Dict[str, Dict] = {}
         self.unique_types = set()
+        self.click_items = set()
+        self.position_items = set()
+        self.factor_items = set()
     
     def load_menu_file(self, input_file: str) -> bool:
         """Загрузка и валидация всего файла меню"""
@@ -46,6 +49,7 @@ class MenuProcessor:
             self.menu_structure = self.flattener.flatten(menu_items)
 
             self.get_unique_types()
+            self.separate_items_by_change_type()
             
             return True
             
@@ -114,6 +118,19 @@ class MenuProcessor:
             else:
                 print(f"Warning: Item {item_id} missing 'type' field")
 
+    def separate_items_by_change_type(self):
+        self.click_items = set()
+        self.position_items = set()
+        self.factor_items = set()
+        for node_id, node in self.menu_structure.items():
+            if node['type'] == 'action_menu' or node['type'] == 'action_callback': next
+            change = node.get('change', None)
+            if change == None: next
+            if change == 'click': self.click_items.add(node['id'])
+            if change == 'position' : self.position_items.add(node['id'])
+            if change == 'factor' : self.factor_items.add(node['id'])
+        
+
     def get_config(self) -> MenuConfig:
         """Геттер для конфигурации"""
         return self.config
@@ -158,6 +175,10 @@ if __name__ == "__main__":
             print(f"\n🌳 Корневая нода:")
             print(f"   ID: {root['id']}")
             print(f"   Первый ребенок: {root.get('first_child', 'None')}")
+
+        print(f'click_items: {processor.click_items}')
+        print(f'position_items: {processor.position_items}')
+        print(f'factor_items: {processor.factor_items}')
         
         # Генерируем выходной файл
         processor.generate_output("output/flattened_menu.json")

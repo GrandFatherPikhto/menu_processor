@@ -6,7 +6,7 @@ class MenuValidator:
     
     VALID_TYPES = {'action_menu', 'action_int', 'action_int_factor', 
                   'action_callback', 'action_bool', 
-                  'action_fixed_ints', 'action_fixed_floats', 'action_fixed_strings'}
+                  'action_fixed_int', 'action_fixed_float', 'action_fixed_string'}
     
     def __init__(self):
         self.errors: List[MenuError] = []
@@ -82,9 +82,9 @@ class MenuValidator:
             'action_int_factor': self._validate_action_int_factor,
             'action_callback': self._validate_action_callback,
             'action_bool': self._validate_action_bool,
-            'action_fixed_ints': self._validate_action_fixed_ints,
-            'action_fixed_floats': self._validate_action_fixed_floats,
-            'action_fixed_strings': self._validate_action_fixed_strings
+            'action_fixed_int': self._validate_action_fixed_int,
+            'action_fixed_float': self._validate_action_fixed_float,
+            'action_fixed_string': self._validate_action_fixed_string
         }
         
         validator = type_validators.get(node['type'])
@@ -93,7 +93,7 @@ class MenuValidator:
     
     def _validate_action_int(self, node: Dict, path: List[str]) -> None:
         """Валидация action_int"""
-        required_fields = ['min', 'max', 'default']
+        required_fields = ['min', 'max']
         for field in required_fields:
             if field not in node:
                 self.errors.append(MenuError(
@@ -103,7 +103,7 @@ class MenuValidator:
     
     def _validate_action_int_factor(self, node: Dict, path: List[str]) -> None:
         """Валидация action_int_factor"""
-        required_fields = ['min', 'max', 'default', 'factors', 'default_factor_idx']
+        required_fields = ['min', 'max', 'factors']
         for field in required_fields:
             if field not in node:
                 self.errors.append(MenuError(
@@ -115,9 +115,9 @@ class MenuValidator:
         """Валидация action_callback"""
         pass
 
-    def _validate_action_fixed_ints(self, node: Dict, path: List[str]) -> None:
-        """Валидация action_callback"""
-        required_fields = ["values", "default_idx"]
+    def _validate_action_fixed_int(self, node: Dict, path: List[str]) -> None:
+        """Валидация action_fixed_int"""
+        required_fields = ["massif"]
         for field in required_fields:
             if field not in node:
                 self.errors.append(MenuError(
@@ -125,9 +125,9 @@ class MenuValidator:
                     path
                 ))
 
-    def _validate_action_fixed_floats(self, node: Dict, path: List[str]) -> None:
-        """Валидация action_callback"""
-        required_fields = ["values", "default_idx"]
+    def _validate_action_fixed_float(self, node: Dict, path: List[str]) -> None:
+        """Валидация action_fixed_float"""
+        required_fields = ["massif"]
         for field in required_fields:
             if field not in node:
                 self.errors.append(MenuError(
@@ -135,23 +135,27 @@ class MenuValidator:
                     path
                 ))
 
-    def _validate_action_fixed_strings(self, node: Dict, path: List[str]) -> None:
-        """Валидация action_callback"""
-        required_fields = ["ids", "strings", "default_idx"]
+    def _validate_action_fixed_string(self, node: Dict, path: List[str]) -> None:
+        """Валидация action_fixed_string"""
+        required_fields = ["ids", "massif", "ids"]
         for field in required_fields:
             if field not in node:
                 self.errors.append(MenuError(
-                    f"Для action_callback обязательно поле '{field}'",
+                    f"Для action_fixed_string обязательно поле '{field}'",
                     path
                 ))
 
     def _validate_action_bool(self, node: Dict, path: List[str]) -> None:
         """Валидация action_bool"""
-        if 'default' not in node:
-            self.errors.append(MenuError(
-                "Для action_bool обязательно поле 'default'",
-                path
-            ))
+        pass
+        # required_fields = ["default"]
+        # for field in required_fields:
+        #     if field not in node:
+        #         self.errors.append(MenuError(
+        #             f"Для action_bool обязательно поле '{field}'",
+        #             path
+        #         ))
+
     
     def get_errors(self) -> List[MenuError]:
         """Получить список ошибок"""

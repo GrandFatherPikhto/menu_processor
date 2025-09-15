@@ -203,6 +203,7 @@ static menu_values_t s_menu_values.
 2. В файле [menu_flattener.py](menu_flattener.py)
   a. В метод `_add_type_specific_fields` дописываем лямбду обработки нужных полей
      Если поле необязательное, как `field03` в примере, используем оператор "распаковки словаря"
+     Имя "values" использовать нельзя, т.к., оно является ключевым для пакета [JINJA](https://jinja.palletsprojects.com/)
 ```python
     def _add_type_specific_fields(self, item: Dict, node: Dict) -> None:
         """Добавление полей, специфичных для типа"""

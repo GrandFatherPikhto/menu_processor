@@ -3,42 +3,54 @@
     "id": "root",
     "title": "ROOT",
     "type": "root",
-    "first_child": "settings",
+    "first_child": "info",
     "next_sibling": null,
     "prev_sibling": null,
-    "first_sibling": "settings",
+    "first_sibling": "info",
     "last_sibling": null
   },
-  "settings": {
-    "id": "settings",
-    "title": "Settings",
+  "info": {
+    "id": "info",
+    "title": "Info",
     "type": "action_menu",
     "parent": "root",
-    "original_id": "settings",
-    "first_child": "pwm_frequency",
-    "next_sibling": "info",
-    "first_sibling": "settings",
-    "last_sibling": "start"
+    "original_id": "info",
+    "first_child": "version",
+    "next_sibling": "start",
+    "first_sibling": "info",
+    "last_sibling": "settings"
   },
-  "pwm_frequency": {
-    "id": "pwm_frequency",
-    "title": "PWM Frequency",
+  "version": {
+    "id": "version",
+    "title": "Version",
     "type": "action_callback",
-    "parent": "settings",
-    "original_id": "pwm_frequency",
+    "parent": "info",
+    "original_id": "version",
+    "first_sibling": "version",
+    "last_sibling": "version"
+  },
+  "start": {
+    "id": "start",
+    "title": "Start",
+    "type": "action_bool",
+    "parent": "root",
+    "prev_sibling": "info",
+    "default": false,
+    "change": "click",
+    "original_id": "start",
     "next_sibling": "regime",
-    "first_sibling": "pwm_frequency",
-    "last_sibling": "lo_channel"
+    "first_sibling": "info",
+    "last_sibling": "settings"
   },
   "regime": {
     "id": "regime",
     "title": "Regime",
-    "type": "action_fixed_strings",
-    "parent": "settings",
-    "prev_sibling": "pwm_frequency",
+    "type": "action_fixed_string",
+    "parent": "root",
+    "prev_sibling": "start",
     "default_idx": 0,
     "counter": 3,
-    "strings": [
+    "massif": [
       "Normal",
       "Precision",
       "Super"
@@ -48,7 +60,50 @@
       2,
       3
     ],
+    "change": "position",
     "original_id": "regime",
+    "next_sibling": "delimiters",
+    "first_sibling": "info",
+    "last_sibling": "settings"
+  },
+  "delimiters": {
+    "id": "delimiters",
+    "title": "Delimiters",
+    "type": "action_fixed_int",
+    "parent": "root",
+    "prev_sibling": "regime",
+    "default_idx": 2,
+    "counter": 5,
+    "massif": [
+      12,
+      3,
+      5,
+      7,
+      10
+    ],
+    "change": "position",
+    "original_id": "delimiters",
+    "next_sibling": "settings",
+    "first_sibling": "info",
+    "last_sibling": "settings"
+  },
+  "settings": {
+    "id": "settings",
+    "title": "Settings",
+    "type": "action_menu",
+    "parent": "root",
+    "prev_sibling": "delimiters",
+    "original_id": "settings",
+    "first_child": "pwm_frequency",
+    "first_sibling": "info",
+    "last_sibling": "settings"
+  },
+  "pwm_frequency": {
+    "id": "pwm_frequency",
+    "title": "PWM Frequency",
+    "type": "action_callback",
+    "parent": "settings",
+    "original_id": "pwm_frequency",
     "next_sibling": "hi_channel",
     "first_sibling": "pwm_frequency",
     "last_sibling": "lo_channel"
@@ -58,7 +113,7 @@
     "title": "Hi Channel",
     "type": "action_menu",
     "parent": "settings",
-    "prev_sibling": "regime",
+    "prev_sibling": "pwm_frequency",
     "original_id": "hi_channel",
     "first_child": "hi_delay",
     "next_sibling": "lo_channel",
@@ -92,6 +147,7 @@
     ],
     "factors_count": 4,
     "default_factor_idx": 2,
+    "change": "factor",
     "original_id": "hi_delay",
     "next_sibling": "hi_duration",
     "first_sibling": "hi_delay",
@@ -114,6 +170,7 @@
     ],
     "factors_count": 4,
     "default_factor_idx": 2,
+    "change": "factor",
     "original_id": "hi_duration",
     "next_sibling": "hi_pwm_on",
     "first_sibling": "hi_delay",
@@ -126,6 +183,7 @@
     "parent": "hi_channel",
     "prev_sibling": "hi_duration",
     "default": false,
+    "change": "click",
     "original_id": "hi_pwm_on",
     "next_sibling": "hi_duty",
     "first_sibling": "hi_delay",
@@ -141,6 +199,7 @@
     "max": 100,
     "default": 45,
     "step": 1,
+    "change": "position",
     "original_id": "hi_duty",
     "first_sibling": "hi_delay",
     "last_sibling": "hi_duty"
@@ -161,6 +220,7 @@
     ],
     "factors_count": 4,
     "default_factor_idx": 2,
+    "change": "factor",
     "original_id": "lo_delay",
     "next_sibling": "lo_duration",
     "first_sibling": "lo_delay",
@@ -183,6 +243,7 @@
     ],
     "factors_count": 4,
     "default_factor_idx": 2,
+    "change": "factor",
     "original_id": "lo_duration",
     "next_sibling": "lo_pwm_on",
     "first_sibling": "lo_delay",
@@ -195,6 +256,7 @@
     "parent": "lo_channel",
     "prev_sibling": "lo_duration",
     "default": false,
+    "change": "click",
     "original_id": "lo_pwm_on",
     "next_sibling": "lo_duty",
     "first_sibling": "lo_delay",
@@ -210,40 +272,9 @@
     "max": 100,
     "default": 45,
     "step": 1,
+    "change": "position",
     "original_id": "lo_duty",
     "first_sibling": "lo_delay",
     "last_sibling": "lo_duty"
-  },
-  "info": {
-    "id": "info",
-    "title": "Info",
-    "type": "action_menu",
-    "parent": "root",
-    "prev_sibling": "settings",
-    "original_id": "info",
-    "first_child": "version",
-    "next_sibling": "start",
-    "first_sibling": "settings",
-    "last_sibling": "start"
-  },
-  "version": {
-    "id": "version",
-    "title": "Version",
-    "type": "action_callback",
-    "parent": "info",
-    "original_id": "version",
-    "first_sibling": "version",
-    "last_sibling": "version"
-  },
-  "start": {
-    "id": "start",
-    "title": "Start",
-    "type": "action_bool",
-    "parent": "root",
-    "prev_sibling": "info",
-    "default": false,
-    "original_id": "start",
-    "first_sibling": "settings",
-    "last_sibling": "start"
   }
 }

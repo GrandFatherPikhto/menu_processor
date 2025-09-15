@@ -154,52 +154,60 @@ class MenuFlattener:
     def _add_type_specific_fields(self, item: Dict, node: Dict) -> None:
         """Добавление полей, специфичных для типа"""
         type_processors = {
+            'action_bool': lambda: item.update({
+                'default': node.get('default', False),
+                'change' : 'click' if node.get('change', 'click') == 'click' else 'position'
+            }),
             'action_int': lambda: item.update({
                 'min': node['min'],
                 'max': node['max'],
-                'default': node['default'],
-                'step': node.get('step', 1)
+                'default': node.get('default', node['min']),
+                'step': node.get('step', 1),
+                'change' : 'position' if node.get('change', 'position') == 'position' else 'click'
             }),
             'action_int_factor': lambda: item.update({
                 'min': node['min'],
                 'max': node['max'],
-                'default': node['default'],
+                'default': node.get('default', node['min']),
                 'factors': node['factors'],
                 'factors_count': (len(node.get('factors', []))),
-                'default_factor_idx': node['default_factor_idx']
+                'default_factor_idx': node.get('default_factor_idx', 0),
+                'change' : 'factor'
             }),
             'action_float': lambda: item.update({
                 'min': node['min'],
                 'max': node['max'],
-                'default': node['default'],
-                'step': node.get('step', 1)
+                'default': node.get('default', node['min']),
+                'step': node.get('step', 1),
+                'change' : 'position' if node.get('change', 'position') == 'position' else 'click'
             }),
             'action_float_factor': lambda: item.update({
                 'min': node['min'],
                 'max': node['max'],
-                'default': node['default'],
+                'default': node.get('default', node['min']),
                 'factors': node['factors'],
                 'factors_count': (len(node.get('factors', []))),
-                'default_factor_idx': node['default_factor_idx']
+                'default_factor_idx': node.get('default_factor_idx', 0),
+                'change' : 'factor'
             }),
-            'action_bool': lambda: item.update({
-                'default': node['default']
+            'action_fixed_int': lambda: item.update({
+                'default_idx': node.get('default_idx', 0),
+                'counter': len(node['massif']),
+                'massif': node['massif'],
+                'change' : 'position' if node.get('change', 'position') == 'position' else 'click'
             }),
-            'action_fixed_ints': lambda: item.update({
-                'default_idx': node['default_idx'],
-                'counter': len(node['values']),
-                'values': node['values'],
+            'action_fixed_float': lambda: item.update({
+                'default_idx': node.get('default_idx', 0),
+                'counter': len(node['massif']),
+                'massif': node['massif'],
+                'change' : 'position' if node.get('change', 'position') == 'position' else 'click'
             }),
-            'action_fixed_floats': lambda: item.update({
-                'default_idx': node['default_idx'],
-                'counter': len(node['values']),
-                'values': node['values'],
-            }),
-            'action_fixed_strings': lambda: item.update({
-                'default_idx': node['default_idx'],
-                'counter': len(node['strings']),
-                'strings': node['strings'],
+            'action_fixed_string': lambda: item.update({
+                'default_idx': node.get('default_idx', 0),
+                'counter': len(node['massif']),
+                'massif': node['massif'],
                 'ids': node['ids'],
+                'change' : 'position' if node.get('change', 'position') == 'position' else 'click'
             })
         }
         

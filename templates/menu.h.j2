@@ -62,11 +62,16 @@ typedef enum {
 
 {% if 'action_int_factor' in unique_types or 'action_float_factor' in unique_types %}
 typedef struct {
-    uint8_t index;
     uint8_t default_idx;
     uint8_t count;
     const int32_t *factors;
 } factor_t;
+{% endif %}
+
+{% if 'action_bool' in unique_types %}
+typedef struct {
+    bool default_value;
+} action_bool_config_t;
 {% endif %}
 
 // Структуры для НЕИЗМЕНЯЕМЫХ данных конфигурации
@@ -106,37 +111,31 @@ typedef struct {
 } action_float_factor_config_t;
 {% endif %}
 
-{% if 'action_bool' in unique_types %}
-typedef struct {
-    bool default_value;
-} action_bool_config_t;
-{% endif %}
-
-{% if 'action_fixed_ints' in unique_types %}
+{% if 'action_fixed_int' in unique_types %}
 typedef struct {
     uint16_t value_id;
-    uint16_t default_value_id;
+    uint16_t default_idx;
     uint16_t counter;
-    const int32_t *values;
-} action_fixed_int_values_config_t;
+    const int32_t *massif;
+} action_fixed_int_config_t;
 {% endif %}
 
-{% if 'action_fixed_floats' in unique_types %}
+{% if 'action_fixed_float' in unique_types %}
 typedef struct {
     uint16_t value_id;
-    uint16_t default_value_id;
+    uint16_t default_idx;
     uint16_t counter;
-    const int32_t *values;
-} action_fixed_float_values_config_t;
+    const float *massif;
+} action_fixed_float_config_t;
 {% endif %}
 
-{% if 'action_fixed_strings' in unique_types %}
+{% if 'action_fixed_string' in unique_types %}
 typedef struct {
     uint8_t default_idx;
     uint8_t counter;
-    const char **strings;    
+    const char **massif;   
     const uint8_t *ids;
-} action_fixed_strings_config_t;
+} action_fixed_string_config_t;
 {% endif %}
 
 typedef union {
@@ -155,14 +154,14 @@ typedef union {
 {% if 'action_float_factor' in unique_types %}    
     action_float_factor_config_t action_float_factor;
 {% endif %}
-{% if 'action_fixed_ints' in unique_types %}
-    action_fixed_ints_config_t action_fixed_ints;
+{% if 'action_fixed_int' in unique_types %}
+    action_fixed_int_config_t action_fixed_int;
 {% endif %}
-{% if 'action_fixed_floats' in unique_types %}
-    action_fixed_floats_config_t action_fixed_floats;
+{% if 'action_fixed_float' in unique_types %}
+    action_fixed_float_config_t action_fixed_float;
 {% endif %}
-{% if 'action_fixed_strings' in unique_types %}
-    action_fixed_strings_config_t action_fixed_strings;
+{% if 'action_fixed_string' in unique_types %}
+    action_fixed_string_config_t action_fixed_string;
 {% endif %}
 } menu_item_config_t;
 
@@ -180,6 +179,11 @@ typedef struct {
 } menu_item_t;
 
 // Структуры для ИЗМЕНЯЕМЫХ данных значений
+{% if 'action_bool' in unique_types %}
+typedef struct {
+    bool value;
+} action_bool_values_t;
+{% endif %}
 {% if 'action_int' in unique_types %}
 typedef struct {
     int32_t value;
@@ -190,11 +194,6 @@ typedef struct {
     int32_t value;
     uint8_t factor_idx;
 } action_int_factor_values_t;
-{% endif %}
-{% if 'action_bool' in unique_types %}
-typedef struct {
-    bool value;
-} action_bool_values_t;
 {% endif %}
 {% if 'action_float' in unique_types %}
 typedef struct {
@@ -207,20 +206,20 @@ typedef struct {
     uint8_t factor_idx;
 } action_float_factor_values_t;
 {% endif %}
-{% if 'action_fixed_ints' in unique_types %}
+{% if 'action_fixed_int' in unique_types %}
 typedef struct {
     uint8_t value_idx;
-} action_fixed_ints_values_t;
+} action_fixed_int_values_t;
 {% endif %}
-{% if 'action_fixed_floats' in unique_types %}
+{% if 'action_fixed_float' in unique_types %}
 typedef struct {
     uint8_t value_idx;
-} action_fixed_floats_values_t;
+} action_fixed_float_values_t;
 {% endif %}
-{% if 'action_fixed_strings' in unique_types %}
+{% if 'action_fixed_string' in unique_types %}
 typedef struct {
     uint8_t value_idx;
-} action_fixed_strings_values_t;
+} action_fixed_string_values_t;
 {% endif %}
 typedef union {
 {% if 'action_bool' in unique_types %}    
@@ -238,14 +237,14 @@ typedef union {
 {% if 'action_float_factor' in unique_types %}
     action_float_factor_values_t action_float_factor;
 {% endif %}
-{% if 'action_fixed_ints' in unique_types %}
-    action_fixed_ints_values_t action_fixed_ints;
+{% if 'action_fixed_int' in unique_types %}
+    action_fixed_int_values_t action_fixed_int;
 {% endif %}
-{% if 'action_fixed_floats' in unique_types %}
-    action_fixed_floats_values_t action_fixed_floats;
+{% if 'action_fixed_float' in unique_types %}
+    action_fixed_float_values_t action_fixed_float;
 {% endif %}
-{% if 'action_fixed_strings' in unique_types %}
-    action_fixed_strings_values_t action_fixed_strings;
+{% if 'action_fixed_string' in unique_types %}
+    action_fixed_string_values_t action_fixed_string;
 {% endif %}
 } menu_item_values_t;
 

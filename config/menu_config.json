@@ -20,6 +20,42 @@
   },
   "menu": [
     {
+      "id" : "info",
+      "title": "Info",
+      "type": "action_menu",
+      "children": [
+        {
+          "id": "version",
+          "title": "Version",
+          "type": "action_callback",
+          "change_cb": "callback_info_change",
+          "display_cb": "callback_info_display"
+        }
+      ]
+    },
+    {
+      "id": "start",
+      "title": "Start",
+      "type": "action_bool",
+      "default": false
+    },
+    {
+      "id" : "regime",
+      "title" : "Regime",
+      "type" : "action_fixed_string",
+      "massif" : ["Normal", "Precision", "Super"],
+      "ids" : [1,2,3],
+      "default_idx": 0
+    },
+    {
+      "id" : "delimiters",
+      "title": "Delimiters",
+      "type" : "action_fixed_int",
+      "default_idx": 2,
+      "massif": [12, 3, 5, 7, 10],
+      "change": "position"
+    },
+    {
       "id" : "settings",
       "title": "Settings",
       "type": "action_menu",
@@ -28,14 +64,6 @@
           "id" : "pwm_frequency",
           "title": "PWM Frequency",
           "type": "action_callback"
-        },
-        {
-          "id" : "regime",
-          "title" : "Regime",
-          "type" : "action_fixed_strings",
-          "strings" : ["Normal", "Precision", "Super"],
-          "ids" : [1,2,3],
-          "default_idx": 0
         },
         {
           "id" : "hi_channel",
@@ -122,26 +150,6 @@
           ]
         }
       ]
-    },
-    {
-      "id" : "info",
-      "title": "Info",
-      "type": "action_menu",
-      "children": [
-        {
-          "id": "version",
-          "title": "Version",
-          "type": "action_callback",
-          "change_cb": "callback_info_change",
-          "display_cb": "callback_info_display"
-        }
-      ]
-    },
-    {
-      "id": "start",
-      "title": "Start",
-      "type": "action_bool",
-      "default": false
     }
   ]
 }

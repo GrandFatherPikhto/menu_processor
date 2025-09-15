@@ -1,4 +1,5 @@
-from jinja2 import Environment, FileSystemLoader, Template, filters
+from jinja2 import Environment, FileSystemLoader, Environment, Template, TemplateSyntaxError, UndefinedError, TemplateError
+from jinja2.ext import Extension, debug
 import os
 from typing import Dict, List, Any
 from enum import Enum
@@ -18,9 +19,9 @@ class MenuType(Enum):
     ACTION_INT_FACTOR = "action_int_factor"
     ACTION_FLOAT = "action_float"
     ACTION_FLOAT_FACTOR = "action_float_factor"
-    ACTION_FIXED_INTS = "action_fixed_ints"
-    ACTION_FIXED_FLOATS = "action_fixed_floats"
-    ACTION_FIXED_STRINGS = "action_fixed_strings"
+    ACTION_FIXED_INT = "action_fixed_int"
+    ACTION_FIXED_FLOAT = "action_fixed_float"
+    ACTION_FIXED_STRING = "action_fixed_string"
     ACTION_CALLBACK = "action_callback"
 
 class MenuGenerator:
@@ -39,7 +40,8 @@ class MenuGenerator:
         self.env = Environment(
             loader=FileSystemLoader('.'),  # Ищем шаблоны в текущей директории
             trim_blocks=True,
-            lstrip_blocks=True
+            lstrip_blocks=True,
+            extensions=['jinja2.ext.debug']
         )
         
     def generate(self):
@@ -82,9 +84,9 @@ class MenuGenerator:
                 'ACTION_INT_FACTOR': 'action_int_factor',
                 'ACTION_FLOAT': 'action_float',
                 'ACTION_FLOAT_FACTOR': 'action_float_factor',
-                'ACTION_FIXED_INTS': 'action_fixed_ints',
-                'ACTION_FIXED_FLOATS': 'action_fixed_floats',
-                'ACTION_FIXED_STRINGS': 'action_fixed_strings',
+                'ACTION_FIXED_INT': 'action_fixed_int',
+                'ACTION_FIXED_FLOAT': 'action_fixed_float',
+                'ACTION_FIXED_STRING': 'action_fixed_string',
                 'ACTION_CALLBACK': 'action_callback',
             },
             'first_menu_id': self._get_first_menu_id(),
@@ -94,7 +96,10 @@ class MenuGenerator:
             },
             'event_cb': self.config.get_callback('event_cb'),
             'display_cb' : self.config.get_callback('display_cb'),
-            'unique_types' : self.processor.unique_types
+            'unique_types' : self.processor.unique_types,
+            'click_items' : self.processor.click_items,
+            'position_items' : self.processor.position_items,
+            'factor_items' : self.processor.factor_items,
         }
     
     def _get_first_menu_id(self):
@@ -122,5 +127,14 @@ class MenuGenerator:
             
             print(f"✅ Сгенерирован {output_path}")
             
+        except TemplateSyntaxError as e:
+            error_string = str(e)  # Get the error message as a string
+            print(f"Template Syntax Error: {error_string}")
+        except UndefinedError as e:
+            error_string = str(e)
+            print(f"Undefined Variable Error: {error_string}")
+        except TemplateError as e:
+            error_string = str(e)
+            print(f"General Template Error: {error_string}")
         except Exception as e:
             print(f"❌ Ошибка генерации {output_path} файла: {e}")

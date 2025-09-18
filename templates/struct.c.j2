@@ -1,0 +1,85 @@
+#include "menu_struct.h"
+
+typedef struct menu_node {
+    menu_id_t id;
+    menu_id_t parent;
+    menu_id_t child;
+    menu_id_t prev;
+    menu_id_t next;
+    menu_id_t first;
+    menu_id_t last;
+    const char *title;
+} menu_node_t;
+
+static const menu_node_t s_menu_nodes[] = {
+    [MENU_ID_ROOT] = {
+        .id = MENU_ID_ROOT,
+        .title = "root",
+        .parent = MENU_ID_COUNT,
+        .child = MENU_ID_{{ first_item_id.upper() }},
+        .prev = MENU_ID_COUNT,
+        .next = MENU_ID_COUNT,
+        .first = MENU_ID_COUNT,
+        .last = MENU_ID_COUNT
+    },
+{% for item_id, item in menu_items.items() %}
+    [MENU_ID_{{ item_id.upper()}}] = {
+        .id = MENU_ID_{{ item_id.upper()}},
+        .title = "{{ item.name }}",
+        .parent = {% if item.parent %}MENU_ID_{{ item.parent.upper() }}{% else %}MENU_ID_COUNT{% endif %},
+        .child = {% if item.first_child %}MENU_ID_{{ item.first_child.upper() }}{% else %}MENU_ID_COUNT{% endif %},
+        .prev = {% if item.prev_sibling %}MENU_ID_{{ item.prev_sibling.upper() }}{% else %}MENU_ID_COUNT{% endif %},
+        .next = {% if item.next_sibling %}MENU_ID_{{ item.next_sibling.upper() }}{% else %}MENU_ID_COUNT{% endif %},
+        .first = {% if item.first_sibling %}MENU_ID_{{ item.first_sibling.upper() }}{% else %}MENU_ID_COUNT{% endif %},
+        .last = {% if item.last_sibling %}MENU_ID_{{ item.last_sibling.upper() }}{% else %}MENU_ID_COUNT{% endif %},
+    },
+{% endfor %}    
+}; 
+
+const menu_node_t *menu_get_node(menu_id_t id) {
+    if (id >= MENU_ID_COUNT)
+        return 0;
+    return &(s_menu_nodes[id]);
+}
+
+menu_id_t menu_next(menu_id_t id) {
+    const menu_node_t *node = menu_get_node(id);
+    if (node == 0)
+        return MENU_ID_COUNT;
+
+    if (node->next == MENU_ID_COUNT)
+        return node->prev;
+    
+    return node->next;
+}
+
+menu_id_t menu_prev(menu_id_t id) {
+    const menu_node_t *node = menu_get_node(id);
+    if (node == 0)
+        return MENU_ID_COUNT;
+    if (node->prev == MENU_ID_COUNT)
+        return node->last;
+    return node->prev;
+}
+
+menu_id_t menu_parent (menu_id_t id) {
+    const menu_node_t *node = menu_get_node(id);
+    if (node == 0)
+        return MENU_ID_COUNT;
+    if (node->parent == MENU_ID_ROOT)
+        return MENU_ID_COUNT;
+    return node->parent;
+}
+
+menu_id_t menu_child (menu_id_t id) {
+    const menu_node_t *node = menu_get_node(id);
+    if (node == 0)
+        return MENU_ID_COUNT;
+    return node->child;
+}
+
+const char *menu_get_title(menu_id_t id) {
+    if (id >= MENU_ID_COUNT)
+        return 0;
+    return s_menu_nodes[id].title;
+}

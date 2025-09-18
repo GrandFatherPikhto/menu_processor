@@ -1,117 +1,126 @@
+import inspect
+import logging
+import json
+import os
 from jinja2 import Environment, FileSystemLoader, Environment, Template, TemplateSyntaxError, UndefinedError, TemplateError
 from jinja2.ext import Extension, debug
-import os
-from typing import Dict, List, Any
-from enum import Enum
 
-from menu_config import MenuConfig
 from menu_processor import MenuProcessor
+import constants
 
-class MenuState(Enum):
-    NAVIGATION = 0
-    EDIT = 1
-
-class MenuType(Enum):
-    ROOT = "root"
-    SUBMENU = "action_menu" 
-    ACTION_BOOL = "action_bool"
-    ACTION_INT = "action_int"
-    ACTION_INT_FACTOR = "action_int_factor"
-    ACTION_FLOAT = "action_float"
-    ACTION_FLOAT_FACTOR = "action_float_factor"
-    ACTION_FIXED_INT = "action_fixed_int"
-    ACTION_FIXED_FLOAT = "action_fixed_float"
-    ACTION_FIXED_STRING = "action_fixed_string"
-    ACTION_CALLBACK = "action_callback"
+FILES = {
+    "struct": {
+        "name": "struct",
+        "template" : {
+            "header": "struct.h.j2",
+            "source": "struct.c.j2",
+        },
+        "output": {
+            "header" : "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_struct.h",
+            "source" : "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_struct.c",
+        }
+    },
+    "config": {
+        "name": "config",
+        "template" : {
+            "header": "config.h.j2",
+            "source": "config.c.j2",
+        },
+        "output": {
+            "header" : "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_config.h",
+            "source" : "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_config.c",
+        }
+    },
+    "engine": {
+        "name": "engine",
+        "template" : {
+            "header": "engine.h.j2",
+            "source": "engine.c.j2",
+        },
+        "output": {
+            "header" : "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_engine.h",
+            "source" : "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_engine.c",
+        }
+    },
+}
 
 class MenuGenerator:
-    def __init__(self, processor):
-        """
-        Инициализация генератора меню
-        
-        Args:
-            processor: Экземпляр MenuProcessor с уплощенными данными и конфигурацией
-        """
-        self.processor : 'MenuProcessor' = processor
-        self.flattened_menu = processor.get_flattened_menu()
-        self.config : 'MenuConfig' = processor.get_config()
-        
-        # Настройка Jinja2 environment
+    def __init__(self):
+        self.context = {}
+        self.menu_items = {}
+        self.leaf_items = {}
+        self.unique_data_types = {}
+
+        self.processor = MenuProcessor()
         self.env = Environment(
-            loader=FileSystemLoader('.'),  # Ищем шаблоны в текущей директории
+            loader=FileSystemLoader('./templates/'),  # Ищем шаблоны в текущей директории
             trim_blocks=True,
             lstrip_blocks=True,
             extensions=['jinja2.ext.debug']
         )
-        
-    def generate(self):
-        """Основной метод генерации файлов"""
-        print("🔧 Генерация меню...")
-        
-        # Подготовка данных для шаблонов
-        template_data = self._prepare_template_data()
-        
-        # Генерация .h файла
-        template_path = self.config.get_template_path('menu_header')
-        output_path = self.config.get_output_path('menu_header')
 
-        self._generate_file(template_path, output_path, template_data)
-        
-        # Генерация .c файла  
-        template_path = self.config.get_template_path('menu_source')
-        output_path = self.config.get_output_path('menu_source')
-        self._generate_file(template_path, output_path, template_data)
-        
-        print("✅ Генерация завершена!")
+        self.files = FILES
+
+
+    def load_config(self, config_path)->bool:
+        try:
+            self.processor.load_config(config_path)
+            return True
+        except Exception as e:
+            print(f'Ошибка загрузки конфигурации {e}')        
+            return False
+
+    def generate(self):
+        self._generate_menu_items()
+        self._generate_leaf_items()
+        self._generate_unique_data_types()
+        self._build_template_context()
+        self._generate_code()
+
+    def save_template(self, output_path: str):
+        self.processor.save_template_json(output_path)
+
+    def _generate_menu_items(self):
+        self.menu_items.clear()
+        for node in self.processor.flattern_nodes:
+            if node.id == 'root':
+                continue
+            self.menu_items[node.id] = node.get_template_data
     
-    def _prepare_template_data(self):
-        """Подготовка данных для шаблонов Jinja2"""
-        # Фильтруем root из меню
-        menu_items = {k: v for k, v in self.flattened_menu.items() if k != 'root'}
+    def _generate_leaf_items(self):
+        self.leaf_items.clear()
+        for node in self.processor.flattern_nodes:
+            if node.first_child is None and node.id != 'root' and node.data_type is not None:
+                self.leaf_items[node.id] = node.get_template_data
         
-        return {
-            'includes' : self.processor.get_includes(),
-            'menu_items': menu_items,
-            'menu_states': {
-                'NAVIGATION': 0,
-                'EDIT': 1
-            },
-            'menu_types': {
-                'ROOT': 'root',
-                'ACTION_MENU': 'action_menu',
-                'ACTION_BOOL': 'action_bool',
-                'ACTION_INT': 'action_int',
-                'ACTION_INT_FACTOR': 'action_int_factor',
-                'ACTION_FLOAT': 'action_float',
-                'ACTION_FLOAT_FACTOR': 'action_float_factor',
-                'ACTION_FIXED_INT': 'action_fixed_int',
-                'ACTION_FIXED_FLOAT': 'action_fixed_float',
-                'ACTION_FIXED_STRING': 'action_fixed_string',
-                'ACTION_CALLBACK': 'action_callback',
-            },
-            'first_menu_id': self._get_first_menu_id(),
-            'config': {
-                'templates': self.config.get_templates(),
-                'output_files': self.config.get_output_files()
-            },
-            'event_cb': self.config.get_callback('event_cb'),
-            'display_cb' : self.config.get_callback('display_cb'),
-            'unique_types' : self.processor.unique_types,
-            'click_items' : self.processor.click_items,
-            'position_items' : self.processor.position_items,
-            'factor_items' : self.processor.factor_items,
+    def _generate_unique_data_types(self):
+        self.unique_data_types.clear()
+
+        for node in self.processor.flattern_nodes:
+            if node.data_type is None:
+                continue
+            if constants.DATA_TYPES.get(node.data_type, None) is not None:
+                if not self.unique_data_types or node.data_type not in self.unique_data_types.keys():
+                    self.unique_data_types[node.data_type] = constants.DATA_TYPES[node.data_type]
+
+    def _build_template_context(self):
+        self.context = {
+            'menu_items': self.menu_items,
+            'first_item_id': self.processor.first_item.id,
+            'leaf_items': self.leaf_items,
+            'unique_data_types': self.unique_data_types,
+            'data_types': constants.DATA_TYPES
         }
-    
-    def _get_first_menu_id(self):
-        """Получить ID первого элемента меню (после root)"""
-        root = self.flattened_menu.get('root', {})
-        first_child_id = root.get('first_child')
-        if first_child_id and first_child_id in self.flattened_menu:
-            return first_child_id.upper()
-        return 'SETTINGS'  # fallback
-    
-    def _generate_file(self, template_path: str, output_path: str, template_data: Dict):
+
+    def _generate_code(self):
+        for name in self.files.keys():
+            print('Generate: ' + name)
+            self._generate_file(self.files[name]["template"]["header"], self.files[name]["output"]["header"], self.context)
+            self._generate_file(self.files[name]["template"]["source"], self.files[name]["output"]["source"], self.context)
+
+    def _generate_file(self, template_path: str, output_path: str, template_data):
         """Генерация конкретного файла"""
+        print(f'Generate from {template_path} to {output_path}')
         
         try:
             # Загрузка шаблона
@@ -129,12 +138,22 @@ class MenuGenerator:
             
         except TemplateSyntaxError as e:
             error_string = str(e)  # Get the error message as a string
-            print(f"Template Syntax Error: {error_string}")
+            print(f"❌ Template Syntax Error: {error_string}")
         except UndefinedError as e:
             error_string = str(e)
-            print(f"Undefined Variable Error: {error_string}")
+            print(f"❌ Undefined Variable Error: {error_string}")
         except TemplateError as e:
             error_string = str(e)
-            print(f"General Template Error: {error_string}")
+            print(f"❌ General Template Error: {error_string}")
         except Exception as e:
             print(f"❌ Ошибка генерации {output_path} файла: {e}")
+
+
+def main(config_path:str, output_path: str):
+    generator = MenuGenerator()
+    generator.load_config(config_path)
+    generator.save_template(output_path)
+    generator.generate()
+
+if __name__ == '__main__':
+    main('config/menu.json', 'config/template.json')

@@ -1,0 +1,26 @@
+#ifndef MENU_STRUCT_H
+#define MENU_STRUCT_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+#define MENU_TITLE_LEN 0x10
+
+typedef enum {
+    MENU_ID_ROOT,
+{% for item_id, item in menu_items.items() %}
+    MENU_ID_{{item_id.upper()}},
+{% endfor %}
+    MENU_ID_COUNT
+} menu_id_t;
+
+typedef struct menu_node menu_node_t;
+
+const menu_node_t *menu_get_node(menu_id_t id);
+menu_id_t menu_next(menu_id_t id);
+menu_id_t menu_prev(menu_id_t id);
+menu_id_t menu_parent(menu_id_t id);
+menu_id_t menu_child(menu_id_t id);
+const char *menu_get_title(menu_id_t id);
+
+#endif /* MENU_STRUCT_H */

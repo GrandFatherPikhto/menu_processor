@@ -1,0 +1,185 @@
+#include "menu_config.h"
+#include "menu_struct.h"
+
+{% for item_id, item in leaf_items.items() if item.c_str_factors is not none %}
+static const {{item.media_type}} s_factors_{{item_id}}[] = { {{item.c_str_factors}} };
+{% endfor %}
+
+{% for item_id, item in leaf_items.items() if item.c_str_string_values is not none %}
+static const char *s_values_str_{{item_id}}[] = { {{ item.c_str_string_values }} };
+{% endfor %}
+
+static const node_config_t s_nodes_data[] = {
+{% for item_id, item in leaf_items.items() if item.type != 'callback' %}
+    [MENU_ID_{{item_id.upper()}}] = {
+{% if item.data_type == 'boolean' %}
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.boolean_config = {
+            .default_value = {{ 'false' if item.default else 'true' }},
+            .str_true = "{{ item.str_true }}",
+            .str_false = "{{ item.str_false }}"
+        }
+{% endif %}
+{% if item.data_type == 'byte' %}
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.byte_config = {
+            .step = {{item.step}},
+            .min = {{ item.min }},
+            .max = {{ item.max }},
+            .default_value = {{ item.default }}
+        }
+{% endif %}
+{% if item.data_type == 'ubyte' %}
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.ubyte_config = {
+            .step = {{item.step}},
+            .min = {{ item.min }},
+            .max = {{ item.max }},
+            .default_value = {{ item.default }}
+        }
+{% endif %}
+{% if item.data_type == 'word' %}
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.word_config = {
+            .step = {{item.step}},
+            .min = {{ item.min }},
+            .max = {{ item.max }},
+            .default_value = {{ item.default }}
+        }
+{% endif %}
+{% if item.data_type == 'uword' %}
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.uword_config = {
+            .step = {{item.step}},
+            .min = {{ item.min }},
+            .max = {{ item.max }},
+            .default_value = {{ item.default }}
+        }
+{% endif %}
+{% if item.data_type == 'dword' %}
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.dword_config = {
+            .step = {{item.step}},
+            .min = {{ item.min }},
+            .max = {{ item.max }},
+            .default_value = {{ item.default }}
+        }
+{% endif %}
+{% if item.data_type == 'udword' %}
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.udword_config = {
+            .step = {{item.step}},
+            .min = {{ item.min }},
+            .max = {{ item.max }},
+            .default_value = {{ item.default }}
+        }
+{% endif %}
+{% if item.data_type == 'float' %}
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.float_config = {
+            .step = {{item.step}},
+            .min = {{ item.min }},
+            .max = {{ item.max }},
+            .default_value = {{ item.default }}
+        }
+{% endif %}
+{% if item.data_type == 'byte_factor' %}
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.byte_factor_config = {
+            .min = {{ item.min }},
+            .max = {{ item.max }},
+            .default_value = {{ item.default }},
+            .factor = {
+                .default_idx = {{ item.default_idx }},
+                .factors = s_factors_{{item_id}}
+            }
+        }
+{% endif %}
+{% if item.data_type == 'ubyte_factor' %}
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.ubyte_factor_config = {
+            .min = {{ item.min }},
+            .max = {{ item.max }},
+            .default_value = {{ item.default }},
+            .factor = {
+                .default_idx = {{ item.default_idx }},
+                .factors = s_factors_{{item_id}}
+            }
+        }
+{% endif %}
+{% if item.data_type == 'word_factor' %}
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.word_factor_config = {
+            .min = {{ item.min }},
+            .max = {{ item.max }},
+            .default_value = {{ item.default }},
+            .factor = {
+                .default_idx = {{ item.default_idx }},
+                .factors = s_factors_{{item_id}}
+            }
+        }
+{% endif %}
+{% if item.data_type == 'uword_factor' %}
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.uword_factor_config = {
+            .min = {{ item.min }},
+            .max = {{ item.max }},
+            .default_value = {{ item.default }},
+            .factor = {
+                .default_idx = {{ item.default_idx }},
+                .factors = s_factors_{{item_id}}
+            }
+        }
+{% endif %}
+{% if item.data_type == 'dword_factor' %}
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.dword_factor_config = {
+            .min = {{ item.min }},
+            .max = {{ item.max }},
+            .default_value = {{ item.default }},
+            .factor = {
+                .default_idx = {{ item.default_idx }},
+                .factors = s_factors_{{item_id}}
+            }
+        }
+{% endif %}
+{% if item.data_type == 'udword_factor' %}
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.udword_factor_config = {
+            .min = {{ item.min }},
+            .max = {{ item.max }},
+            .default_value = {{ item.default }},
+            .factor = {
+                .default_idx = {{ item.default_idx }},
+                .factors = s_factors_{{item_id}}
+            }
+        }
+{% endif %}
+{% if item.data_type == 'string' %}
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.string_config = {
+            .value = "{{item.string}}",
+            .length = {{item.length}}
+        }
+{% endif %}
+{% if item.data_type == 'string_fixed' %}
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.string_fixed_config = {
+            .count = {{ item.count }},
+            .default_idx = {{ item.default_idx }},
+            .values = s_values_str_{{ item_id }}
+        }
+{% endif %}
+{% if item.data_type == 'callback'%}
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.stub_config = {0}
+{% endif %}
+    },
+{% endfor %}
+};
+
+const node_config_t *node_get_config(menu_id_t id) {
+    if (id >= MENU_ID_COUNT)
+        return 0;
+    return &(s_nodes_data[id]);
+}

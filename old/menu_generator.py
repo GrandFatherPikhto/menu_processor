@@ -171,6 +171,5 @@ def check_config(config_path):
             print(f"❌ {item['id']}: callback '{item['callback']}' not defined")
 
 if __name__ == "__main__":
-    # 4-2 !4-6 8-8 8-3 !8-10 10-5
     generator = JinjaMenuGenerator("./config/menu_config.json", '../menu/src/', '../menu/src/include/')
     generator.generate_code()

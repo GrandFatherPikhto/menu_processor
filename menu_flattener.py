@@ -1,217 +1,155 @@
-from menu_error import MenuError
-from collections import deque
 from typing import Dict, List, Optional, Any
+import json
 
-class MenuFlattener:
-    """Класс для преобразования древовидной структуры в плоскую"""
+from flat_node import FlatNode
+
+class Flattener:
+    """Преобразует дерево меню в плоскую структуру с настраиваемыми циклическими связями"""
     
     def __init__(self):
-        self.flattened: Dict[str, Dict] = {}
-        self._auto_root_id = "root"
-    
-    def flatten(self, menu_data: List[Dict]) -> Dict[str, Dict]:
-        """Основной метод уплощения"""
-        self.flattened.clear()
+        self.flat_nodes: List[FlatNode] = []
+        self.node_dict = {}
+        self.node_dict: Dict[str, FlatNode] = {}
         
-        if not menu_data:
-            raise MenuError("Нет данных меню для уплощения")
-        
-        # Автоматически создаем root ноду
-        self._create_root_node(menu_data)
-        
-        # Обрабатываем все корневые элементы
-        if len(menu_data) == 1:
-            self._process_tree(menu_data[0], self._auto_root_id, None)
-        else:
-            prev_sibling_id = None
-            for root_item in menu_data:
-                root_item_id = self._get_or_generate_id(root_item)
-                self._process_tree(root_item, self._auto_root_id, prev_sibling_id)
-                prev_sibling_id = root_item_id
-        
-        # Устанавливаем связи next_sibling
-        self._add_next_sibling_links()
-        
-        # ДОБАВЛЕНО: Устанавливаем связи first_sibling и last_sibling
-        self._add_sibling_boundaries()
-        
-        return self.flattened
-    
-    def _add_sibling_boundaries(self):
-        """Установка связей first_sibling и last_sibling для всех узлов"""
-        for item_id, item in self.flattened.items():
-            if 'parent' in item and item['parent'] in self.flattened:
-                parent_id = item['parent']
-                parent = self.flattened[parent_id]
-                
-                # Если у родителя есть дети, устанавливаем first_sibling
-                if 'first_child' in parent:
-                    first_child_id = parent['first_child']
-                    item['first_sibling'] = first_child_id
-                    
-                    # Находим last_sibling
-                    last_sibling_id = first_child_id
-                    while (last_sibling_id in self.flattened and 
-                           'next_sibling' in self.flattened[last_sibling_id] and
-                           self.flattened[last_sibling_id]['next_sibling'] is not None):
-                        last_sibling_id = self.flattened[last_sibling_id]['next_sibling']
-                    
-                    item['last_sibling'] = last_sibling_id
-    
-    def _add_next_sibling_links(self):
-        """Установка связей next_sibling на основе prev_sibling"""
-        for item_id, item in self.flattened.items():
-            if 'prev_sibling' in item:
-                prev_id = item['prev_sibling']
-                if prev_id in self.flattened:
-                    self.flattened[prev_id]['next_sibling'] = item_id
-    
-    def _create_root_node(self, menu_data: List[Dict]) -> None:
-        """Создание автоматической root ноды с ссылкой на первый элемент"""
-        first_child_id = None
-        if menu_data:
-            first_child_id = self._get_or_generate_id(menu_data[0])
-        
-        self.flattened[self._auto_root_id] = {
-            'id': self._auto_root_id,
-            'title': 'ROOT',
-            'type': 'root',
-            'first_child': first_child_id,
-            'next_sibling': None,
-            'prev_sibling': None,
-            'first_sibling': first_child_id,  # ДОБАВЛЕНО
-            'last_sibling': None  # Будет установлено позже
-        }
-    
-    def _process_tree(self, node: Dict, parent_id: str, prev_sibling_id: Optional[str]) -> str:
-        """Обработка дерева с использованием BFS"""
-        queue = deque()
-        node_id = self._get_or_generate_id(node)
-        
-        queue.append((node, parent_id, prev_sibling_id, node_id))
-        
-        while queue:
-            current_node, current_parent_id, current_prev_sibling_id, current_node_id = queue.popleft()
-            
-            flat_item = self._create_flat_item(current_node, current_node_id, 
-                                             current_parent_id, current_prev_sibling_id)
-            self.flattened[current_node_id] = flat_item
-            
-            # Обновляем first_child у родителя, если это первый ребенок
-            if (current_prev_sibling_id is None and 
-                current_parent_id in self.flattened and 
-                self.flattened[current_parent_id].get('first_child') is None):
-                self.flattened[current_parent_id]['first_child'] = current_node_id
-            
-            # Обрабатываем дочерние элементы
-            children = current_node.get('children', [])
-            if children:
-                prev_child_sibling_id = None
-                for child in children:
-                    child_id = self._get_or_generate_id(child)
-                    queue.append((child, current_node_id, prev_child_sibling_id, child_id))
-                    prev_child_sibling_id = child_id
-        
-        return node_id
-    
-    def _get_or_generate_id(self, node: Dict) -> str:
-        """Получить ID из ноды или сгенерировать его"""
-        if 'id' in node and node['id']:
-            return node['id']
-        
-        # Генерируем ID из title, если явный ID не указан
-        title = node.get('title', 'unknown')
-        return self._generate_id_from_title(title)
-    
-    def _generate_id_from_title(self, title: str) -> str:
-        """Генерация ID из title"""
-        return title.lower().replace(' ', '_').replace('-', '_')
-    
-    def _create_flat_item(self, node: Dict, node_id: str, 
-                         parent_id: Optional[str], prev_sibling_id: Optional[str]) -> Dict:
-        """Создание уплощенного элемента меню"""
-        item = {
-            'id': node_id,
-            'title': node['title'],
-            'type': node['type']
-        }
-        
-        # Добавляем связи
-        if parent_id:
-            item['parent'] = parent_id
-        if prev_sibling_id:
-            item['prev_sibling'] = prev_sibling_id
-        
-        # Добавляем специфичные поля
-        self._add_type_specific_fields(item, node)
-        
-        # Сохраняем оригинальный ID, если он был указан
-        if 'id' in node and node['id']:
-            item['original_id'] = node['id']
-        
-        return item
-    
-    def _add_type_specific_fields(self, item: Dict, node: Dict) -> None:
-        """Добавление полей, специфичных для типа"""
-        type_processors = {
-            'action_bool': lambda: item.update({
-                'default': node.get('default', False),
-                'change' : 'click' if node.get('change', 'click') == 'click' else 'position'
-            }),
-            'action_int': lambda: item.update({
-                'min': node['min'],
-                'max': node['max'],
-                'default': node.get('default', node['min']),
-                'step': node.get('step', 1),
-                'change' : 'position' if node.get('change', 'position') == 'position' else 'click'
-            }),
-            'action_int_factor': lambda: item.update({
-                'min': node['min'],
-                'max': node['max'],
-                'default': node.get('default', node['min']),
-                'factors': node['factors'],
-                'factors_count': (len(node.get('factors', []))),
-                'default_factor_idx': node.get('default_factor_idx', 0),
-                'change' : 'factor'
-            }),
-            'action_float': lambda: item.update({
-                'min': node['min'],
-                'max': node['max'],
-                'default': node.get('default', node['min']),
-                'step': node.get('step', 1),
-                'change' : 'position' if node.get('change', 'position') == 'position' else 'click'
-            }),
-            'action_float_factor': lambda: item.update({
-                'min': node['min'],
-                'max': node['max'],
-                'default': node.get('default', node['min']),
-                'factors': node['factors'],
-                'factors_count': (len(node.get('factors', []))),
-                'default_factor_idx': node.get('default_factor_idx', 0),
-                'change' : 'factor'
-            }),
-            'action_fixed_int': lambda: item.update({
-                'default_idx': node.get('default_idx', 0),
-                'counter': len(node['massif']),
-                'massif': node['massif'],
-                'change' : 'position' if node.get('change', 'position') == 'position' else 'click'
-            }),
-            'action_fixed_float': lambda: item.update({
-                'default_idx': node.get('default_idx', 0),
-                'counter': len(node['massif']),
-                'massif': node['massif'],
-                'change' : 'position' if node.get('change', 'position') == 'position' else 'click'
-            }),
-            'action_fixed_string': lambda: item.update({
-                'default_idx': node.get('default_idx', 0),
-                'counter': len(node['massif']),
-                'massif': node['massif'],
-                'ids': node['ids'],
-                'change' : 'position' if node.get('change', 'position') == 'position' else 'click'
-            })
-        }
-        
-        processor = type_processors.get(node['type'])
-        if processor:
-            processor()
+    def flatten(self, menu_tree: List[Dict[str, Any]]) -> List[FlatNode]:
+        """Преобразует дерево в плоский список с установленными связями"""
+        self.flat_nodes.clear()
+        self.node_dict.clear()
 
+        self.root_node = FlatNode({
+            'id': 'root',
+            'name': 'root',
+            'items': menu_tree
+        })
+        self.flat_nodes.append(self.root_node)
+        self.node_dict['root'] = self.root_node
+        
+        # Рекурсивный обход дерева
+        self._process_node(self.root_node, None, menu_tree)
+
+        self._make_cyclic_links()
+        
+        return self.flat_nodes
+        
+    def _process_node(self, parent: Optional[FlatNode], prev_sibling: Optional[FlatNode], 
+                     nodes: List[Dict[str, Any]]) -> Optional[FlatNode]:
+        """Рекурсивно обрабатывает узлы и устанавливает связи"""
+        last_node = None
+        
+        for i, node_data in enumerate(nodes):
+            # Создаем плоский узел
+            flat_node = FlatNode(node_data)
+            self.flat_nodes.append(flat_node)
+            self.node_dict[flat_node.id] = flat_node
+            
+            # Устанавливаем связи
+            flat_node.parent = parent
+            flat_node.prev_sibling = prev_sibling
+            
+            # Устанавливаем next_sibling для предыдущего sibling'а
+            if prev_sibling:
+                prev_sibling.next_sibling = flat_node
+            
+            # Добавляем к родительским детям
+            if parent:
+                parent.children.append(flat_node)
+                if not parent.first_child:
+                    parent.first_child = flat_node
+                parent.last_child = flat_node
+            
+            # Обрабатываем детей, если есть
+            if 'items' in node_data and node_data['items']:
+                self._process_children(flat_node, node_data['items'])
+            
+            # Обновляем указатели для следующей итерации
+            prev_sibling = flat_node
+            last_node = flat_node
+        
+        return last_node
+    
+    def _make_cyclic_links(self):
+        """Замыкает циклические связи для всех sibling'ов на основе настроек родителей"""
+        for node in self.flat_nodes:
+            if node.parent and node.parent.cyclic_siblings and node.parent.children:
+                # Делаем циклические связи для siblings, если родитель имеет cyclic_siblings=True
+                first_child = node.parent.children[0]
+                last_child = node.parent.children[-1]
+                
+                if len(node.parent.children) > 1:
+                    first_child._prev_sibling = last_child
+                    last_child._next_sibling = first_child    
+
+    def _process_children(self, parent: FlatNode, children_data: List[Dict[str, Any]]):
+        """Обрабатывает дочерние узлы"""
+        prev_sibling = None
+        
+        for child_data in children_data:
+            flat_child = FlatNode(child_data)
+            self.flat_nodes.append(flat_child)
+            self.node_dict[flat_child.id] = flat_child
+            
+            # Устанавливаем связи
+            flat_child.parent = parent
+            flat_child.prev_sibling = prev_sibling
+            
+            if prev_sibling:
+                prev_sibling.next_sibling = flat_child
+            
+            # Добавляем к родительским детям
+            parent.children.append(flat_child)
+            if not parent.first_child:
+                parent.first_child = flat_child
+            parent.last_child = flat_child
+            
+            # Рекурсивно обрабатываем детей детей
+            if 'items' in child_data and child_data['items']:
+                self._process_children(flat_child, child_data['items'])
+            
+            prev_sibling = flat_child
+    
+    def get_node_by_id(self, node_id: str) -> Optional[FlatNode]:
+        """Возвращает узел по ID"""
+        return self.node_dict.get(node_id)
+    
+    def print_sibling_chain(self, node_id: str, count: int = 5):
+        """Печатает цепочку sibling'ов для демонстрации закольцовывания"""
+        node = self.get_node_by_id(node_id)
+        if not node:
+            print(f"Узел {node_id} не найден")
+            return
+        
+        print(f"Цепочка sibling'ов для {node_id} (cyclic: {node.has_cyclic_siblings}):")
+        current = node
+        for i in range(count):
+            print(f"  {i}: {current.id}")
+            current = current.next_sibling
+            if not current or current == node:
+                break
+
+
+def flat_menu(menu_tree):
+    flattener = Flattener()
+    flat_menu = flattener.flatten(menu_tree)
+    
+    print("Плоский список узлов:")
+    for node in flat_menu:
+        print(f"- {node}")
+    
+
+# Пример использования
+def main(input_file) -> bool:
+    try:
+        with open(input_file, 'r', encoding='utf-8') as f:
+            menu_data = json.load(f)
+            if menu_data.get('menu', None) is not None:
+                flat_menu(menu_data.get('menu', []))
+                return True
+    except json.JSONDecodeError as e:
+        print(f"❌ Ошибка JSON: {e}")
+        return False
+    except Exception as error:
+        print(f"❌ Ошибка загрузки: {error}")
+        return False
+    
+if __name__ == "__main__":
+    main('config/menu.json')

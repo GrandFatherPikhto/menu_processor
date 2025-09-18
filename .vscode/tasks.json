@@ -17,7 +17,7 @@
             "presentation": {
                 "reveal": "always",
                 "panel": "new",
-                "close": true
+                "close": false
             },
             "problemMatcher": []
         }

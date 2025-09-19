@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Any
 
-from constants import SIMPLE_NUMBER_TYPES, FACTOR_NUMBER_TYPES, FIXED_NUMBER_TYPES, FIXED_COMPOSITE_TYPES, NUMBER_TYPES, COMPOSITE_TYPES, DATA_TYPES
+from data_types import DataTypeConfig
 
 class FlatNode:
 
@@ -9,7 +9,7 @@ class FlatNode:
         self.id = original_node['id']
         self.name = original_node['name']
         self.type = original_node.get('type')
-        self.type_info = None if self.type is None else DATA_TYPES.get(self.type, None)
+        self.type_info = original_node.get('type_info')
         self.control = original_node.get('control')
         self.min = original_node.get('min')
         self.max = original_node.get('max')
@@ -47,9 +47,8 @@ class FlatNode:
             'values': None if self.values is None else self.values,
             'str_true': self.get_str_true,
             'str_false': self.get_str_false,
-            'c_str_factors': self.get_c_str_factors,
-            'c_str_num_values': self.get_c_str_num_values,
-            'c_str_string_values': self.get_c_str_string_values,
+            'c_str_factors': None if self.factors is None else self.get_c_str_values(self.factors),
+            'c_str_values': None if self.values is None else self.get_c_str_values(self.values),
             'count': self.get_count,
             #
             'parent': None if self.parent is None else self.parent.id,
@@ -169,13 +168,9 @@ class FlatNode:
 
     @property
     def get_count(self)->int|None:
-        if self.type is None:
-            return None
-        if self.type in FIXED_NUMBER_TYPES and self.values is not None:
-            return len(self.values)
-        if self.type in FACTOR_NUMBER_TYPES and self.factors is not None:
+        if self.factors:
             return len(self.factors)
-        if self.type in COMPOSITE_TYPES and self.values is not None:
+        if self.values:
             return len(self.values)
         return None
 
@@ -201,14 +196,14 @@ class FlatNode:
             return None
         if self.step is not None:
             return self.step
-        if self.type in SIMPLE_NUMBER_TYPES or self.type in FACTOR_NUMBER_TYPES:
+        if self.type_info is not None and self.type_info['media'] == 'number':
             return 1
 
     @property
     def get_default_idx(self)->int|None:
         if self.default_idx is not None:
-            return self.default_idx    
-        if self.type in FACTOR_NUMBER_TYPES or self.type in FIXED_NUMBER_TYPES or self.type in FIXED_COMPOSITE_TYPES:
+            return self.default_idx
+        if self.type_info is not None and self.type_info['media'] == 'number' and (self.type_info['category'] in ['fixed', 'factor']):
             return 0
         
     @property
@@ -217,9 +212,7 @@ class FlatNode:
             return None
         if self.control is not None:
             return self.control
-        if self.type in SIMPLE_NUMBER_TYPES:
-            return 'position'
-        if self.type in FACTOR_NUMBER_TYPES:
+        if self.type_info['category'] in ['factor', 'fixed']:
             return 'position'
         if self.type == 'boolean':
             return 'click'
@@ -240,44 +233,17 @@ class FlatNode:
             return 'Off'
         return None        
     
-    @property
-    def get_c_str_factors(self)->str|None:
-        if self.factors is not None:
-            return ', '.join(map(str, self.factors))
+    def get_c_str_values(self, values)->str|None:
+        if values is None:
+            return None
         
-    @property
-    def get_c_str_string_values(self)->str|None:
-        if self.type is None:
-            return None
-        if self.type != 'string_fixed':
-            return None
-        if self.values is None:
-            return None
-        values = []
-    
-        for value in self.values:
+        str_values = []
+        for value in values:
                 if isinstance(value, str):
-                    values.append(f'"{value}"')
+                    str_values.append(f'"{value}"')
                 else:
-                    values.append(str(value))
-        return ', '.join(values)
-
-    @property
-    def get_c_str_num_values(self)->str|None:
-        if self.type is None:
-            return None
-        if self.type not in SIMPLE_NUMBER_TYPES or self.type not in FIXED_NUMBER_TYPES:
-            return None
-        if self.values is None:
-            return None
-        values = []
-    
-        for value in self.values:
-                if isinstance(value, str):
-                    values.append(f'"{value}"')
-                else:
-                    values.append(str(value))
-        return ', '.join(values)
+                    str_values.append(str(value))
+        return ', '.join(str_values)
 
     @property
     def get_is_leaf(self)->bool:

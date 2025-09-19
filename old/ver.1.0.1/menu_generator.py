@@ -96,7 +96,7 @@ class MenuGenerator:
             },
             'event_cb': self.config.get_callback('event_cb'),
             'display_cb' : self.config.get_callback('display_cb'),
-            'unique_types' : self.processor.unique_types,
+            'unique_types' : self.processor._unique_types,
             'click_items' : self.processor.click_items,
             'position_items' : self.processor.position_items,
             'factor_items' : self.processor.factor_items,

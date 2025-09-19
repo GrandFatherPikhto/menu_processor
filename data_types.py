@@ -1,11 +1,12 @@
 import json
 from typing import Dict, List, Optional, Any, Set
 from pathlib import Path
+from common import load_json_data
 
 class DataTypeConfig:
     """Класс для работы с конфигурацией типов данных из JSON файла."""
     
-    def __init__(self, config_file: str = "config/types.json"):
+    def __init__(self, config_file: str = "./config/data_types.json"):
         """
         Инициализация класса с загрузкой конфигурации из JSON файла.
         
@@ -13,26 +14,7 @@ class DataTypeConfig:
             config_file: Путь к JSON файлу с конфигурацией
         """
         self.config_file = config_file
-        self._types = self._load_config()
-    
-    def _load_config(self) -> Dict[str, Dict[str, Any]]:
-        """
-        Загрузка конфигурации из JSON файла.
-        
-        Returns:
-            Словарь с конфигурацией типов данных
-            
-        Raises:
-            FileNotFoundError: Если файл конфигурации не найден
-            JSONDecodeError: Если файл содержит некорректный JSON
-        """
-        config_path = Path(self.config_file)
-        
-        if not config_path.exists():
-            raise FileNotFoundError(f"Конфигурационный файл '{self.config_file}' не найден")
-        
-        with open(config_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        self._types = load_json_data(config_file=config_file)
     
     def get_by_type(self, type: str) -> Optional[Dict[str, Any]]:
         """
@@ -161,11 +143,15 @@ class DataTypeConfig:
             'media_types_count': len(self.get_all_media_types()),
             'unique_types': len(self.get_all_types())
         }
+    
+    @property
+    def get_config(self)->Dict[str, Any]:
+        return self._types
 
 # Пример использования
 if __name__ == "__main__":
     try:
-        config = DataTypeConfig("config/types.json")
+        config = DataTypeConfig("config/data_types.json")
         
         # 1. Получение конфигурации по типу
         byte_config = config.get_by_type('byte')

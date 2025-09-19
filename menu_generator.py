@@ -4,113 +4,51 @@ import json
 import os
 from jinja2 import Environment, FileSystemLoader, Environment, Template, TemplateSyntaxError, UndefinedError, TemplateError
 from jinja2.ext import Extension, debug
+from typing import Dict, Set, List, Optional, Any
+from common import load_json_data
 
 from menu_processor import MenuProcessor
-import constants
-
-FILES = {
-    "struct": {
-        "name": "struct",
-        "template" : {
-            "header": "struct.h.j2",
-            "source": "struct.c.j2",
-        },
-        "output": {
-            "header" : "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_struct.h",
-            "source" : "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_struct.c",
-        }
-    },
-    "config": {
-        "name": "config",
-        "template" : {
-            "header": "config.h.j2",
-            "source": "config.c.j2",
-        },
-        "output": {
-            "header" : "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_config.h",
-            "source" : "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_config.c",
-        }
-    },
-    "engine": {
-        "name": "engine",
-        "template" : {
-            "header": "engine.h.j2",
-            "source": "engine.c.j2",
-        },
-        "output": {
-            "header" : "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_engine.h",
-            "source" : "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_engine.c",
-        }
-    },
-}
+from data_types import DataTypeConfig
 
 class MenuGenerator:
-    def __init__(self):
-        self.context = {}
-        self.menu_items = {}
-        self.leaf_items = {}
-        self.unique_data_types = {}
+    def __init__(self, config):
+        self.config = config
+        self._data_types_config = DataTypeConfig(self.config.get('data_types'))
 
-        self.processor = MenuProcessor()
+        self._processor = MenuProcessor(config=self.config, data_types_config=self._data_types_config)
+        
         self.env = Environment(
-            loader=FileSystemLoader('./templates/'),  # Ищем шаблоны в текущей директории
+            loader=FileSystemLoader(self.config.get('templates')),  # Ищем шаблоны в текущей директории
             trim_blocks=True,
             lstrip_blocks=True,
             extensions=['jinja2.ext.debug']
         )
 
-        self.files = FILES
+        self.context = {}
+        self.files = load_json_data(config.get('generate_files'))
 
-
-    def load_config(self, config_path)->bool:
+    def load_menu(self, menu_path:str = None)->bool:
         try:
-            self.processor.load_config(config_path)
+            self._processor.load_config(self.config.get('menu_config') if menu_path is None else menu_path)
             return True
         except Exception as e:
             print(f'Ошибка загрузки конфигурации {e}')        
             return False
 
     def generate(self):
-        self._generate_menu_items()
-        self._generate_leaf_items()
-        self._generate_unique_data_types()
         self._build_template_context()
         self._generate_code()
 
-    def save_template(self, output_path: str):
-        self.processor.save_template_json(output_path)
-
-    def _generate_menu_items(self):
-        self.menu_items.clear()
-        for node in self.processor.flattern_nodes:
-            if node.id == 'root':
-                continue
-            self.menu_items[node.id] = node.get_template_data
+    def save_flatterned_menu(self, output_path: str = None):
+        self._processor.save_flattern_json(self.config.get('output_flattern') if output_path is None else output_path)
     
-    def _generate_leaf_items(self):
-        self.leaf_items.clear()
-        for node in self.processor.flattern_nodes:
-            if node.first_child is None and node.id != 'root' and node.data_type is not None:
-                self.leaf_items[node.id] = node.get_template_data
-    
-    """Сейчас генерация типа callback отключена!!!"""
-    def _generate_unique_data_types(self):
-        self.unique_data_types.clear()
-
-        for node in self.processor.flattern_nodes:
-            if node.data_type is None:
-                continue
-            if constants.DATA_TYPES.get(node.data_type, None) is not None:
-                if not self.unique_data_types or node.data_type not in self.unique_data_types.keys():
-                    self.unique_data_types[node.data_type] = constants.DATA_TYPES[node.data_type]
-
     def _build_template_context(self):
         self.context = {
-            'menu_items': self.menu_items,
-            'first_item_id': self.processor.first_item.id,
-            'leaf_items': self.leaf_items,
-            'unique_data_types': self.unique_data_types,
-            'data_types': constants.DATA_TYPES
+            'menu_items': self._processor.get_template_nodes,
+            'first_item_id': self._processor.get_first_node,
+            'leaf_items': self._processor.get_template_leafs,
+            'unique_types': self._processor.get_unique_types,
+            'data_types': self._data_types_config.get_config
         }
 
     def _generate_code(self):
@@ -149,12 +87,13 @@ class MenuGenerator:
         except Exception as e:
             print(f"❌ Ошибка генерации {output_path} файла: {e}")
 
+def main():
+    config = load_json_data('config/config.json')
 
-def main(config_path:str, output_path: str):
-    generator = MenuGenerator()
-    generator.load_config(config_path)
-    generator.save_template(output_path)
+    generator = MenuGenerator(config=config)
+    generator.load_menu()
+    generator.save_flatterned_menu()
     generator.generate()
 
 if __name__ == '__main__':
-    main('config/menu.json', 'config/template.json')
+    main()

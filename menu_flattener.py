@@ -2,14 +2,21 @@ from typing import Dict, List, Optional, Any
 import json
 
 from flat_node import FlatNode
+from data_types import DataTypeConfig
+from common import load_json_data
 
 class Flattener:
     """Преобразует дерево меню в плоскую структуру с настраиваемыми циклическими связями"""
     
-    def __init__(self):
+    def __init__(self, config:Dict, data_types_config: DataTypeConfig | None = None):
+        self.config = config
         self.flat_nodes: List[FlatNode] = []
         self.node_dict = {}
         self.node_dict: Dict[str, FlatNode] = {}
+        if data_types_config is None:
+            self.data_type_config = DataTypeConfig(config.get('data_types'))
+        else:
+            self.data_type_config = data_types_config
         
     def flatten(self, menu_tree: List[Dict[str, Any]]) -> List[FlatNode]:
         """Преобразует дерево в плоский список с установленными связями"""
@@ -19,7 +26,8 @@ class Flattener:
         self.root_node = FlatNode({
             'id': 'root',
             'name': 'root',
-            'items': menu_tree
+            'items': menu_tree,
+            'type_info': None
         })
         self.flat_nodes.append(self.root_node)
         self.node_dict['root'] = self.root_node
@@ -30,7 +38,14 @@ class Flattener:
         self._make_cyclic_links()
         
         return self.flat_nodes
-        
+
+    def _append_type_info(self, node_data: Dict[str, Any]) -> bool:
+        if node_data.get('type', None) is not None:
+            node_data['type_info'] = self.data_type_config.get_by_type(node_data['type'])
+            return True
+        return False
+
+
     def _process_node(self, parent: Optional[FlatNode], prev_sibling: Optional[FlatNode], 
                      nodes: List[Dict[str, Any]]) -> Optional[FlatNode]:
         """Рекурсивно обрабатывает узлы и устанавливает связи"""
@@ -38,6 +53,7 @@ class Flattener:
         
         for i, node_data in enumerate(nodes):
             # Создаем плоский узел
+            self._append_type_info(node_data)
             flat_node = FlatNode(node_data)
             self.flat_nodes.append(flat_node)
             self.node_dict[flat_node.id] = flat_node
@@ -84,6 +100,7 @@ class Flattener:
         prev_sibling = None
         
         for child_data in children_data:
+            self._append_type_info(child_data)
             flat_child = FlatNode(child_data)
             self.flat_nodes.append(flat_child)
             self.node_dict[flat_child.id] = flat_child
@@ -128,28 +145,20 @@ class Flattener:
 
 
 def flat_menu(menu_tree):
-    flattener = Flattener()
+    config = load_json_data('config/config.json')
+    flattener = Flattener(config=config)
     flat_menu = flattener.flatten(menu_tree)
     
     print("Плоский список узлов:")
     for node in flat_menu:
-        print(f"- {node}")
-    
+        print(f"- {node}")    
+
 
 # Пример использования
-def main(input_file) -> bool:
-    try:
-        with open(input_file, 'r', encoding='utf-8') as f:
-            menu_data = json.load(f)
-            if menu_data.get('menu', None) is not None:
-                flat_menu(menu_data.get('menu', []))
-                return True
-    except json.JSONDecodeError as e:
-        print(f"❌ Ошибка JSON: {e}")
-        return False
-    except Exception as error:
-        print(f"❌ Ошибка загрузки: {error}")
-        return False
+def main():
+    menu_data = load_json_data('menu/menu.json')        
+    if menu_data.get('menu', None) is not None:
+        flat_menu(menu_data.get('menu', []))
     
 if __name__ == "__main__":
-    main('menu/menu.json')
+    main()

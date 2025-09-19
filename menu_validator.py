@@ -5,7 +5,7 @@ from pathlib import Path
 
 from data_types import DataTypeConfig
 
-class TreeMenuValidator:
+class MenuValidator:
     def __init__(self, schema_path: str = "config/menu_schema.json"):
         self.schema = self._load_schema(schema_path)
         self.validator = Draft7Validator(self.schema)
@@ -143,14 +143,14 @@ class TreeMenuValidator:
     
 def main():
     # Инициализация валидатора
-    validator = TreeMenuValidator("config/menu_schema.json")
+    validator = MenuValidator("config/menu_schema.json")
 
     # Загрузка конфигурации типов данных
     data_type_config = DataTypeConfig("config/types.json")
     validator.load_data_type_config(data_type_config)
 
     # Загрузка и валидация меню
-    with open("menu/menu_test.json", "r") as f:
+    with open("menu/menu.json", "r") as f:
         menu_config = json.load(f)
 
     errors = validator.validate_menu(menu_config)

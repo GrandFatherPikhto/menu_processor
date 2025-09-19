@@ -92,7 +92,8 @@ class MenuGenerator:
         for node in self.processor.flattern_nodes:
             if node.first_child is None and node.id != 'root' and node.data_type is not None:
                 self.leaf_items[node.id] = node.get_template_data
-        
+    
+    """Сейчас генерация типа callback отключена!!!"""
     def _generate_unique_data_types(self):
         self.unique_data_types.clear()
 

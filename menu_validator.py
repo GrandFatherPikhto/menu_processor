@@ -1,392 +1,167 @@
-from typing import Dict, List, Optional, Any
-from jsonschema import validate, Draft7Validator
+from jsonschema import Draft7Validator, ValidationError
 import json
+from typing import Dict, List, Optional, Any
+from pathlib import Path
 
-class ParserError(Exception):
-    """Выбрасывается при ошибках валидации меню"""
-    def __init__(self, errors: List[str]):
-        super().__init__("Menu validation failed")
-        self.errors = errors
+from data_types import DataTypeConfig
 
-# Поля, требуемые для каждой ноды
-REQUIRED_FIELDS=['id', 'name']
-ALLOWED_FIELDS={'id', 'name', 'data_type'}
-
-# Базовые data_types
-DATA_TYPES = [
-    "boolean", "byte", "ubyte",
-    "word", "uword", "dword", "udword",
-    "string",
-    # расширенные варианты
-    "byte_factor", "ubyte_factor",
-    "word_factor", "uword_factor",
-    "dword_factor", "udword_factor",
-    "byte_fixed", "ubyte_fixed",
-    "word_fixed", "uword_fixed",
-    "dword_fixed", "udword_fixed",
-    "string_fixed",
-    # Только функция обратного вызова
-    "callback"
-]
-
-CONTROL_TYPES = ["click", "position"]
-
-# Настраиваемая таблица допустимых комбинаций
-RULES = {
-    "boolean": {
-        "required": ["default"],
-        "allowed": ["control", "default", "str_true", "str_false"],
-        "forbid": ["min", "max", "step", "factors", "values", "cyclic_siblings"]
-    },
-    "string": {
-        "required": ["values", "default"],
-        "allowed": ["values", "default", "control"],
-        "forbid": ["min", "max", "step", "factors", "cyclic_siblings"]
-    },
-    "byte": {
-        "required": ["factors", "min", "max", "default"],
-        "allowed": ["id", "name", "data_type","min", "max", "step", "default", "control"],
-        "forbid": ["factors", "values", "cyclic_siblings"]
-    },
-    "byte_factor": {
-        "required": ["factors", "min", "max", "default"],
-        "allowed": ["min", "max", "step", "default", "factors"],
-        "forbid": ["control", "values", "cyclic_siblings"]
-    },
-    "byte_fixed": {
-        "required": ["values", "default"],
-        "allowed": ["values", "default"],
-        "forbid": ["min", "max", "step", "factors", "control", "cyclic_siblings"]
-    },
-    "ubyte": {
-        "required": ["factors", "min", "max", "default"],
-        "allowed": ["min", "max", "step", "default", "control"],
-        "forbid": ["factors", "values", "cyclic_siblings"]
-    },
-    "ubyte_factor": {
-        "required": ["factors", "min", "max", "default"],
-        "allowed": ["min", "max", "step", "default", "factors"],
-        "forbid": ["control", "values", "cyclic_siblings"]
-    },
-    "ubyte_fixed": {
-        "required": ["values", "default"],
-        "allowed": ["values", "default"],
-        "forbid": ["min", "max", "step", "factors", "control", "cyclic_siblings"]
-    },
-    "uword": {
-        "required": ["factors", "min", "max", "default"],
-        "allowed": ["min", "max", "step", "default", "control"],
-        "forbid": ["factors", "values", "cyclic_siblings"]
-    },
-    "uword_factor": {
-        "required": ["factors", "min", "max", "default"],
-        "allowed": ["min", "max", "step", "default", "factors"],
-        "forbid": ["control", "values", "cyclic_siblings"]
-    },
-    "uword_fixed": {
-        "required": ["values", "min", "max", "default"],
-        "allowed": ["values", "default"],
-        "forbid": ["min", "max", "step", "factors", "control", "cyclic_siblings"]
-    },
-    "dword": {
-        "required": ["min", "max", "default"],
-        "allowed": ["min", "max", "step", "default", "control"],
-        "forbid": ["factors", "values", "cyclic_siblings"]
-    },
-    "dword_factor": {
-        "required": ["factors", "min", "max", "default"],
-        "allowed": ["min", "max", "step", "default", "factors"],
-        "forbid": ["control", "values", "cyclic_siblings"]
-    },
-    "dword_fixed": {
-        "required": ["values", "min", "max", "default"],
-        "allowed": ["values", "default"],
-        "forbid": ["min", "max", "step", "factors", "control", "cyclic_siblings"]
-    },
-    "udword": {
-        "required": ["factors", "min", "max", "default"],
-        "allowed": ["min", "max", "step", "default", "control"],
-        "forbid": ["factors", "values", "cyclic_siblings"]
-    },
-    "udword_factor": {
-        "required": ["factors", "min", "max", "default"],
-        "allowed": ["min", "max", "step", "default", "factors"],
-        "forbid": ["control", "values", "cyclic_siblings"]
-    },
-    "udword_fixed": {
-        "required": ["values", "min", "max", "default"],
-        "allowed": ["values", "default"],
-        "forbid": ["min", "max", "step", "factors", "control", "cyclic_siblings"]
-    },
-    "callback" : {
-        "required": [],
-        "allowed": ["value"],
-        "forbid": ["min", "max", "step", "factors", "control", "cyclic_siblings"]
-    }
-}
-
-# Правило для callback-узлов (без data_type)
-CALLBACK_RULE = {
-    "allowed": ["control", "value", "data_type"],
-    "forbid": ["min", "max", "step", "default", "factors", "values", "cyclic_siblings"]
-}
-
-# Правило для групповых узлов (без data_type, с items)
-GROUP_RULE = {
-    "allowed": ["cyclic_siblings", "items"],
-    "forbid": ["data_type", "control", "min", "max", "step", "default", "factors", "values"]
-}
-
-class MenuValidator:
-    """Класс для проверки меню с поддержкой callback-узлов"""
-
-    def __init__(self, 
-                 rules: Dict[str, Dict[str, List[str]]] = None, 
-                 callback_rule: Dict[str, List[str]] = None,
-                 group_rule: Dict[str, List[str]] = None):
-        self.rules = rules or RULES
-        self.callback_rule = callback_rule or CALLBACK_RULE
-        self.group_rule = group_rule or GROUP_RULE
-        self.schema = {
-            "type": "array",
-            "items": {"$ref": "#/definitions/node"},
-            "definitions": {
-                "node": {
-                    "type": "object",
-                    "required": ["name", "id"],
-                    "properties": {
-                        "id": {"type": "string"},
-                        "name": {"type": "string"},
-                        "data_type": {"enum": DATA_TYPES},
-                        "control": {"enum": CONTROL_TYPES},
-                        "min": {"type": "integer"},
-                        "max": {"type": "integer"},
-                        "step": {"type": "integer"},
-                        "default_idx": {"type": "integer"},
-                        "default": {},
-                        "factors": {"type": "array", "items": {"type": "integer"}},
-                        "values": {"type": "array", "items": {}},
-                        "cyclic_siblings": {"type": "boolean"},
-                        "str_false": {"type": "string"},
-                        "str_true": {"type": "string"},
-                        "items": {
-                            "type": "array",
-                            "items": {"$ref": "#/definitions/node"}
-                        }
-                    },
-                    "additionalProperties": False,
-                    "oneOf": [
-                        {
-                            # Узел с вложенными элементами (не лист)
-                            "required": ["items"],
-                            "not": {"required": ["data_type"]},
-                            "error_message": "Group nodes must have 'items' and must NOT have 'data_type'"
-                        },
-                        {
-                            # Конечный узел (лист) - должен иметь data_type
-                            "required": ["data_type"],
-                            "not": {"required": ["items"]},
-                            "error_message": "Leaf nodes must have 'data_type' and must NOT have 'items'"
-                        }
-                    ]
-                }
-            }
-        }
-
-    def validate(self, menu: List[Dict[str, Any]]):
-        errors: List[str] = []
-
-        # --- jsonschema ---
-        validator = Draft7Validator(self.schema)
-        for error in validator.iter_errors(menu):
-            error_message = self._get_detailed_error_message(error)
-            errors.append(f"Schema error at {list(error.path)}: {error_message}")
-
-        # --- семантика ---
-        self._check_recursive(menu, errors, path="ROOT")
-
-        if errors:
-            raise ParserError(errors)
-
-    def _get_detailed_error_message(self, error) -> str:
-        """Получает детализированное сообщение об ошибке"""
-        if error.validator == 'oneOf':
-            # Анализируем, какое именно правило не выполнено
-            node = error.instance
-            has_data_type = 'data_type' in node
-            has_items = 'items' in node
-            
-            if has_data_type and has_items:
-                return "Node cannot have both 'data_type' and 'items'"
-            elif not has_data_type and not has_items:
-                return "Node must have either 'data_type' (for leaf nodes) or 'items' (for group nodes)"
-            elif has_data_type:
-                return "Leaf node with 'data_type' cannot have 'items'"
-            else:
-                return "Group node with 'items' cannot have 'data_type'"
+class TreeMenuValidator:
+    def __init__(self, schema_path: str = "config/menu_schema.json"):
+        self.schema = self._load_schema(schema_path)
+        self.validator = Draft7Validator(self.schema)
+        self.data_type_config = None
         
-        return error.message
+    def _load_schema(self, schema_path: str) -> Dict:
+        """Загрузка JSON Schema из файла"""
+        with open(schema_path, 'r') as f:
+            return json.load(f)
     
-    def _check_recursive(self, nodes: List[Dict[str, Any]], errors: List[str], path: str):
-        """Рекурсивные проверки + правила"""
-        names_seen = set()
-        for node in nodes:
-            name = node["name"]
-            full_path = f"{path}/{name}"
+    def load_data_type_config(self, config: DataTypeConfig):
+        """Загрузка конфигурации типов данных"""
+        self.data_type_config = config
+    
+    def validate_menu(self, menu_config: Dict) -> Dict[str, List[str]]:
+        """
+        Полная валидация древовидного меню
+        
+        Returns:
+            Dict[str, List[str]]: Ошибки по ID элементов
+        """
+        errors = {}
+        
+        # Валидация JSON Schema
+        try:
+            self.validator.validate(menu_config)
+        except ValidationError as e:
+            errors["root"] = [f"Schema validation failed: {e.message}"]
+            return errors
+        
+        # Рекурсивная валидация элементов
+        self._validate_tree(menu_config.get("menu", []), [], errors)
+        
+        return errors
+    
+    def _validate_tree(self, items: List[Dict], path: List[str], errors: Dict[str, List[str]]):
+        """Рекурсивная валидация дерева меню"""
+        for item in items:
+            current_path = path + [item['id']]
+            item_errors = []
             
-            # уникальность имён
-            if name in names_seen:
-                errors.append(f"Duplicate name '{name}' under {path}")
-            names_seen.add(name)
-
-            # Определяем тип узла и применяем соответствующие правила
-            if "data_type" in node:
-                # Конечный узел с data_type (обычный параметр)
-                self._validate_parameter_node(node, full_path, errors)
-                
-            elif "items" in node:
-                # Групповой узел
-                self._validate_group_node(node, full_path, errors)
-                
-            else:
-                # Callback-узел (без data_type и без items)
-                self._validate_callback_node(node, full_path, errors)
-
-            # рекурсия для вложенных элементов
-            if "items" in node:
-                self._check_recursive(node["items"], errors, full_path)
-
-    def _validate_parameter_node(self, node: Dict[str, Any], full_path: str, errors: List[str]):
-        """Валидация конечного узла с data_type"""
-        dtype = node["data_type"]
-        
-        if dtype in self.rules:
-            rule = self.rules[dtype]
-            allowed = set(rule.get("allowed", []))
-            forbidden = set(rule.get("forbid", []))
-            required = set(rule.get("required", []))
-            present = set(node.keys()) - {"name", "data_type", "items", "id"}
+            # Валидация элемента
+            item_errors.extend(self._validate_item(item))
             
-            # Проверяем запрещенные поля
-            for field in present:
-                if field in forbidden:
-                    errors.append(f"Field '{field}' not allowed for {dtype} at {full_path}")
+            # Рекурсивная валидация детей
+            if 'items' in item:
+                self._validate_tree(item['items'], current_path, errors)
             
-            # Проверяем обязательные поля, специфичные для данного data_type
-            for field in required:
-                if field.endswith("*") and not any(x.startswith(field[:-1]) for x in present):
-                    errors.append(f"Expected at least one field '{field}' for {dtype} at {full_path}")
-
-        # диапазоны
-        if "min" in node and "max" in node and node["min"] > node["max"]:
-            errors.append(f"Invalid range at {full_path}: min > max")
-
-        if "default" in node and "min" in node and "max" in node:
-            d = node["default"]
-            if not (node["min"] <= d <= node["max"]):
-                errors.append(f"Default {d} out of range [{node['min']}, {node['max']}] at {full_path}")
-
-    def _validate_group_node(self, node: Dict[str, Any], full_path: str, errors: List[str]):
-        """Валидация группового узла"""
-        rule = self.group_rule
-        allowed = set(rule.get("allowed", []))
-        forbidden = set(rule.get("forbid", []))
-        present = set(node.keys()) - {"name", "id"}
+            if item_errors:
+                errors['->'.join(current_path)] = item_errors
+    
+    def _validate_item(self, item: Dict) -> List[str]:
+        """Валидация отдельного элемента меню"""
+        errors = []
         
-        # Проверяем запрещенные поля для групп
-        for field in present:
-            if field in forbidden:
-                errors.append(f"Field '{field}' not allowed for group nodes at {full_path}")
+        # Проверка: branch не должен иметь type
+        if 'items' in item and 'type' in item:
+            errors.append("Branch element cannot have 'type'")
         
-        # Проверяем, что у группы есть items и они не пустые
-        if not node.get("items"):
-            errors.append(f"Group node must have non-empty 'items' at {full_path}")
-
-    def _validate_callback_node(self, node: Dict[str, Any], full_path: str, errors: List[str]):
-        """Валидация callback-узла (без data_type и items)"""
-        rule = self.callback_rule
-        allowed = set(rule.get("allowed", []))
-        print(f'Allowed: {allowed}')
-        forbidden = set(rule.get("forbid", []))
-        print(f'Forbidden: {forbidden}')
-        present = set(node.keys()) - {"name", "id"}
+        # Проверка: leaf должен иметь type
+        if 'items' not in item and 'type' not in item:
+            errors.append("Leaf element must have 'type'")
         
-        # Проверяем запрещенные поля для callback-узлов
-        for field in present:
-            if field in forbidden:
-                errors.append(f"Field '{field}' not allowed for callback nodes at {full_path}")
+        # Валидация типа данных
+        if 'type' in item:
+            errors.extend(self._validate_data_type(item))
         
-        # Проверяем разрешенные поля
-        for field in allowed:
-            if field.endswith("*") and not any(x.startswith(field[:-1]) for x in present):
-                errors.append(f"Expected at least one field '{field}' for callback nodes at {full_path}")
+        # Валидация значений
+        if 'default' in item:
+            errors.extend(self._validate_default_value(item))
         
-        # # Специальная проверка: callback-узлы должны иметь control
-        # if "control" not in node:
-        #     errors.append(f"Callback node must have 'control' field at {full_path}")
+        # Валидация факторов и значений
+        if 'factors' in item:
+            errors.extend(self._validate_factors(item))
+        if 'values' in item:
+            errors.extend(self._validate_values(item))
+        
+        return errors
+    
+    def _validate_data_type(self, item: Dict) -> List[str]:
+        """Валидация типа данных"""
+        errors = []
+        
+        if self.data_type_config and not self.data_type_config.has_type(item['type']):
+            errors.append(f"Unknown data type: {item['type']}")
+        
+        return errors
+    
+    def _validate_default_value(self, item: Dict) -> List[str]:
+        """Валидация значения по умолчанию"""
+        errors = []
+        
+        # Проверка для числовых типов
+        if 'min' in item and 'max' in item:
+            if not (item['min'] <= item['default'] <= item['max']):
+                errors.append(f"default value {item['default']} out of range [{item['min']}, {item['max']}]")
+        
+        # Проверка для fixed типов
+        if 'values' in item and 'default' in item:
+            if item['default'] not in item['values']:
+                errors.append(f"default value {item['default']} not in allowed values")
+        
+        return errors
+    
+    def _validate_factors(self, item: Dict) -> List[str]:
+        """Валидация факторов"""
+        errors = []
+        
+        if 'default_idx' in item and item['default_idx'] >= len(item['factors']):
+            errors.append(f"default_idx {item['default_idx']} out of bounds for factors array")
+        
+        return errors
+    
+    def _validate_values(self, item: Dict) -> List[str]:
+        """Валидация значений"""
+        errors = []
+        
+        if 'default_idx' in item and item['default_idx'] >= len(item['values']):
+            errors.append(f"default_idx {item['default_idx']} out of bounds for values array")
+        
+        return errors
+    
+    def get_validation_report(self, errors: Dict[str, List[str]]) -> str:
+        """Генерация читаемого отчета об ошибках"""
+        if not errors:
+            return "✅ Validation passed successfully!"
+        
+        report = ["❌ Validation errors:"]
+        for path, path_errors in errors.items():
+            report.append(f"\nPath: {path}")
+            for error in path_errors:
+                report.append(f"  - {error}")
+        
+        return "\n".join(report)
+    
+def main():
+    # Инициализация валидатора
+    validator = TreeMenuValidator("config/menu_schema.json")
 
+    # Загрузка конфигурации типов данных
+    data_type_config = DataTypeConfig("config/types.json")
+    validator.load_data_type_config(data_type_config)
 
-def main(input_file: str) -> bool:
-    try:
-        with open(input_file, 'r', encoding='utf-8') as f:
-            menu_data = json.load(f)
-            if menu_data.get('menu', None) is not None:
-                validator = MenuValidator()
-                validator.validate(menu_data.get('menu', None))
-                print("✅ Конфигурация валидна!")
-                return True
-            
-    except ParserError as error:
-        print(f"❌ Ошибка синтаксиса:")
-        for err in error.errors:
-            print(f"   - {err}")
-        return False
-    except json.JSONDecodeError as e:
-        print(f"❌ Ошибка JSON: {e}")
-        return False
-    except Exception as error:
-        print(f"❌ Ошибка загрузки: {error}")
-        return False
+    # Загрузка и валидация меню
+    with open("menu/menu_test.json", "r") as f:
+        menu_config = json.load(f)
 
+    errors = validator.validate_menu(menu_config)
 
-# Пример валидной конфигурации
-EXAMPLE_CONFIG = {
-    "menu": [
-        {
-            "id": "group1",
-            "name": "Основные настройки",
-            "items": [
-                {
-                    "id": "param1",
-                    "name": "Скорость",
-                    "data_type": "uword",
-                    "min": 0,
-                    "max": 1000,
-                    "default": 500
-                },
-                {
-                    "id": "callback1",
-                    "name": "Сброс настроек",
-                    "control": "click"  # Callback-узел
-                }
-            ]
-        },
-        {
-            "id": "callback2", 
-            "name": "Экстренная остановка",
-            "control": "click"  # Callback-узел в корне
-        }
-    ]
-}
+    # Вывод результатов
+    print(validator.get_validation_report(errors))
 
-if __name__ == "__main__":
-    # Тестируем на примере
-    # validator = MenuValidator()
-    # try:
-    #     validator.validate(EXAMPLE_CONFIG["menu"])
-    #     print("✅ Пример конфигурации валиден!")
-    # except ParserError as e:
-    #     print("❌ Ошибки в примере:")
-    #     for error in e.errors:
-    #         print(f"   - {error}")
-    main('config/menu.json')
+    if not errors:
+        print("Menu configuration is valid!")
+    else:
+        print(f"Found {len(errors)} validation errors")    
+
+if __name__ == '__main__':
+    main()

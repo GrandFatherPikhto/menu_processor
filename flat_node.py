@@ -8,8 +8,8 @@ class FlatNode:
     def __init__(self, original_node: Dict[str, Any]):
         self.id = original_node['id']
         self.name = original_node['name']
-        self.data_type = original_node.get('data_type')
-        self.data_type_info = None if self.data_type is None else DATA_TYPES.get(self.data_type, None)
+        self.type = original_node.get('type')
+        self.type_info = None if self.type is None else DATA_TYPES.get(self.type, None)
         self.control = original_node.get('control')
         self.min = original_node.get('min')
         self.max = original_node.get('max')
@@ -35,8 +35,8 @@ class FlatNode:
         item = {
             'id': None if self.id is None else self.id,
             'name': None if self.name is None else self.name,
-            'data_type': None if self.data_type is None else self.data_type,
-            'data_type_info': None if self.data_type_info is None else self.data_type_info,
+            'type': None if self.type is None else self.type,
+            'type_info': None if self.type_info is None else self.type_info,
             'control': None if self.control is None else self.control,
             'step': None if self.step is None else self.step,
             'min': None if self.min is None else self.min,
@@ -169,19 +169,19 @@ class FlatNode:
 
     @property
     def get_count(self)->int|None:
-        if self.data_type is None:
+        if self.type is None:
             return None
-        if self.data_type in FIXED_NUMBER_TYPES and self.values is not None:
+        if self.type in FIXED_NUMBER_TYPES and self.values is not None:
             return len(self.values)
-        if self.data_type in FACTOR_NUMBER_TYPES and self.factors is not None:
+        if self.type in FACTOR_NUMBER_TYPES and self.factors is not None:
             return len(self.factors)
-        if self.data_type in COMPOSITE_TYPES and self.values is not None:
+        if self.type in COMPOSITE_TYPES and self.values is not None:
             return len(self.values)
         return None
 
     @property
     def get_min(self)->int|None:
-        if self.data_type is None:
+        if self.type is None:
             return None
         if self.min is not None:
             return self.min
@@ -189,7 +189,7 @@ class FlatNode:
             
     @property
     def get_max(self)->int|None:
-        if self.data_type is None:
+        if self.type is None:
             return None
         if self.min is not None:
             return self.min        
@@ -197,36 +197,36 @@ class FlatNode:
     
     @property
     def get_step(self)->int|None:
-        if self.data_type is None:
+        if self.type is None:
             return None
         if self.step is not None:
             return self.step
-        if self.data_type in SIMPLE_NUMBER_TYPES or self.data_type in FACTOR_NUMBER_TYPES:
+        if self.type in SIMPLE_NUMBER_TYPES or self.type in FACTOR_NUMBER_TYPES:
             return 1
 
     @property
     def get_default_idx(self)->int|None:
         if self.default_idx is not None:
             return self.default_idx    
-        if self.data_type in FACTOR_NUMBER_TYPES or self.data_type in FIXED_NUMBER_TYPES or self.data_type in FIXED_COMPOSITE_TYPES:
+        if self.type in FACTOR_NUMBER_TYPES or self.type in FIXED_NUMBER_TYPES or self.type in FIXED_COMPOSITE_TYPES:
             return 0
         
     @property
     def get_control(self)->str|None:
-        if self.data_type is None:
+        if self.type is None:
             return None
         if self.control is not None:
             return self.control
-        if self.data_type in SIMPLE_NUMBER_TYPES:
+        if self.type in SIMPLE_NUMBER_TYPES:
             return 'position'
-        if self.data_type in FACTOR_NUMBER_TYPES:
+        if self.type in FACTOR_NUMBER_TYPES:
             return 'position'
-        if self.data_type == 'boolean':
+        if self.type == 'boolean':
             return 'click'
 
     @property
     def get_str_true(self)->str|None:
-        if self.data_type is not None or self.data_type == 'boolean':
+        if self.type is not None or self.type == 'boolean':
             if self.str_true is not None:
                 return self.str_true
             return 'On'
@@ -234,7 +234,7 @@ class FlatNode:
 
     @property
     def get_str_false(self)->str|None:
-        if self.data_type is not None or self.data_type == 'boolean':
+        if self.type is not None or self.type == 'boolean':
             if self.str_false is not None:
                 return self.str_false
             return 'Off'
@@ -247,9 +247,9 @@ class FlatNode:
         
     @property
     def get_c_str_string_values(self)->str|None:
-        if self.data_type is None:
+        if self.type is None:
             return None
-        if self.data_type != 'string_fixed':
+        if self.type != 'string_fixed':
             return None
         if self.values is None:
             return None
@@ -264,9 +264,9 @@ class FlatNode:
 
     @property
     def get_c_str_num_values(self)->str|None:
-        if self.data_type is None:
+        if self.type is None:
             return None
-        if self.data_type not in SIMPLE_NUMBER_TYPES or self.data_type not in FIXED_NUMBER_TYPES:
+        if self.type not in SIMPLE_NUMBER_TYPES or self.type not in FIXED_NUMBER_TYPES:
             return None
         if self.values is None:
             return None

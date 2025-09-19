@@ -1,0 +1,34 @@
+{
+  "config": {
+    "version": "1.0",
+    "author": "Embedded Team"
+  },
+  "menu": [
+    {
+      "id": "start",
+      "name": "Start",
+      "type": "boolean",
+      "default": false
+    },
+    {
+      "id": "settings",
+      "name": "Settings",
+      "items": [
+        {
+          "id": "display",
+          "name": "Display",
+          "items": [
+            {
+              "id": "brightness",
+              "name": "Brightness",
+              "type": "ubyte",
+              "min": 0,
+              "max": 100,
+              "default": 50
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

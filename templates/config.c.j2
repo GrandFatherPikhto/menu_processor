@@ -9,8 +9,11 @@ static const {{item.media_type}} s_factors_{{item_id}}[] = { {{item.c_str_factor
 static const char *s_values_str_{{item_id}}[] = { {{ item.c_str_string_values }} };
 {% endfor %}
 
+/**
+  * @note Пока тип callback не поддерживается
+  **/
 static const node_config_t s_nodes_data[] = {
-{% for item_id, item in leaf_items.items() if item.type != 'callback' %}
+{% for item_id, item in leaf_items.items() if item.data_type != 'callback' %}
     [MENU_ID_{{item_id.upper()}}] = {
 {% if item.data_type == 'boolean' %}
         .id = MENU_ID_{{item_id.upper()}},

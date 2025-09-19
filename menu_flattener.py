@@ -152,4 +152,4 @@ def main(input_file) -> bool:
         return False
     
 if __name__ == "__main__":
-    main('config/menu.json')
+    main('menu/menu.json')

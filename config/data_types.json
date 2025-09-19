@@ -2,8 +2,9 @@
     "boolean": {
         "type": "boolean",
         "c_type": "bool",
+        "media": "bool",
         "category": "simple",
-        "media": "boolean",
+        "media_type": "boolean",
         "min": 0,
         "max": 1
     },
@@ -11,6 +12,7 @@
         "type": "string",
         "c_type": "char",
         "category": "simple",
+        "media_type": "string",
         "media": "string",
         "min": null,
         "max": null
@@ -18,8 +20,9 @@
     "string_fixed": {
         "type": "string_fixed",
         "c_type": "char",
-        "category": "fixed",
         "media": "string",
+        "category": "fixed",
+        "media_type": "string",
         "min": null,
         "max": null
     },
@@ -27,7 +30,8 @@
         "type": "float",
         "c_type": "float",
         "category": "simple",
-        "media": "number",
+        "media": "float",
+        "media_type": "number",
         "min": -1.0,
         "max":  1.0
     },
@@ -35,7 +39,8 @@
         "type": "byte",
         "c_type": "int8_t",
         "category": "simple",
-        "media": "number",
+        "media": "byte",
+        "media_type": "number",
         "min": -128,
         "max":  127
     },
@@ -43,7 +48,8 @@
         "type": "ubyte",
         "c_type": "uint8_t",
         "category": "simple",
-        "media": "number",
+        "media": "ubyte",
+        "media_type": "number",
         "min": 0,
         "max": 255
     },
@@ -51,7 +57,8 @@
         "type": "word",
         "c_type": "int16_t",
         "category": "simple",
-        "media": "number",
+        "media": "word",
+        "media_type": "number",
         "min": -32768,
         "max":  32767
     },
@@ -59,7 +66,8 @@
         "type": "uword",
         "c_type": "uint16_t",
         "category": "simple",
-        "media": "number",
+        "media": "uword",
+        "media_type": "number",
         "min": 0,
         "max": 65535
     },
@@ -67,7 +75,8 @@
         "type": "dword",
         "c_type": "int32_t",
         "category": "simple",
-        "media": "number",
+        "media": "dword",
+        "media_type": "number",
         "min": -2147483648,
         "max":  2147483647
     },
@@ -75,7 +84,8 @@
         "type": "udword",
         "c_type": "uint32_t",
         "category": "simple",
-        "media": "number",
+        "media": "udword",
+        "media_type": "number",
         "min": 0,
         "max": 4294967295
     },
@@ -83,7 +93,8 @@
         "type": "float",
         "c_type": "float",
         "category": "fixed",
-        "media": "number",
+        "media": "float",
+        "media_type": "number",
         "min": -2147483648,
         "max":  2147483647
     },
@@ -91,7 +102,8 @@
         "type": "byte_factor",
         "c_type": "int8_t",
         "category": "factor",
-        "media": "number",
+        "media": "byte",
+        "media_type": "number",
         "min": -128,
         "max":  127
     },
@@ -99,7 +111,8 @@
         "type": "ubyte_factor",
         "c_type": "uint8_t",
         "category": "factor",
-        "media": "number",
+        "media": "ubyte",
+        "media_type": "number",
         "min": 0,
         "max": 255
     },
@@ -107,7 +120,8 @@
         "type": "word_factor",
         "c_type": "int16_t",
         "category": "factor",
-        "media": "number",
+        "media": "word",
+        "media_type": "number",
         "min": -32768,
         "max":  32768
     },
@@ -115,7 +129,8 @@
         "type": "uword_factor",
         "c_type": "uint16_t",
         "category": "factor",
-        "media": "number",
+        "media": "uword",
+        "media_type": "number",
         "min": 0,
         "max": 65535
     },
@@ -123,7 +138,8 @@
         "type": "dword_factor",
         "c_type": "int32_t",
         "category": "factor",
-        "media": "number",
+        "media": "dword",
+        "media_type": "number",
         "min": -2147483648,
         "max":  2147483647
     },
@@ -131,7 +147,8 @@
         "type": "udword_factor",
         "c_type": "uint32_t",
         "category": "factor",
-        "media": "number",
+        "media": "udword",
+        "media_type": "number",
         "min": -2147483648,
         "max":  2147483647
     },
@@ -139,7 +156,8 @@
         "type": "byte_fixed",
         "c_type": "int8_t",
         "category": "fixed",
-        "media": "number",
+        "media": "byte",
+        "media_type": "number",
         "min": -128,
         "max": 127
     },
@@ -147,7 +165,8 @@
         "type": "ubyte_fixed",
         "c_type": "uint8_t",
         "category": "fixed",
-        "media": "number",
+        "media": "ubyte",
+        "media_type": "number",
         "min": 0,
         "max": 255
     },
@@ -155,7 +174,8 @@
         "type": "word_fixed",
         "c_type": "int16_t",
         "category": "fixed",
-        "media": "number",
+        "media": "word",
+        "media_type": "number",
         "min": -32768,
         "max":  32767
     },
@@ -163,7 +183,8 @@
         "type": "uword_fixed",
         "c_type": "uint16_t",
         "category": "fixed",
-        "media": "number",
+        "media": "uword",
+        "media_type": "number",
         "min": 0,
         "max": 65535
     },
@@ -171,7 +192,8 @@
         "type": "dword_fixed",
         "c_type": "int32_t",
         "category": "fixed",
-        "media": "number",
+        "media": "dword",
+        "media_type": "number",
         "min": -2147483648,
         "max":  2147483647
     },
@@ -179,7 +201,8 @@
         "type": "udword_fixed",
         "c_type": "uint32_t",
         "category": "fixed",
-        "media": "number",
+        "media": "udword",
+        "media_type": "number",
         "min": -2147483648,
         "max":  2147483647
     },
@@ -187,7 +210,8 @@
         "type": "float_fixed",
         "c_type": "float",
         "category": "fixed",
-        "media": "number",
+        "media": "float",
+        "media_type": "number",
         "min": -2147483648,
         "max":  2147483647
     },
@@ -195,7 +219,8 @@
         "type": "callback",
         "c_type": "void",
         "category": "callback",
-        "media": "void",
+        "media": "callback",
+        "media_type": "callback",
         "min": null,
         "max":  null
     }

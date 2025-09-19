@@ -21,6 +21,17 @@
             "source" : "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_config.c"
         }
     },
+    "values": {
+        "name": "values",
+        "template" : {
+            "header": "values.h.j2",
+            "source": "values.c.j2"
+        },
+        "output": {
+            "header" : "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_values.h",
+            "source" : "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_values.c"
+        }
+    },
     "engine": {
         "name": "engine",
         "template" : {
@@ -30,6 +41,28 @@
         "output": {
             "header" : "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_engine.h",
             "source" : "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_engine.c"
+        }
+    },
+    "navigate": {
+        "name": "navigate",
+        "template" : {
+            "header": "navigate.h.j2",
+            "source": "navigate.c.j2"
+        },
+        "output": {
+            "header" : "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_navigate.h",
+            "source" : "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_navigate.c"
+        }
+    },
+    "edit": {
+        "name": "edit",
+        "template" : {
+            "header": "edit.h.j2",
+            "source": "edit.c.j2"
+        },
+        "output": {
+            "header" : "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_edit.h",
+            "source" : "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_edit.c"
         }
     }
 }

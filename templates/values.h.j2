@@ -1,0 +1,53 @@
+#ifndef MENU_VALUES_H
+#define MENU_VALUES_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "menu_struct.h"
+
+typedef struct stub_value_t {} stub_value_t;
+{% for type_id, type in unique_types.items() %}
+{% if type.category == 'simple' %}
+typedef struct {
+    {{type.c_type}} value;
+} {{type.type}}_value_t;
+{% elif type.category == 'factor' %}
+typedef struct {
+    uint8_t factor_idx;
+    {{type.c_type}} value;
+} {{type.type}}_value_t;
+{% elif type.category == 'fixed' %}
+typedef struct {
+    uint8_t value_idx;
+} {{type.type}}_value_t;
+{% elif type.category == 'callback' %}
+typedef struct {
+    void *value_ptr;
+} {{type.type}}_value_t;
+{% endif %}
+{% endfor %}
+
+typedef struct menu_value {
+    menu_id_t id;
+    union {
+        stub_value_t stub_value;
+{% for type_id, type in unique_types.items() %}
+{% if type.category == 'simple' %}
+        {{type.type}}_value_t {{type.type}}_value;
+{% elif type.category == 'factor' %}
+        {{type.type}}_value_t {{type.type}}_value;
+{% elif type.category == 'fixed' %}
+        {{type.type}}_value_t {{type.type}}_value;
+{% elif type.category == 'callback' %}
+        {{type.type}}_value_t callback_value;
+{% endif %}
+{% endfor %}
+    } data;
+} menu_value_t;
+
+menu_value_t *menu_get_value(menu_id_t id);
+void menu_change_value(int8_t delta);
+void menu_next_value(void);
+
+#endif // MENU_VALUES_H

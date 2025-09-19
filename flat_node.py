@@ -20,7 +20,7 @@ class FlatNode:
         self.values = original_node.get('values')
         self.str_true = original_node.get('str_true')
         self.str_false = original_node.get('str_false')
-        self.cyclic_siblings = original_node.get('cyclic_siblings', False)  # Новая настройка
+        self.navigate = original_node.get('navigate')
         
         # Связи
         self.parent: Optional['FlatNode'] = None
@@ -37,11 +37,11 @@ class FlatNode:
             'name': None if self.name is None else self.name,
             'type': None if self.type is None else self.type,
             'type_info': None if self.type_info is None else self.type_info,
-            'control': None if self.control is None else self.control,
+            'control': self.get_control,
             'step': None if self.step is None else self.step,
             'min': None if self.min is None else self.min,
             'max': None if self.max is None else self.max,
-            'default': None if self.default is None else self.default,
+            'default': self.get_default_value,
             'default_idx': self.get_default_idx,
             'factors': None if self.factors is None else self.factors,
             'values': None if self.values is None else self.values,
@@ -64,7 +64,7 @@ class FlatNode:
     def prev_sibling(self) -> Optional['FlatNode']:
         """Возвращает предыдущего sibling'а с учетом настройки cyclic_siblings"""
         if not self._prev_sibling:
-            if self.cyclic_siblings and self.parent and self.parent.children:
+            if self.navigate == 'cyclic' and self.parent and self.parent.children:
                 # Возвращаем последнего sibling'а при закольцовывании
                 return self.parent.children[-1]
             return None
@@ -74,7 +74,7 @@ class FlatNode:
     def next_sibling(self) -> Optional['FlatNode']:
         """Возвращает следующего sibling'а с учетом настройки cyclic_siblings"""
         if not self._next_sibling:
-            if self.cyclic_siblings and self.parent and self.parent.children:
+            if self.navigate=='cyclic' and self.parent and self.parent.children:
                 # Возвращаем первого sibling'а при закольцовывании
                 return self.parent.children[0]
             return None
@@ -94,8 +94,8 @@ class FlatNode:
     def has_cyclic_siblings(self) -> bool:
         """Проверяет, включено ли закольцовывание для этой группы siblings"""
         # Должно проверять настройку РОДИТЕЛЯ, а не текущего узла
-        if self.parent and hasattr(self.parent, 'cyclic_siblings'):
-            return self.parent.cyclic_siblings and len(self.parent.children) > 1
+        if self.parent and hasattr(self.parent, 'navigate'):
+            return self.parent.navigate == 'cyclic' and len(self.parent.children) > 1
         return False
     
     @property
@@ -201,9 +201,11 @@ class FlatNode:
 
     @property
     def get_default_idx(self)->int|None:
+        if self.type is None:
+            return None
         if self.default_idx is not None:
             return self.default_idx
-        if self.type_info is not None and self.type_info['media'] == 'number' and (self.type_info['category'] in ['fixed', 'factor']):
+        if self.type_info is not None and self.type_info['media_type'] in ['number', 'string'] and (self.type_info['category'] in ['fixed', 'factor']):
             return 0
         
     @property
@@ -244,6 +246,16 @@ class FlatNode:
                 else:
                     str_values.append(str(value))
         return ', '.join(str_values)
+
+    @property
+    def get_default_value(self):
+        if self.type is None:
+            return None
+        if self.type == 'boolean':
+            return 'false' if self.default is None else 'false' if self.default == False else 'true'
+
+        if self.default is not None:
+            return self.default
 
     @property
     def get_is_leaf(self)->bool:

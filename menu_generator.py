@@ -24,7 +24,7 @@ class MenuGenerator:
             extensions=['jinja2.ext.debug']
         )
 
-        self.context = {}
+        self._context = {}
         self.files = load_json_data(config.get('generate_files'))
 
     def load_menu(self, menu_path:str = None)->bool:
@@ -43,19 +43,21 @@ class MenuGenerator:
         self._processor.save_flattern_json(self.config.get('output_flattern') if output_path is None else output_path)
     
     def _build_template_context(self):
-        self.context = {
+        self._context = {
             'menu_items': self._processor.get_template_nodes,
             'first_item_id': self._processor.get_first_node,
             'leaf_items': self._processor.get_template_leafs,
             'unique_types': self._processor.get_unique_types,
+            'unique_categories': self._processor.get_unique_categories,
+            'unique_medias': self._processor.get_unique_medias,
             'data_types': self._data_types_config.get_config
         }
 
     def _generate_code(self):
         for name in self.files.keys():
             print('Generate: ' + name)
-            self._generate_file(self.files[name]["template"]["header"], self.files[name]["output"]["header"], self.context)
-            self._generate_file(self.files[name]["template"]["source"], self.files[name]["output"]["source"], self.context)
+            self._generate_file(self.files[name]["template"]["header"], self.files[name]["output"]["header"], self._context)
+            self._generate_file(self.files[name]["template"]["source"], self.files[name]["output"]["source"], self._context)
 
     def _generate_file(self, template_path: str, output_path: str, template_data):
         """Генерация конкретного файла"""

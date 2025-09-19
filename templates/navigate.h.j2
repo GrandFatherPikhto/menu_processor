@@ -1,0 +1,14 @@
+#ifndef MENU_NAVIGATE_H
+#define MENU_NAVIGATE_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "menu_struct.h"
+
+void menu_navigate(int8_t delta);
+void menu_navigate_enter(void);
+void menu_navigate_up(void);
+void menu_navigate_to(menu_id_t id);
+
+#endif // MENU_NAVIGATE_H

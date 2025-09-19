@@ -3,6 +3,6 @@
     "data_types": "./config/data_types.json",
     "generate_files": "./config/generate_files.json",
     "menu_config": "./menu/menu.json",
-    "output_flattern": "./output/flattern.json",
+    "output_flattern": "./output/flatterned.json",
     "templates": "./templates/"
 }

@@ -108,7 +108,30 @@ class MenuProcessor:
             type_name: self._data_types_config.get_by_type(type_name) 
             for type_name in {n.type for n in self._nodes if n.type is not None}
         }
+    
+    def get_unique_meta_list(self, meta_name:str)->List[str] | None:
+        if not self._nodes:
+            return None
+        return  {n.type_info.get(meta_name) for n in self._nodes if n.type_info and n.type_info.get(meta_name, None) is not None}
+
+    @property 
+    def get_unique_categories(self)->Set[str] | None:
+        if not self._nodes:
+            return None
+        return self.get_unique_meta_list('category')
         
+    @property 
+    def get_unique_medias(self)->Set[str] | None:
+        if not self._nodes:
+            return None
+        return self.get_unique_meta_list('media')
+
+    @property 
+    def get_unique_media_types(self)->Set[str] | None:
+        if not self._nodes:
+            return None
+        return self.get_unique_meta_list('media_type')
+    
     @property
     def get_types_config(self):
         return self._data_types_config.get_config()
@@ -170,6 +193,10 @@ def main() -> bool:
 
     for node in processor._nodes:
         print(node)
+
+    print(processor.get_unique_categories)
+    print(processor.get_unique_medias)
+    print(processor.get_unique_media_types)
 
     return True
 

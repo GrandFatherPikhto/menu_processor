@@ -86,7 +86,9 @@ class Flattener:
     def _make_cyclic_links(self):
         """Замыкает циклические связи для всех sibling'ов на основе настроек родителей"""
         for node in self.flat_nodes:
-            if node.parent and node.parent.cyclic_siblings and node.parent.children:
+            print(node.name, node.navigate)
+            if node.parent and node.parent.navigate == "cyclic" and node.parent.children:
+                print(f'Делаем цикличиские связи {node}')
                 # Делаем циклические связи для siblings, если родитель имеет cyclic_siblings=True
                 first_child = node.parent.children[0]
                 last_child = node.parent.children[-1]

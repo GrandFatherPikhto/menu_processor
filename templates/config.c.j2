@@ -5,26 +5,33 @@
 static const {{item.media_type}} s_factors_{{item_id}}[] = { {{item.c_str_factors}} };
 {% endfor %}
 
-{% for item_id, item in leaf_items.items() if item.c_str_string_values is not none %}
-static const char *s_values_str_{{item_id}}[] = { {{ item.c_str_string_values }} };
+{% for item_id, item in leaf_items.items() if item.c_str_values is not none %}
+static const char *s_values_str_{{item_id}}[] = { {{ item.c_str_values }} };
 {% endfor %}
 
 /**
   * @note Пока тип callback не поддерживается
   **/
 static const node_config_t s_nodes_data[] = {
-{% for item_id, item in leaf_items.items() if item.data_type != 'callback' %}
-    [MENU_ID_{{item_id.upper()}}] = {
-{% if item.data_type == 'boolean' %}
+{% for item_id, item in leaf_items.items() if item.type != 'callback' %}
+    [MENU_ID_{{item_id.upper()}}] = {        
         .id = MENU_ID_{{item_id.upper()}},
+        .type = MENU_TYPE_{{item.type.upper()}},
+        .category = MENU_CATEGORY_{{item.type_info.category.upper()}},
+        .media = MENU_MEDIA_{{item.type_info.media.upper()}},
+{% if item.control is none %}
+        .control = MENU_CONTROL_NONE,
+{% else %}
+        .control = MENU_CONTROL_{{item.control.upper()}},
+{% endif %}
+{% if item.type == 'boolean' %}
         .data.boolean_config = {
             .default_value = {{ 'false' if item.default else 'true' }},
             .str_true = "{{ item.str_true }}",
             .str_false = "{{ item.str_false }}"
         }
 {% endif %}
-{% if item.data_type == 'byte' %}
-        .id = MENU_ID_{{item_id.upper()}},
+{% if item.type == 'byte' %}
         .data.byte_config = {
             .step = {{item.step}},
             .min = {{ item.min }},
@@ -32,8 +39,7 @@ static const node_config_t s_nodes_data[] = {
             .default_value = {{ item.default }}
         }
 {% endif %}
-{% if item.data_type == 'ubyte' %}
-        .id = MENU_ID_{{item_id.upper()}},
+{% if item.type == 'ubyte' %}
         .data.ubyte_config = {
             .step = {{item.step}},
             .min = {{ item.min }},
@@ -41,8 +47,7 @@ static const node_config_t s_nodes_data[] = {
             .default_value = {{ item.default }}
         }
 {% endif %}
-{% if item.data_type == 'word' %}
-        .id = MENU_ID_{{item_id.upper()}},
+{% if item.type == 'word' %}
         .data.word_config = {
             .step = {{item.step}},
             .min = {{ item.min }},
@@ -50,8 +55,7 @@ static const node_config_t s_nodes_data[] = {
             .default_value = {{ item.default }}
         }
 {% endif %}
-{% if item.data_type == 'uword' %}
-        .id = MENU_ID_{{item_id.upper()}},
+{% if item.type == 'uword' %}
         .data.uword_config = {
             .step = {{item.step}},
             .min = {{ item.min }},
@@ -59,8 +63,7 @@ static const node_config_t s_nodes_data[] = {
             .default_value = {{ item.default }}
         }
 {% endif %}
-{% if item.data_type == 'dword' %}
-        .id = MENU_ID_{{item_id.upper()}},
+{% if item.type == 'dword' %}
         .data.dword_config = {
             .step = {{item.step}},
             .min = {{ item.min }},
@@ -68,8 +71,7 @@ static const node_config_t s_nodes_data[] = {
             .default_value = {{ item.default }}
         }
 {% endif %}
-{% if item.data_type == 'udword' %}
-        .id = MENU_ID_{{item_id.upper()}},
+{% if item.type == 'udword' %}
         .data.udword_config = {
             .step = {{item.step}},
             .min = {{ item.min }},
@@ -77,8 +79,7 @@ static const node_config_t s_nodes_data[] = {
             .default_value = {{ item.default }}
         }
 {% endif %}
-{% if item.data_type == 'float' %}
-        .id = MENU_ID_{{item_id.upper()}},
+{% if item.type == 'float' %}
         .data.float_config = {
             .step = {{item.step}},
             .min = {{ item.min }},
@@ -86,8 +87,7 @@ static const node_config_t s_nodes_data[] = {
             .default_value = {{ item.default }}
         }
 {% endif %}
-{% if item.data_type == 'byte_factor' %}
-        .id = MENU_ID_{{item_id.upper()}},
+{% if item.type == 'byte_factor' %}
         .data.byte_factor_config = {
             .min = {{ item.min }},
             .max = {{ item.max }},
@@ -98,8 +98,7 @@ static const node_config_t s_nodes_data[] = {
             }
         }
 {% endif %}
-{% if item.data_type == 'ubyte_factor' %}
-        .id = MENU_ID_{{item_id.upper()}},
+{% if item.type == 'ubyte_factor' %}
         .data.ubyte_factor_config = {
             .min = {{ item.min }},
             .max = {{ item.max }},
@@ -110,8 +109,7 @@ static const node_config_t s_nodes_data[] = {
             }
         }
 {% endif %}
-{% if item.data_type == 'word_factor' %}
-        .id = MENU_ID_{{item_id.upper()}},
+{% if item.type == 'word_factor' %}
         .data.word_factor_config = {
             .min = {{ item.min }},
             .max = {{ item.max }},
@@ -122,8 +120,7 @@ static const node_config_t s_nodes_data[] = {
             }
         }
 {% endif %}
-{% if item.data_type == 'uword_factor' %}
-        .id = MENU_ID_{{item_id.upper()}},
+{% if item.type == 'uword_factor' %}
         .data.uword_factor_config = {
             .min = {{ item.min }},
             .max = {{ item.max }},
@@ -134,8 +131,7 @@ static const node_config_t s_nodes_data[] = {
             }
         }
 {% endif %}
-{% if item.data_type == 'dword_factor' %}
-        .id = MENU_ID_{{item_id.upper()}},
+{% if item.type == 'dword_factor' %}
         .data.dword_factor_config = {
             .min = {{ item.min }},
             .max = {{ item.max }},
@@ -146,8 +142,7 @@ static const node_config_t s_nodes_data[] = {
             }
         }
 {% endif %}
-{% if item.data_type == 'udword_factor' %}
-        .id = MENU_ID_{{item_id.upper()}},
+{% if item.type == 'udword_factor' %}
         .data.udword_factor_config = {
             .min = {{ item.min }},
             .max = {{ item.max }},
@@ -158,23 +153,20 @@ static const node_config_t s_nodes_data[] = {
             }
         }
 {% endif %}
-{% if item.data_type == 'string' %}
-        .id = MENU_ID_{{item_id.upper()}},
+{% if item.type == 'string' %}
         .data.string_config = {
             .value = "{{item.string}}",
             .length = {{item.length}}
         }
 {% endif %}
-{% if item.data_type == 'string_fixed' %}
-        .id = MENU_ID_{{item_id.upper()}},
+{% if item.type == 'string_fixed' %}
         .data.string_fixed_config = {
             .count = {{ item.count }},
             .default_idx = {{ item.default_idx }},
             .values = s_values_str_{{ item_id }}
         }
 {% endif %}
-{% if item.data_type == 'callback'%}
-        .id = MENU_ID_{{item_id.upper()}},
+{% if item.type == 'callback'%}
         .data.stub_config = {0}
 {% endif %}
     },
@@ -185,4 +177,8 @@ const node_config_t *node_get_config(menu_id_t id) {
     if (id >= MENU_ID_COUNT)
         return 0;
     return &(s_nodes_data[id]);
+}
+
+const menu_id_t get_first_id(void) {
+    return MENU_ID_{{first_item_id.upper()}};
 }

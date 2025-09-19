@@ -2,6 +2,18 @@ import json
 from typing import Dict, List, Optional, Any, Set
 from pathlib import Path
 from common import load_json_data
+from enum import Enum
+
+class DataType(Enum):
+    BYTE = 'byte',
+    UBYTE = 'ubyte',
+    WORD = 'word',
+    UWORD = 'uword',
+    DWORD = 'dword',
+    UDWORD = 'udword',
+    FLOAT = 'float',
+    STRING = 'string'
+    CALLBACK = 'void'
 
 class DataTypeConfig:
     """Класс для работы с конфигурацией типов данных из JSON файла."""
@@ -81,6 +93,15 @@ class DataTypeConfig:
         """
         return {config.get('type') for config in self._types.values()}
     
+    def get_all_media_types(self) -> Set[str]:
+        """
+        Получить все уникальные типы данных.
+        
+        Returns:
+            Множество всех типов данных
+        """
+        return {config.get('media_type') for config in self._types.values()}
+
     def get_all_config_names(self) -> List[str]:
         """
         Получить список всех имен конфигураций (ключей).
@@ -123,6 +144,19 @@ class DataTypeConfig:
         """
         config = self.get_by_type(type)
         return config.get('c_type') if config else None
+    
+    def get_media_type(self, type: str) -> Optional[str]:
+        """
+        Получить тип данных для указанного типа данных. [byte, ubyte...]
+        
+        Args:
+            type: Название типа данных
+            
+        Returns:
+            Соответствующий C-тип или None
+        """
+        config = self.get_by_type(type)
+        return config.get('media_type') if config else None
     
     def reload_config(self) -> None:
         """

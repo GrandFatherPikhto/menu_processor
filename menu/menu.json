@@ -10,7 +10,8 @@
       "type": "boolean",
       "str_true": "Started",
       "str_false": "Start",
-      "default": false
+      "default": false,
+      "control": "click"
     },
     {
       "id" : "regimes",
@@ -27,6 +28,7 @@
     {
       "id" : "settings",
       "name": "Settings",
+      "navigate": "cyclic",
       "items": [
         {
           "id" : "pwm_frequency",

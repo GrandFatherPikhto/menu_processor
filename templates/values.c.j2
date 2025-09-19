@@ -1,0 +1,32 @@
+#include "menu_values.h"
+
+static menu_value_t s_values[] = {
+{% for item_id, item in leaf_items.items() %}
+    // {{item.type_info.category}}
+    [MENU_ID_{{item_id.upper()}}] = {
+        .id = MENU_ID_{{item_id.upper()}},
+        .data.{{item.type_info.type}}_value = {
+{% if item.type_info.category == 'simple' %}
+            .value = {{item.default}}
+{% elif item.type_info.category == 'factor'%}
+            .factor_idx = {{ item.default_idx }},
+            .value = {{item.default}}
+{% elif item.type_info.category == 'fixed' %}
+            .value_idx = {{item.default_idx}}
+{% elif item.type_info.category == 'callback' %}
+            .value_ptr = 0
+{% endif %}
+        }
+    },
+{% endfor %}
+};
+
+menu_value_t *menu_get_value(menu_id_t id) {
+    if (id >= MENU_ID_COUNT)
+        return 0;
+    return &(s_values[MENU_ID_COUNT]);
+}
+
+void menu_change_value(int8_t delta) {
+
+}

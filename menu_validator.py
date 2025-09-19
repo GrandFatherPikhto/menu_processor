@@ -146,7 +146,7 @@ def main():
     validator = MenuValidator("config/menu_schema.json")
 
     # Загрузка конфигурации типов данных
-    data_type_config = DataTypeConfig("config/types.json")
+    data_type_config = DataTypeConfig("config/data_types.json")
     validator.load_data_type_config(data_type_config)
 
     # Загрузка и валидация меню

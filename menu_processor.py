@@ -44,11 +44,12 @@ class MenuProcessor:
     def functions(self)->Dict[str,Any] | None:
         items = {}
         for node in self._flat_nodes:
-            name = node.function_name
-            props = node.function_info
-            if name is None or props is None or name in items.keys():
+            if node.type == "callback":
                 continue
-            items[name] = props
+            if click_info := node.function_click_info:
+                items[click_info["name"]] = click_info
+            if position_info := node.function_position_info:
+                items[position_info["name"]] = position_info
         return items
     
     @property

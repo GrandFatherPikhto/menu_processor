@@ -40,7 +40,6 @@ class MenuGenerator:
             'categories': self._processor.categories,
             'functions': self._processor.functions
         }
-        # print(self._context.get("functions"))
 
     def _generate_code(self):
         for template, output in self._files.items():

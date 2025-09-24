@@ -3,6 +3,16 @@ from typing import Dict, List, Optional, Set, Any
 from menu_config import MenuConfig
 from menu_data import MenuData
 
+from enum import Enum
+
+class ControlType(Enum):
+    CLICK = "click"
+    POSITION = "position"
+
+class NavigationType(Enum):
+    LIMIT = "limit"
+    CYCLIC = "cyclic"
+
 class FlatNode:
     """Плоское представление узла с настраиваемыми циклическими связями"""
     
@@ -61,41 +71,89 @@ class FlatNode:
     def c_str_values(self)-> str | None:
         return self.c_str_array(self.values)
 
-    @property
-    def function_name(self)->str | None:
-        if self.type is None or self.role is None or self.control is None or self.navigate is None:
+    def _get_function_config(self, control: ControlType) -> Optional[Dict[str, Any]]:
+        """Определяет конфигурацию функции обработки для заданного типа контроля"""
+        if self.type is None or self.role is None:
             return None
-        return f"{self.type}_{self.role}_{self.control}_{self.navigate}"
-    
-    @property 
-    def click_function_name(self)->str | None:
-        if self.type is None or self.role is None or self.control is None or self.navigate is None:
+        
+        # Базовые правила для определения navigate типа
+        if control == ControlType.CLICK:
+            # Для клика всегда циклическое поведение
+            navigate = NavigationType.CYCLIC
+        else:  # POSITION
+            # Для позиции используем настройку из узла или по умолчанию
+            navigate = NavigationType(self.navigate) if self.navigate else NavigationType.LIMIT
+        
+        # Проверяем валидность комбинации control + navigate для данной роли
+        if not self._is_valid_combination(control, navigate):
             return None
-        if self.control != "click":
-            return None
-        return self.function_name
-    
-    @property 
-    def position_function_name(self)->str | None:
-        if self.type is None or self.role is None or self.control is None or self.navigate is None:
-            return None
-        if self.control != "position":
-            return None
-        return self.function_name
-    
-    @property
-    def function_info(self)->Dict[str, Any] | None:
-        if self.type is None or self.role is None or self.control is None or self.navigate is None:
-            return None
+            
         return {
-                    "name": self.function_name,
-                    "category": self.category,
-                    "type": self.type,
-                    "role": self.role,
-                    "control": self.control,
-                    "navigate": self.navigate
-                }
+            "name": f"{self.type}_{self.role}_{control.value}_{navigate.value}",
+            "category": self.category,
+            "type": self.type,
+            "role": self.role,
+            "control": control.value,
+            "navigate": navigate.value
+        }
     
+    def _is_valid_combination(self, control: ControlType, navigate: NavigationType) -> bool:
+        """Проверяет валидность комбинации control + navigate для роли"""
+        rules = {
+            "simple": {
+                ControlType.CLICK: [NavigationType.CYCLIC],
+                ControlType.POSITION: [NavigationType.LIMIT, NavigationType.CYCLIC]
+            },
+            "factor": {
+                ControlType.CLICK: [NavigationType.CYCLIC],  # Клик меняет множитель
+                ControlType.POSITION: [NavigationType.LIMIT, NavigationType.CYCLIC]  # Позиция меняет значение
+            },
+            "fixed": {
+                ControlType.CLICK: [NavigationType.CYCLIC],
+                ControlType.POSITION: [NavigationType.LIMIT, NavigationType.CYCLIC]
+            },
+            "callback": {
+                ControlType.CLICK: [NavigationType.CYCLIC],
+                ControlType.POSITION: []  # callback обычно только по клику
+            }
+        }
+        
+        role_rules = rules.get(self.role, {})
+        valid_navigations = role_rules.get(control, [])
+        return navigate in valid_navigations
+    
+    @property
+    def function_click_info(self) -> Optional[Dict[str, Any]]:
+        """Информация для функции обработки клика"""
+        return self._get_function_config(ControlType.CLICK)
+    
+    @property
+    def function_position_info(self) -> Optional[Dict[str, Any]]:
+        """Информация для функции обработки позиции энкодера"""
+        return self._get_function_config(ControlType.POSITION)
+    
+    @property
+    def function_click_name(self) -> Optional[str]:
+        """Имя функции обработки клика"""
+        info = self.function_click_info
+        return info["name"] if info else None
+    
+    @property
+    def function_position_name(self) -> Optional[str]:
+        """Имя функции обработки позиции энкодера"""
+        info = self.function_position_info
+        return info["name"] if info else None
+    
+    @property
+    def all_function_infos(self) -> List[Dict[str, Any]]:
+        """Все возможные функции обработки для этого узла"""
+        infos = []
+        for control in [ControlType.CLICK, ControlType.POSITION]:
+            info = self._get_function_config(control)
+            if info:
+                infos.append(info)
+        return infos
+            
     @property
     def category_name(self)->str | None:
         if self.type is None or self.role is None:

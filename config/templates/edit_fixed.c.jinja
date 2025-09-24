@@ -1,0 +1,29 @@
+/** @brief Функция для простейших числовых типов и строк
+  * Последующее или предыдущее значение берётся из массива values
+  * Если control == click, то navigation _только_ cycle.
+  * @param id Идентификтор меню Определён, в enum в menu_struct.h
+  * @param delta Количество "щелчков" энкодера. Передаётся только если control==position
+  */
+void {{function_name}}_cb(menu_id_t id{% if function_info.control == "position" %}, int8_t delta{% endif %}) {
+    menu_item_config_t *config = menu_get_config(id);
+    menu_item_value_t  *value  = menu_get_value(id);
+    uint8_t *idx = &(value->data.{{function_info.category.name}}.idx);
+    uint8_t count = config->data.{{function_info.category.name}}.count;
+{% if function_info.control == "click" %}{# Если click, то только кольцевой режим ВЕЗДЕ. Занеси это во FlatNode! #}
+    *idx = (*idx + 1) % count;
+{% elif function_info.control == "position" %}
+{% if function_info.navigate == "limit" %}
+    if (delta > 0)
+        *idx = (*idx + delta) >= count ? count - 1 : (*idx + 1);
+    else if (delta < 0)
+        *idx = (*idx + delta) < 0 ? 0 : (*idx + delta);
+{% elif function_info.navigate == "cyclic" %}
+    if (delta > 0)
+        *idx = (*idx + delta) >= count ? 0 : (*idx + 1);
+    else if (delta < 0)
+        *idx = (*idx + delta) < 0 ? count - 1 : (*idx + delta);
+{% endif %}{# navigate #}
+{% endif %}{# control #}
+
+    menu_update();
+}

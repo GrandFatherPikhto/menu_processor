@@ -8,24 +8,34 @@ from typing import Dict, Set, List, Optional, Any
 from common import load_json_data
 
 from menu_processor import MenuProcessor
-from menu_config import MenuConfig
+from data_types import DataTypeConfig
 
 class MenuGenerator:
-    def __init__(self, config_json):
-        self._processor = MenuProcessor(config_json)
-        self._config:MenuConfig = self._processor.config
-        self._env = Environment(
-            loader=FileSystemLoader(self._config.templates_path),  # Ищем шаблоны в текущей директории
+    def __init__(self, config):
+        self.config = config
+        self._data_types_config = DataTypeConfig(self.config.get('data_types'))
+
+        self._processor = MenuProcessor(config=self.config, data_types_config=self._data_types_config)
+        
+        self.env = Environment(
+            loader=FileSystemLoader(self.config.get('templates')),  # Ищем шаблоны в текущей директории
             trim_blocks=True,
             lstrip_blocks=True,
             extensions=['jinja2.ext.debug']
         )
-        self._files = self._config.generatrion_files
+
         self._context = {}
+        self.files = load_json_data(config.get('generate_files'))
 
-        self._generate()
+    def load_menu(self, menu_path:str = None)->bool:
+        try:
+            self._processor.load_config(self.config.get('menu_config') if menu_path is None else menu_path)
+            return True
+        except Exception as e:
+            print(f'Ошибка загрузки конфигурации {e}')        
+            return False
 
-    def _generate(self):
+    def generate(self):
         self._build_template_context()
         self._generate_code()
 
@@ -34,18 +44,21 @@ class MenuGenerator:
     
     def _build_template_context(self):
         self._context = {
-            'menu': self._processor.menu,
-            'first': self._processor.first,
-            'leafs': self._processor.leafs,
-            'categories': self._processor.categories,
-            'functions': self._processor.functions
+            'menu_items': self._processor.get_template_nodes,
+            'first_item_id': self._processor.get_first_node_id,
+            'leaf_items': self._processor.get_template_leafs,
+            'unique_types': self._processor.get_unique_types,
+            'unique_categories': self._processor.get_unique_categories,
+            'unique_medias': self._processor.get_unique_medias,
+            'data_types': self._data_types_config.get_config,
+            'unique_functions': self._processor.get_unique_functions
         }
-        # print(self._context.get("functions"))
 
     def _generate_code(self):
-        for template, output in self._files.items():
-            print(f"Generate: {template} => {output}")
-            self._generate_file(template, output, self._context)
+        for name in self.files.keys():
+            print('Generate: ' + name)
+            self._generate_file(self.files[name]["template"]["header"], self.files[name]["output"]["header"], self._context)
+            self._generate_file(self.files[name]["template"]["source"], self.files[name]["output"]["source"], self._context)
 
     def _generate_file(self, template_path: str, output_path: str, template_data):
         """Генерация конкретного файла"""
@@ -53,7 +66,7 @@ class MenuGenerator:
         
         try:
             # Загрузка шаблона
-            template = self._env.get_template(template_path)
+            template = self.env.get_template(template_path)
             
             # Рендеринг
             content = template.render(**template_data)
@@ -77,8 +90,13 @@ class MenuGenerator:
         except Exception as e:
             print(f"❌ Ошибка генерации {output_path} файла: {e}")
 
-def main(config_file:str):
-    generator = MenuGenerator(config_file)
+def main():
+    config = load_json_data('config/config.json')
+
+    generator = MenuGenerator(config=config)
+    generator.load_menu()
+    generator.save_flatterned_menu()
+    generator.generate()
 
 if __name__ == '__main__':
-    main('./config/config.json')
+    main()

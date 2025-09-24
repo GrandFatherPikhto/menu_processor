@@ -1,0 +1,18 @@
+#ifndef MENU_EDIT_H
+#define MENU_EDIT_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "menu_struct.h"
+#include "menu_config.h"
+
+{% for function_name, function_info  in functions.items() %}
+{% if function_info.control == "click" %}
+void {{function_name}}_cb(menu_id_t id);
+{% elif function_info.control == "position" %}
+void {{function_name}}_cb(menu_id_t id, int8_t delta);
+{% endif %}
+{% endfor %}
+
+#endif /* MENU_EDIT_H */

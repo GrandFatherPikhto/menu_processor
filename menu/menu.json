@@ -1,118 +1,143 @@
 {
-  "config": {
-    "version": "1.0",
-    "author": "Embedded Team"  
-  },
-  "menu": [
-    {
-      "id": "start",
-      "name": "Start",
-      "type": "boolean",
-      "str_true": "Started",
-      "str_false": "Start",
-      "default": false,
-      "control": "click"
+    "config": {
+        "version": "1.0",
+        "author": "Embedded Team",
+        "default_navigate": "limit",
+        "default_control": "position",
+        "root_navigate": "limit"
     },
-    {
-      "id" : "regimes",
-      "name": "Regime",
-      "type": "string_fixed",
-      "values": ["Simple", "Strong", "Quality"],
-      "default": "Simple"
-    },
-    {
-      "id": "version",
-      "name": "Firmware version",
-      "type": "callback"
-    },
-    {
-      "id" : "settings",
-      "name": "Settings",
-      "navigate": "cyclic",
-      "items": [
+    "menu": [
         {
-          "id" : "pwm_frequency",
-          "name": "PWM Frequency",
-          "type": "callback"
+            "id": "start",
+            "title": "Start",
+            "type": "string",
+            "role": "fixed",
+            "values": ["Start", "Started"],
+            "default_idx": 0,
+            "control": "click",
+            "navigate": "cyclic"
         },
         {
-          "id": "hi_channel",
-          "name": "Hi Channel",
-          "items": [
-            {
-              "id" : "hi_delay",
-              "name" : "Delay",
-              "type": "udword_factor",
-              "default": 10,
-              "min": 10,
-              "max": 10000,
-              "factors": [1, 10, 100, 1000]
-            },
-            {
-              "id" : "hi_duration",
-              "name" : "Duration",
-              "type": "udword_factor",
-              "default": 10,
-              "min": 10,
-              "max": 10000,
-              "factors": [1, 10, 100, 1000],
-              "default_idx": 2           
-            },
-            {
-              "id": "hi_pwm_on",
-              "name": "PWM On/Off",
-              "type" : "boolean"
-            },
-            {
-              "id" : "hi_duty",
-              "name" : "PWM Duty",
-              "type": "ubyte",
-              "step": 1,
-              "default": 30,
-              "min": 0,
-              "max": 95
-            }
-          ]
+            "id" : "regimes",
+            "title": "Regimes",
+            "type": "string",
+            "role": "fixed",
+            "values": ["Simple", "Strong", "Quality"],
+            "control": "position",
+            "navigate": "cyclic",
+            "default_idx": 2
         },
         {
-          "id": "lo_channel",
-          "name": "Lo Channel",
-          "items": [
-            {
-              "id" : "lo_delay",
-              "name" : "Delay",
-              "type": "udword_factor",
-              "default": 10,
-              "min": 10,
-              "max": 10000,
-              "factors": [1, 10, 100, 1000]
-            },
-            {
-              "id" : "lo_duration",
-              "name" : "Duration",
-              "type": "udword_factor",
-              "default": 10,
-              "min": 10,
-              "max": 10000,
-              "factors": [1, 10, 100, 1000]
-            },
-            {
-              "id": "lo_pwm_on",
-              "name": "PWM On/Off",
-              "type": "boolean"
-            },
-            {
-              "id" : "lo_duty",
-              "name" : "PWM Duty",
-              "type": "ubyte",
-              "step": 1,
-              "default": 30,
-              "min": 0,
-              "max": 95
-            }
-          ]
+            "id": "version",
+            "title": "Firmware version",
+            "type": "callback",
+            "role": "callback"
+        },
+        {
+            "id" : "settings",
+            "title": "Settings",
+            "navigate": "limit",
+            "items": [
+                {
+                    "id" : "pwm_frequency",
+                    "title": "PWM Frequency",
+                    "type": "callback",
+                    "role": "callback",
+                    "control": "position",
+                    "navigate": "cyclic"
+                },
+                {
+                    "id": "hi_channel",
+                    "title": "Hi Channel",
+                    "items": [
+                        {
+                            "id" : "hi_delay",
+                            "title" : "Delay",
+                            "type": "udword",
+                            "role": "factor",
+                            "default": 10,
+                            "min": 10,
+                            "max": 10000,
+                            "factors": [1, 10, 100, 1000]
+                        },
+                        {
+                            "id" : "hi_duration",
+                            "title" : "Duration",
+                            "type": "udword",
+                            "role": "factor",
+                            "default": 10,
+                            "min": 10,
+                            "max": 10000,
+                            "factors": [1, 10, 100, 1000],
+                            "default_idx": 2           
+                        },
+                        {
+                            "id": "hi_pwm_on",
+                            "title": "PWM On/Off",
+                            "type": "string",
+                            "role": "fixed",
+                            "navigate": "cyclic",
+                            "values": ["Off", "On"],
+                            "default_idx": 0
+                        },
+                        {
+                            "id" : "hi_duty",
+                            "title" : "PWM Duty",
+                            "type": "ubyte",
+                            "role": "simple",
+                            "step": 1,
+                            "default": 30,
+                            "min": 0,
+                            "max": 95
+                        }
+                    ]
+                },
+                {
+                    "id": "lo_channel",
+                    "title": "Lo Channel",
+                    "items": [
+                        {
+                            "id" : "lo_delay",
+                            "title" : "Delay",
+                            "type": "udword",
+                            "role": "factor",
+                            "default": 10,
+                            "min": 10,
+                            "max": 10000,
+                            "factors": [1, 10, 100, 1000]
+                        },
+                        {
+                            "id" : "lo_duration",
+                            "title" : "Duration",
+                            "type": "udword",
+                            "role": "factor",
+                            "default": 10,
+                            "min": 10,
+                            "max": 10000,
+                            "factors": [1, 10, 100, 1000]
+                        },
+                        {
+                            "id": "lo_pwm_on",
+                            "title": "PWM On/Off",
+                            "type": "string",
+                            "role": "fixed",
+                            "navigate": "cyclic",
+                            "values": ["Off", "On"],
+                            "default_idx": 0
+                        },
+                        {
+                            "id" : "lo_duty",
+                            "title" : "PWM Duty",
+                            "type": "ubyte",
+                            "role": "simple",
+                            "step": 1,
+                            "default": 30,
+                            "min": 0,
+                            "max": 95
+                        }
+                    ]
+                }
+           ]
         }
-      ]
-    }
-  ]
+    ]
 }

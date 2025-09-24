@@ -3,18 +3,60 @@
   "type": "object",
   "properties": {
     "config": {
-      "type": "object",
-      "additionalProperties": true
+        "$ref": "#/$defs/configItems"
     },
     "menu": {
       "type": "array",
       "items": {
-        "$ref": "#/definitions/menuItem"
+        "$ref": "#/$defs/menuItem"
       }
     }
   },
-  "required": ["menu"],
-  "definitions": {
+  "required": ["menu", "config"],
+  "$defs": {
+    "controlType": {
+        "type": "string",
+        "enum": ["click", "position"],
+        "description": "Тип управления элементами"
+    },
+    "navigateType": {
+        "type": "string",
+        "enum": ["cyclic", "limit"], 
+        "description": "Тип навигации между элементами"
+    },
+    "dataType": {
+        "type": "string",
+        "enum" : ["byte", "ubyte", "word", "uword", "dword", "udword", "float", "string", "callback"],
+        "description": "Типы данных"
+    },
+    "roleType": {
+        "type": "string",
+        "enum": ["simple", "factor", "fixed", "callback"],
+        "description": "Управление данными: простое, добавляем/вычитаем factor * количество шагов, фиксированный набор, функция обратного вызова"
+    },
+    "configItems": {
+        "type": "object",
+        "properties": {
+            "version": {
+                "type": "string",
+                "pattern": "^\\d+\\.\\d+$"
+            },
+            "author": {
+                "type": "string",
+                "minLength": 1
+            },
+            "default_navigate": {
+                "$ref": "#/$defs/navigateType"
+            },
+            "default_control": {
+                "$ref": "#/$defs/controlType"
+            },
+            "root_navigate": {
+                "$ref": "#/$defs/navigateType"
+            }
+        },
+        "additionalProperties": false
+    },
     "menuItem": {
       "type": "object",
       "properties": {
@@ -22,19 +64,24 @@
           "type": "string",
           "pattern": "^[a-zA-Z0-9_]+$"
         },
-        "name": {
+        "title": {
           "type": "string",
           "minLength": 1
         },
         "type": {
-          "type": "string"
+            "$ref": "#/$defs/dataType"
         },
-        "navigation": {
-          "type": "string",
-          "enum": ["cyclic", "limit", "false"]
+        "role": {
+            "$ref": "#/$defs/roleType"
+        },
+        "control": {
+            "$ref": "#/$defs/controlType"
+        },
+        "navigate": {
+            "$ref": "#/$defs/navigateType"
         },
         "default": {
-          "type": ["number", "boolean", "string"]
+          "type": ["number", "string"]
         },
         "min": {
           "type": "number"
@@ -53,16 +100,16 @@
           },
           "minItems": 1
         },
+        "default_idx": {
+          "type": "integer",
+          "minimum": 0
+        },        
         "factors": {
           "type": "array",
           "items": {
             "type": "number"
           },
           "minItems": 1
-        },
-        "default_idx": {
-          "type": "integer",
-          "minimum": 0
         },
         "str_true": {
           "type": "string"
@@ -73,11 +120,12 @@
         "items": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/menuItem"
+            "$ref": "#/$defs/menuItem"
           }
         }
       },
-      "required": ["id", "name"],
+      "additionalProperties": false,
+      "required": ["id", "title"],
       "oneOf": [
         {
           "properties": {
@@ -88,11 +136,11 @@
           },
           "required": ["items"],
           "not": {
-            "required": ["type"]
+            "required": ["type", "role"]
           }
         },
         {
-          "required": ["type"],
+          "required": ["type", "role"],
           "not": {
             "required": ["items"]
           }

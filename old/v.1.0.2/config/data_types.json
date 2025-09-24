@@ -1,0 +1,68 @@
+{
+    "type": {
+        "number" : {
+            "byte": {
+                "c_type": "int8_t",
+                "min": -128,
+                "max":  127
+            },
+            "ubyte": {
+                "c_type": "uint8_t",
+                "min": 0,
+                "max": 255
+            },
+            "word": {
+                "c_type": "int16_t",
+                "min": -32768,
+                "max":  32767
+            },
+            "uword": {
+                "c_type": "uint16_t",
+                "min": 0,
+                "max": 65535
+            },
+            "dword": {
+                "c_type": "int32_t",
+                "min": -2147483648,
+                "max":  2147483647
+            },
+            "udword": {
+                "c_type": "uint32_t",
+                "min": 0,
+                "max": 4294967295
+            },
+            "float": {
+                "c_type": "float",
+                "min": -2147483648,
+                "max":  2147483647
+            }
+        },
+        "string": {
+            "string" : {
+                "min": 1,
+                "max": 32,
+                "c_type": "char"
+            }
+        },
+        "pointer": {
+            "callback": {
+                "c_type": "void *"
+            }
+        }
+    },
+    "category" : {
+        "simple": [
+            "number"
+        ],
+        "factor": [
+            "number"
+        ],
+        "fixed": [
+            "number",
+            "string"
+        ],
+        "callback": [
+
+        ]
+    }
+}

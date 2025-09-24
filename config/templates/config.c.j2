@@ -1,0 +1,59 @@
+#include "menu_config.h"
+#include "menu_struct.h"
+
+{% for leaf_id, leaf in leafs.items() if leaf.c_str_factors is not none %}
+static const {{leaf.c_type}} s_factors_{{leaf_id}}[] = { {{leaf.c_str_factors}} };
+{% endfor %}
+
+{% for leaf_id, leaf in leafs.items() if leaf.c_str_values is not none %}
+static const {{leaf.c_type}} *s_values_str_{{leaf_id}}[] = { {{ leaf.c_str_values }} };
+{% endfor %}
+
+/**
+  * @note Пока тип callback не поддерживается
+  **/
+static const menu_item_config_t s_nodes_data[] = {
+{% for leaf_id, leaf in leafs.items() if leaf.type != 'callback' %}
+    [MENU_ID_{{leaf_id.upper()}}] = {        
+        .id = MENU_ID_{{leaf_id.upper()}},
+{% if leaf.control == 'click' %}{# control block #}
+        .click_cb = {{leaf.click_function_name}}_cb,
+        .position_cb = 0,
+{% elif leaf.control == 'position' %}
+        .click_cb = 0,
+        .position_cb = {{leaf.position_function_name}}_cb,
+{% endif %}{# end control block #}
+        .data.{{leaf.category_name}} = {
+{% if leaf.role == 'simple' %}{# media_type number simple block #}
+            .step = {{leaf.step}},
+            .min = {{ leaf.min }},
+            .max = {{ leaf.max }},
+            .default_value = {{ leaf.default }}
+{% elif leaf.role == 'factor' %}
+            .min = {{ leaf.min }},
+            .max = {{ leaf.max }},
+            .default_value = {{ leaf.default }},
+            .default_idx = {{ leaf.factors_default_idx }},
+            .count = {{ leaf.fixed_count }},
+            .factors = s_factors_{{leaf_id}}
+{% elif leaf.role == 'fixed' %}
+            .count = {{ leaf.values_count }},
+            .default_idx = {{ leaf.values_default_idx }},
+            .values = s_values_str_{{ leaf_id }}
+{% elif leaf.role == 'callback' %}
+            .data.stub_config = {0}
+{% endif %}{# category #}
+        }
+    },
+{% endfor %}
+};
+
+const menu_item_config_t *menu_get_config(menu_id_t id) {
+    if (id >= MENU_ID_COUNT)
+        return 0;
+    return &(s_nodes_data[id]);
+}
+
+const menu_id_t get_first_id(void) {
+    return MENU_ID_{{first.id.upper()}};
+}

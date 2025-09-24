@@ -1,0 +1,35 @@
+#include "menu_edit.h"
+#include "menu_struct.h"
+#include "menu_config.h"
+#include "menu_values.h"
+
+{% for function_name, function_info in functions.items() %}{# functions #}
+void {{function_name}}_cb(menu_id_t id{% if function_info.control == "position" %}, int8_t delta{% endif %}) {
+    menu_item_config_t *config = menu_get_config(id);
+    menu_item_value_t  *value  = menu_get_value(id);
+{% if function_info.role == "simple" %}{# roles #}
+    {{function_info.category.c_type}} *val  = &(value->data.{{function_info.category.name}}.value);
+    {{function_info.category.c_type}}  step = config->data.{{function_info.category.name}}.step;
+    {{function_info.category.c_type}}   min = config->data.{{function_info.category.name}}.min;
+    {{function_info.category.c_type}}   max = config->data.{{function_info.category.name}}.max;
+{% if function_info.control == "click" %}{# control #}
+    *val = (*val + step) % max;
+    if (*val < min)
+        *val = min;
+{% elif function_info.control == "position" %}{# control #}
+{% if function_info.navigate == "limit" %}{# navigate limit #}
+    if (delta < 0)
+        *val = (*val + delta * step) > min ? (*val + delta * step) : min;
+    else if (delta > 0)
+        *val = (*val + delta * step) < max ? (*val + delta * step) : max;
+{% elif function_info.navigate == "cyclic" %}{# navigate cyclic #}
+        if (delta < 0)
+            *val = (*val + delta * step) > min ? (*val + delta * step) : max;
+        else if (delta > 0)
+            *val = (*val + delta * step) < max ? (*val + delta * step) : min;
+{% endif %}{# navigate #}
+{% endif %}{# control #}
+{% endif %}
+}
+{% endfor %}{# functions #}
+

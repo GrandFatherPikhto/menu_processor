@@ -1,0 +1,118 @@
+{
+  "config": {
+    "version": "1.0",
+    "author": "Embedded Team"  
+  },
+  "menu": [
+    {
+      "id": "start",
+      "name": "Start",
+      "type": "boolean",
+      "str_true": "Started",
+      "str_false": "Start",
+      "default": false,
+      "control": "click"
+    },
+    {
+      "id" : "regimes",
+      "name": "Regimes",
+      "type": "string_fixed",
+      "values": ["Simple", "Strong", "Quality"],
+      "default_idx": 2
+    },
+    {
+      "id": "version",
+      "name": "Firmware version",
+      "type": "callback"
+    },
+    {
+      "id" : "settings",
+      "name": "Settings",
+      "navigate": "cyclic",
+      "items": [
+        {
+          "id" : "pwm_frequency",
+          "name": "PWM Frequency",
+          "type": "callback"
+        },
+        {
+          "id": "hi_channel",
+          "name": "Hi Channel",
+          "items": [
+            {
+              "id" : "hi_delay",
+              "name" : "Delay",
+              "type": "udword_factor",
+              "default": 10,
+              "min": 10,
+              "max": 10000,
+              "factors": [1, 10, 100, 1000]
+            },
+            {
+              "id" : "hi_duration",
+              "name" : "Duration",
+              "type": "udword_factor",
+              "default": 10,
+              "min": 10,
+              "max": 10000,
+              "factors": [1, 10, 100, 1000],
+              "default_idx": 2           
+            },
+            {
+              "id": "hi_pwm_on",
+              "name": "PWM On/Off",
+              "type" : "boolean"
+            },
+            {
+              "id" : "hi_duty",
+              "name" : "PWM Duty",
+              "type": "ubyte",
+              "step": 1,
+              "default": 30,
+              "min": 0,
+              "max": 95
+            }
+          ]
+        },
+        {
+          "id": "lo_channel",
+          "name": "Lo Channel",
+          "items": [
+            {
+              "id" : "lo_delay",
+              "name" : "Delay",
+              "type": "udword_factor",
+              "default": 10,
+              "min": 10,
+              "max": 10000,
+              "factors": [1, 10, 100, 1000]
+            },
+            {
+              "id" : "lo_duration",
+              "name" : "Duration",
+              "type": "udword_factor",
+              "default": 10,
+              "min": 10,
+              "max": 10000,
+              "factors": [1, 10, 100, 1000]
+            },
+            {
+              "id": "lo_pwm_on",
+              "name": "PWM On/Off",
+              "type": "boolean"
+            },
+            {
+              "id" : "lo_duty",
+              "name" : "PWM Duty",
+              "type": "ubyte",
+              "step": 1,
+              "default": 30,
+              "min": 0,
+              "max": 95
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

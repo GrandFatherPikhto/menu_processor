@@ -8,7 +8,7 @@
 
 typedef enum {
     MENU_ID_ROOT,
-{% for item_id, item in menu_items.items() %}
+{% for item_id, item in menu.items() %}
     MENU_ID_{{item_id.upper()}},
 {% endfor %}
     MENU_ID_COUNT

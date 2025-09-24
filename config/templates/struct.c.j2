@@ -14,18 +14,18 @@ static const menu_node_t s_menu_nodes[] = {
         .id = MENU_ID_ROOT,
         .title = "root",
         .parent = MENU_ID_COUNT,
-        .child = MENU_ID_{{ first_item_id.upper() }},
+        .child = MENU_ID_{{ first.id.upper() }},
         .prev = MENU_ID_COUNT,
         .next = MENU_ID_COUNT,
     },
-{% for item_id, item in menu_items.items() %}
+{% for item_id, item in menu.items() %}
     [MENU_ID_{{ item_id.upper()}}] = {
         .id = MENU_ID_{{ item_id.upper()}},
         .title = "{{ item.name }}",
-        .parent = {% if item.parent %}MENU_ID_{{ item.parent.upper() }}{% else %}MENU_ID_COUNT{% endif %},
-        .child = {% if item.first_child %}MENU_ID_{{ item.first_child.upper() }}{% else %}MENU_ID_COUNT{% endif %},
-        .prev = {% if item.prev_sibling %}MENU_ID_{{ item.prev_sibling.upper() }}{% else %}MENU_ID_COUNT{% endif %},
-        .next = {% if item.next_sibling %}MENU_ID_{{ item.next_sibling.upper() }}{% else %}MENU_ID_COUNT{% endif %},
+        .parent = {% if item.parent %}MENU_ID_{{ item.parent.id.upper() }}{% else %}MENU_ID_COUNT{% endif %},
+        .child = {% if item.first_child %}MENU_ID_{{ item.first_child.id.upper() }}{% else %}MENU_ID_COUNT{% endif %},
+        .prev = {% if item.prev_sibling %}MENU_ID_{{ item.prev_sibling.id.upper() }}{% else %}MENU_ID_COUNT{% endif %},
+        .next = {% if item.next_sibling %}MENU_ID_{{ item.next_sibling.id.upper() }}{% else %}MENU_ID_COUNT{% endif %},
     },
 {% endfor %}    
 }; 

@@ -1,8 +1,7 @@
 {
-    "menu_schema": "./config/menu_schema.json",
-    "data_types": "./config/data_types.json",
-    "generate_files": "./config/generate_files.json",
-    "menu_config": "./menu/menu.json",
-    "output_flattern": "./output/flatterned.json",
-    "templates": "./templates/"
+    "menu_schema": "menu_schema.json",
+    "menu_config": "menu_data.json",
+    "menu": "../menu/menu.json",
+    "output_flattern": "../output/flatterned.json",
+    "generation_files": "files.json"
 }

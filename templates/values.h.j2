@@ -8,7 +8,11 @@
 
 typedef struct stub_value_t {} stub_value_t;
 {% for type_id, type in unique_types.items() %}
-{% if type.category == 'simple' %}
+{% if type.category == 'boolean' %}
+typedef struct {
+    {{type.c_type}} value;
+} {{type.type}}_value_t;
+{% elif type.category == 'simple' %}
 typedef struct {
     {{type.c_type}} value;
 } {{type.type}}_value_t;
@@ -44,9 +48,9 @@ typedef struct menu_value {
 {% endif %}
 {% endfor %}
     } data;
-} menu_value_t;
+} menu_item_value_t;
 
-menu_value_t *menu_get_value(menu_id_t id);
+menu_item_value_t *menu_get_value(menu_id_t id);
 void menu_change_value(int8_t delta);
 void menu_next_value(void);
 

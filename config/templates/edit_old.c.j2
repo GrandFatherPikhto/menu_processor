@@ -1,0 +1,53 @@
+{% if function_info.control == 'click' %}{# control #}
+void {{function_name}}_cb(menu_id_t id) {
+    menu_item_config_t *config = menu_get_config(id);
+    menu_item_value_t  *value  = menu_get_value(id);
+}
+{% elif function_info.control == 'position' %}
+void {{function_name}}_cb(menu_id_t id, int8_t delta) {
+    menu_item_config_t *config = menu_get_config(id);
+    menu_item_value_t  *value  = menu_get_value(id);
+{% if function_info.role == 'simple' %}{# roles #}
+    if (delta > 0) {
+        value->data.{{function_info.category.name}}.value = 
+            (value->data.{{function_info.category.name}}.value + 
+                config->data.{{function_info.category.name}}.step * delta) >
+                    config->data.{{function_info.category.name}}.max ? 
+                    config->data.{{function_info.category.name}}.max :
+                        value->data.{{function_info.category.name}}.value + 
+                config->data.{{function_info.category.name}}.step * delta;
+
+    } else if (delta < 0) {
+        value->data.{{function_info.category.name}}.value = 
+            (value->data.{{function_info.category.name}}.value + 
+                config->data.{{function_info.category.name}}.step * delta)  
+                    <  config->data.{{function_info.category.name}}.min ? 
+                        config->data.{{function_info.category.name}}.min :
+                        value->data.{{function_info.category.name}}.value + 
+                            config->data.{{function_info.category.name}}.step * delta;
+    }
+{% elif function_info.role == 'factor' %}
+    if (delta > 0) {
+        value->data.{{function_info.category.name}}.idx = 
+            (value->data.{{function_info.category.name}}.idx + delta) >=
+                    config->data.{{function_info.category.name}}.count ? 
+                        config->data.{{function_info.category.name}}.count - 1 :
+                            value->data.{{function_info.category.name}}.idx + delta;
+    } else if (delta < 0) {
+        value->data.{{function_info.category.name}}.idx = 
+            ((value->data.{{function_info.category.name}}.idx + delta) < 0) ? 0 :
+                value->data.{{function_info.category.name}}.idx + delta;
+    }
+{% elif function_info.role == 'fixed' %}
+    if (delta > 0) {
+        value->data.{{function_info.category.name}}.idx = 
+            (value->data.{{function_info.category.name}}.idx + delta) >=
+                    config->data.{{function_info.category.name}}.count ? 
+                        config->data.{{function_info.category.name}}.count - 1 :
+                            value->data.{{function_info.category.name}}.idx + delta;
+    } else if (delta < 0) {
+        value->data.{{function_info.category.name}}.idx = 
+            ((value->data.{{function_info.category.name}}.idx + delta) < 0) ? 0 :
+                value->data.{{function_info.category.name}}.idx + delta;
+    }
+{% endif %}{# role #}

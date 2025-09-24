@@ -1,0 +1,43 @@
+#ifndef MENU_VALUES_H
+#define MENU_VALUES_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "menu_struct.h"
+
+typedef struct stub_value_t {} stub_value_t;
+{%  for category_name, category in categories.items() %}{# categories #}
+{% if category.role == "simple" %}{# roles #}
+typedef struct {
+    {{category.c_type}} value;
+} {{category_name}}_value_t;
+{% elif category.role == "factor" %}
+typedef struct {
+    uint8_t idx;
+    {{category.c_type}} value;
+} {{category_name}}_value_t;
+{% elif category.role == "fixed" %}
+typedef struct {
+    uint8_t idx;
+} {{category_name}}_value_t;
+{% elif category.role == "callback" %}
+typedef struct {
+    void *value_ptr;
+} {{category_name}}_value_t;
+{% endif %}{# roles #}
+{% endfor %}{# categories #}
+
+typedef struct menu_value {
+    menu_id_t id;
+    union {
+        stub_value_t stub_value;
+{% for category_name, category in categories.items() %}{# categories #}
+        {{category_name}}_value_t {{category_name}};
+{% endfor %}
+    } data;
+} menu_item_value_t;
+
+menu_item_value_t *menu_get_value(menu_id_t id);
+
+#endif // MENU_VALUES_H

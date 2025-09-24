@@ -10,9 +10,8 @@
 void menu_change_value(menu_id_t id, int8_t delta);
 void menu_next_value(menu_id_t id);
 
-{% for category in unique_categories if category != 'callback' %}
-void change_{{category}}_value(menu_id_t id, int8_t delta);
-void next_{{category}}_value(menu_id_t id);
+{% for function, function_info  in unique_functions.items() %}
+void {{function}}_func(menu_id_t id, int8_t delta);
 {% endfor %}
 
 #endif /* MENU_EDIT_H */

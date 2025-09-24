@@ -3,46 +3,44 @@ import json
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 
-from common import load_json_data, save_json_data
-from menu_config import MenuConfig, ConfigError
-
-class ParserError(Exception):
-    """Выбрасывается при ошибках валидации меню"""
-    def __init__(self, errors: List[str]):
-        super().__init__("Menu validation failed")
-        self.errors = errors
+from data_types import DataTypeConfig
 
 class MenuValidator:
-    def __init__(self, config: MenuConfig, raise_exception = False):
-        self._config = config
-        self._raise_exception = raise_exception
-        self._validator = Draft7Validator(self._config.menu_schema)
-        self._ids = []
-        self._errors = {}
-
-    def validate(self, menu_data: Dict = None) -> Dict[str, List[str]]:
+    def __init__(self, schema_path: str = "config/menu_schema.json"):
+        self.schema = self._load_schema(schema_path)
+        self.validator = Draft7Validator(self.schema)
+        self.data_type_config = None
+        
+    def _load_schema(self, schema_path: str) -> Dict:
+        """Загрузка JSON Schema из файла"""
+        with open(schema_path, 'r') as f:
+            return json.load(f)
+    
+    def load_data_type_config(self, config: DataTypeConfig):
+        """Загрузка конфигурации типов данных"""
+        self.data_type_config = config
+    
+    def validate_menu(self, menu_config: Dict) -> Dict[str, List[str]]:
         """
         Полная валидация древовидного меню
         
         Returns:
             Dict[str, List[str]]: Ошибки по ID элементов
         """
-        menu = self._config.menu_data if menu_data is None else menu_data
-
         errors = {}
-
+        
         # Валидация JSON Schema
         try:
-            self._validator.validate(menu)
+            self.validator.validate(menu_config)
         except ValidationError as e:
-            errors["schema"] = [f"Schema validation failed: {e.message}"]
+            errors["root"] = [f"Schema validation failed: {e.message}"]
             return errors
         
         # Рекурсивная валидация элементов
-        self._validate_tree(menu.get("menu", []), [], errors)
+        self._validate_tree(menu_config.get("menu", []), [], errors)
         
         return errors
-
+    
     def _validate_tree(self, items: List[Dict], path: List[str], errors: Dict[str, List[str]]):
         """Рекурсивная валидация дерева меню"""
         for item in items:
@@ -58,15 +56,10 @@ class MenuValidator:
             
             if item_errors:
                 errors['->'.join(current_path)] = item_errors
-
+    
     def _validate_item(self, item: Dict) -> List[str]:
         """Валидация отдельного элемента меню"""
         errors = []
-
-        if item.get("id") not in self._ids:
-            self._ids.append(item.get("id"))
-        else:
-            errors.append(f"Id {item.get('id')} not unique")
         
         # Проверка: branch не должен иметь type
         if 'items' in item and 'type' in item:
@@ -91,7 +84,16 @@ class MenuValidator:
             errors.extend(self._validate_values(item))
         
         return errors
-
+    
+    def _validate_data_type(self, item: Dict) -> List[str]:
+        """Валидация типа данных"""
+        errors = []
+        
+        if self.data_type_config and not self.data_type_config.has_type(item['type']):
+            errors.append(f"Unknown data type: {item['type']}")
+        
+        return errors
+    
     def _validate_default_value(self, item: Dict) -> List[str]:
         """Валидация значения по умолчанию"""
         errors = []
@@ -107,10 +109,7 @@ class MenuValidator:
                 errors.append(f"default value {item['default']} not in allowed values")
         
         return errors
-
-    def _validate_data_type(self, item: Dict):
-        return []
-
+    
     def _validate_factors(self, item: Dict) -> List[str]:
         """Валидация факторов"""
         errors = []
@@ -128,30 +127,41 @@ class MenuValidator:
             errors.append(f"default_idx {item['default_idx']} out of bounds for values array")
         
         return errors
+    
+    def get_validation_report(self, errors: Dict[str, List[str]]) -> str:
+        """Генерация читаемого отчета об ошибках"""
+        if not errors:
+            return "✅ Validation passed successfully!"
+        
+        report = ["❌ Validation errors:"]
+        for path, path_errors in errors.items():
+            report.append(f"\nPath: {path}")
+            for error in path_errors:
+                report.append(f"  - {error}")
+        
+        return "\n".join(report)
+    
+def main():
+    # Инициализация валидатора
+    validator = MenuValidator("config/menu_schema.json")
 
+    # Загрузка конфигурации типов данных
+    data_type_config = DataTypeConfig("config/data_types.json")
+    validator.load_data_type_config(data_type_config)
 
-def main(config_file):
-    try:
-        config = MenuConfig(config_file)
-        print(f"✅ Конфигурация {config_file} успешно загружена")
-        validator = MenuValidator(config=config)
-        errors = validator.validate()
-        if errors:
-            print(f"❌ Конфигурация содержит ошибки:")
-            for id, items in errors.items():
-                print(f"❌ {id}:")
-                for item in items:
-                    print(f"\t➤ {item}")
-        else:
-            print("✅ и проверена")
+    # Загрузка и валидация меню
+    with open("menu/menu.json", "r") as f:
+        menu_config = json.load(f)
 
+    errors = validator.validate_menu(menu_config)
 
-    except ConfigError as e:
-        print(f"❌ {e}")
-        return 1
-    except Exception as e:
-        print(f"💥 Неожиданная ошибка: {e}")
-        return 1
+    # Вывод результатов
+    print(validator.get_validation_report(errors))
 
-if __name__ == "__main__":
-    main('./config/config.json')
+    if not errors:
+        print("Menu configuration is valid!")
+    else:
+        print(f"Found {len(errors)} validation errors")    
+
+if __name__ == '__main__':
+    main()

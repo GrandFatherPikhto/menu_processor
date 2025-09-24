@@ -5,38 +5,9 @@
 #include <stdbool.h>
 
 #include "menu_struct.h"
+#include "menu_edit.h"
 
 typedef struct stub_config {} stub_config_t;
-
-typedef enum {
-    MENU_CONTROL_NONE,
-    MENU_CONTROL_CLICK,
-    MENU_CONTROL_POSITION
-} menu_control_t;
-
-typedef enum {
-    MENU_TYPE_NONE = 0x0,
-{% for type_id, type in unique_types.items() %}
-    MENU_TYPE_{{type_id.upper()}},
-{% endfor %}
-    MENU_TYPE_COUNT
-} menu_type_t;
-
-typedef enum {
-    MENU_CATEGORY_NONE = 0,
-{% for category in unique_categories %}
-    MENU_CATEGORY_{{category.upper()}},
-{% endfor %}
-    MENU_CATEGORY_COUNT
-} menu_category_t;
-
-typedef enum {
-    MENU_MEDIA_NONE = 0,
-{% for media in unique_medias %}
-    MENU_MEDIA_{{media.upper()}},
-{% endfor %}
-    MENU_MEDIA_COUNT
-} menu_media_t;
 
 {% for type_id, type in unique_types.items() %}
 {% if type.category == 'simple' %}
@@ -56,14 +27,10 @@ typedef struct {
 typedef struct {
     uint8_t count;
     uint8_t default_idx;
-    const {{type.c_type}} *factors;
-} {{type_id}}_data_t;
-typedef struct {
     {{type.c_type}} min;
     {{type.c_type}} max;
     {{type.c_type}} default_value;
-    {{type.c_type}} step;
-    {{type_id}}_data_t factor;
+    const {{type.c_type}} *factors;
 } {{type_id}}_config_t;
 {% elif type.category == 'fixed' %}
 {% if type.media == 'number' %}
@@ -82,22 +49,20 @@ typedef struct {
 {% endif %}
 {% endfor %}
 
-typedef struct node_config {
+typedef struct menu_config {
     menu_id_t id;
-    menu_type_t type;
-    menu_category_t category;
-    menu_media_t media;
-    menu_control_t control;
+    void (*click_cb)(menu_id_t id);
+    void (*position_cb)(menu_id_t id, int8_t delta);
     union {
         stub_config_t stub_config;
 {% for type_id, type in unique_types.items() if type_id != 'callback' %}
         {{type_id}}_config_t {{type_id}}_config;
 {% endfor %}
     } data;
-} node_config_t;
+} menu_item_config_t;
 
 const menu_id_t get_first_id(void);
-const node_config_t *node_get_config(menu_id_t id);
+const menu_item_config_t *menu_get_config(menu_id_t id);
 
 
 #endif /* MENU_CONFIG_H */

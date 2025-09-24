@@ -3,7 +3,7 @@
         "type": "boolean",
         "c_type": "bool",
         "media": "bool",
-        "category": "simple",
+        "category": "boolean",
         "media_type": "boolean",
         "min": 0,
         "max": 1

@@ -1,0 +1,92 @@
+{
+    "types": {
+        "bool": {
+            "c_type": "bool",
+            "min": false,
+            "max": true
+        },
+        "byte": {
+            "c_type": "int8_t",
+            "min": -128,
+            "max": 127
+        },
+        "ubyte": {
+            "c_type": "uint8_t",
+            "min": 0,
+            "max": 255
+        },
+        "word": {
+            "c_type": "int16_t",
+            "min": -32768,
+            "max": 32767
+        },
+        "uword": {
+            "c_type": "uint16_t",
+            "min": 0,
+            "max": 65535
+        },
+        "dword": {
+            "c_type": "int32_t",
+            "min": -2147483648,
+            "max": 2147483647
+        },
+        "udword": {
+            "c_type": "uint32_t",
+            "min": 0,
+            "max": 4294967295
+        },
+        "float": {
+            "c_type": "float",
+            "min": -3.4e38,
+            "max": 3.4e38
+        },
+        "string": {
+            "c_type": "char",
+            "min_len": 1,
+            "max_len": 32
+        },
+        "callback": {
+            "c_type": "void (*)(void)"
+        },
+        "pointer": {
+            "c_type": "void *"
+        }
+    },
+    "numbers": ["bool", "byte", "ubyte", "word", "uword", "dword", "udword", "float"],
+    "roles": {
+        "simple": [
+            "byte",
+            "ubyte",
+            "word",
+            "uword",
+            "dword",
+            "udword",
+            "float"
+        ],
+        "factor": [
+            "byte",
+            "ubyte",
+            "word",
+            "uword",
+            "dword",
+            "udword",
+            "float"
+        ],
+        "fixed": [
+            "string",
+            "byte",
+            "ubyte",
+            "word",
+            "uword",
+            "dword",
+            "udword",
+            "float"
+        ],
+        "callback": [
+            "callback"
+        ],
+        "pointer": [
+            "pointer"
+        ]
+    }
+}

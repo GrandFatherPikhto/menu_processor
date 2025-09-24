@@ -1,0 +1,307 @@
+#ifndef MENU_CONFIG_H
+#define MENU_CONFIG_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "menu_struct.h"
+
+typedef struct stub_config {} stub_config_t;
+
+{% if 'byte_factor' in unique_data_types %}
+typedef struct {
+    uint8_t default_idx;
+    uint8_t counter;
+    const int8_t *factors;
+} factor_byte_config_t;
+
+typedef struct {
+    int8_t min;
+    int8_t max;
+    int8_t default_value;
+    factor_byte_config_t factor;
+} number_byte_factor_config_t;
+{% endif %}
+{% if 'ubyte_factor' in unique_data_types %}
+typedef struct {
+    uint8_t default_idx;
+    uint8_t counter;
+    const uint8_t *factors;
+} factor_ubyte_config_t;
+
+typedef struct {
+    uint8_t min;
+    uint8_t max;
+    uint8_t default_value;
+    factor_ubyte_config_t factor;
+} number_ubyte_factor_config_t;
+{% endif %}
+{% if 'word_factor' in unique_data_types %}
+typedef struct {
+    uint8_t default_idx;
+    uint8_t counter;
+    const int16_t *factors;
+} factor_word_config_t;
+
+typedef struct {
+    int16_t min;
+    int16_t max;
+    int16_t default_value;
+    factor_word_config_t factor;
+} number_word_factor_config_t;
+{% endif %}
+{% if 'uword_factor' in unique_data_types %}
+typedef struct {
+    uint8_t default_idx;
+    uint8_t counter;
+    const uint16_t *factors;
+} factor_uword_config_t;
+
+typedef struct {
+    uint16_t min;
+    uint16_t max;
+    uint16_t default_value;
+    factor_uword_config_t factor;
+} number_uword_factor_config_t;
+{% endif %}
+{% if 'dword_factor' in unique_data_types %}
+typedef struct {
+    uint8_t default_idx;
+    uint8_t counter;
+    const int32_t *factors;
+} factor_dword_config_t;
+
+typedef struct {
+    uint32_t min;
+    uint8_t max;
+    int8_t default_value;
+    factor_dword_config_t factor;
+} number_dword_factor_config_t;
+{% endif %}
+{% if 'udword_factor' in unique_data_types %}
+typedef struct {
+    uint8_t default_idx;
+    uint8_t counter;
+    const uint32_t *factors;
+} factor_udword_config_t;
+
+typedef struct {
+    uint32_t min;
+    uint32_t max;
+    uint32_t default_value;
+    factor_udword_config_t factor;
+} number_udword_factor_config_t;
+{% endif %}
+{% if 'float_factor' in unique_data_types %}
+typedef struct {
+    uint8_t default_idx;
+    uint8_t counter;
+    const float *factors;
+} factor_float_config_t;
+
+typedef struct {
+    float min;
+    float max;
+    float default_value;
+    factor_float_config_t factor;
+} number_float_factor_config_t;
+{% endif %}
+
+{% if 'boolean' in unique_data_types %}
+typedef struct {
+    bool default_value;
+} boolean_config_t;
+{% endif %}
+{% if 'byte' in unique_data_types %}
+typedef struct {
+    uint16_t step;
+    int8_t default_value;
+    int8_t min;
+    int8_t max;
+} number_byte_config_t;
+{% endif %}
+{% if 'ubyte' in unique_data_types %}
+typedef struct {
+    uint8_t step;
+    uint8_t default_value;
+    uint8_t min;
+    uint8_t max;
+} number_ubyte_config_t;
+{% endif %}
+{% if 'word' in unique_data_types %}
+typedef struct {
+    int16_t step;
+    int16_t default_value;
+    int16_t min;
+    int16_t max;
+} number_word_config_t;
+{% endif %}
+{% if 'uword' in unique_data_types %}
+typedef struct {
+    uint16_t step;
+    uint16_t default_value;
+    uint16_t min;
+    uint16_t max;
+} number_uword_config_t;
+{% endif %}
+{% if 'dword' in unique_data_types %}
+typedef struct {
+    int32_t step;
+    int32_t default_value;
+    int32_t min;
+    int32_t max;
+} number_dword_config_t;
+{% endif %}
+{% if 'udword' in unique_data_types %}
+typedef struct {
+    uint32_t step;
+    uint32_t default_value;
+    uint32_t min;
+    uint32_t max;
+} number_udword_config_t;
+{% endif %}
+{% if 'float' in unique_data_types %}
+typedef struct {
+    float step;
+    float default_value;
+    float min;
+    float max;
+} number_float_config_t;
+{% endif %}
+{% if 'string' in unique_data_types %}
+typedef struct {
+    const char* value;
+    uint8_t length;
+} string_config_t;
+{% endif %}
+{% if 'fixed_byte' in unique_data_types %}
+typedef struct {
+    uint8_t count;
+    uint8_t default_idx;
+    int8_t *values;
+} fixed_byte_config_t;
+{% endif %}
+{% if 'fixed_ubyte' in unique_data_types %}
+typedef struct {
+    uint8_t count;
+    uint8_t default_idx;
+    uint8_t *values;
+} fixed_ubyte_config_t;
+{% endif %}
+{% if 'fixed_word' in unique_data_types %}
+typedef struct {
+    uint8_t count;
+    uint8_t default_idx;
+    int16_t *values;
+} fixed_word_config_t;
+{% endif %}
+{% if 'fixed_uword' in unique_data_types %}
+typedef struct {
+    uint8_t count;
+    uint8_t default_idx;
+    uint16_t *values;
+} fixed_uword_config_t;
+{% endif %}
+{% if 'fixed_dword' in unique_data_types %}
+typedef struct {
+    uint8_t count;
+    uint8_t default_idx;
+    int32_t *values;
+} fixed_dword_config_t;
+{% endif %}
+{% if 'fixed_udword' in unique_data_types %}
+typedef struct {
+    uint8_t count;
+    uint8_t default_idx;
+    uint32_t *values;
+} fixed_udword_config_t;
+{% endif %}
+{% if 'fixed_string' in unique_data_types %}
+typedef struct {
+    uint8_t count;
+    uint8_t default_idx;
+    const char *values[];
+    const uint8_t *ids;
+} fixed_string_config_t;
+{% endif %}
+
+typedef struct node_config {
+    menu_id_t id;
+    union {
+        stub_config_t stub_config;
+{% if 'boolean' in unique_data_types %}
+        boolean_config_t boolean_config;
+{% endif %}
+{% if 'byte' in unique_data_types %}
+        number_byte_config_t byte_config;
+{% endif %}
+{% if 'ubyte' in unique_data_types %}
+        number_ubyte_config_t ubyte_config;
+{% endif %}
+{% if 'word' in unique_data_types %}
+        number_word_config_t word_config;
+{% endif %}
+{% if 'uword' in unique_data_types %}
+        number_uword_config_t uword_config;
+{% endif %}
+{% if 'dword' in unique_data_types %}
+        number_dword_config_t dword_config;
+{% endif %}
+{% if 'udword' in unique_data_types %}
+        number_udword_config_t udword_config;
+{% endif %}
+{% if 'float' in unique_data_types %}
+        number_float_config_t float_config;
+{% endif %}
+{% if 'byte_factor' in unique_data_types %}
+        number_byte_factor_config_t byte_factor_config;
+{% endif %}
+{% if 'ubyte_factor' in unique_data_types %}
+        number_ubyte_factor_config_t ubyte_factor_config;
+{% endif %}
+{% if 'word_factor' in unique_data_types %}
+        number_word_factor_config_t word_factor_config;
+{% endif %}
+{% if 'uword_factor' in unique_data_types %}
+        number_uword_factor_config_t uword_factor_config;
+{% endif %}
+{% if 'dword_factor' in unique_data_types %}
+        number_dword_factor_config_t dword_factor_config;
+{% endif %}
+{% if 'udword_factor' in unique_data_types %}
+        number_udword_factor_config_t udword_factor_config;
+{% endif %}
+{% if 'float_factor' in unique_data_types %}
+        number_float_factor_config_t float_factor_config;
+{% endif %}
+{% if 'string' in unique_data_types %}
+        string_config_t string_config;
+{% endif %}
+{% if 'fixed_byte' in unique_data_types %}
+        fixed_byte_config_t fixed_byte;
+{% endif %}
+{% if 'fixed_ubyte' in unique_data_types %}
+        fixed_ubyte_config_t fixed_ubyte;
+{% endif %}
+{% if 'fixed_word' in unique_data_types %}
+        fixed_word_config_t fixed_word;
+{% endif %}
+{% if 'fixed_uword' in unique_data_types %}
+        fixed_uword_config_t fixed_uword;
+{% endif %}
+{% if 'fixed_dword' in unique_data_types %}
+        fixed_dword_config_t fixed_dword;
+{% endif %}
+{% if 'fixed_udword' in unique_data_types %}
+        fixed_udword_config_t fixed_udword;
+{% endif %}
+{% if 'fixed_string' in unique_data_types %}
+        fixed_string_config_t string_config;
+{% endif %}
+    } data;
+} node_config_t;
+
+const node_config_t *node_get_config(menu_id_t id);
+
+
+#endif /* MENU_CONFIG_H */

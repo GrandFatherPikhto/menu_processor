@@ -2,57 +2,50 @@ from typing import Dict, List, Optional, Any
 import json
 
 from flat_node import FlatNode
-from menu_validator import MenuValidator
-from menu_config import MenuConfig, ConfigError
-from menu_data import MenuData
+from data_types import DataTypeConfig
+from common import load_json_data
 
-class FlattenerError(Exception):
-    """Исключение для ошибок конфигурации"""
-    def __init__(self, message: str):
-        super().__init__(message)
-
-class MenuFlattener:
+class Flattener:
     """Преобразует дерево меню в плоскую структуру с настраиваемыми циклическими связями"""
     
-    def __init__(self, config:MenuConfig):
+    def __init__(self, config:Dict, data_types_config: DataTypeConfig | None = None):
+        self.config = config
         self.flat_nodes: List[FlatNode] = []
         self.node_dict = {}
         self.node_dict: Dict[str, FlatNode] = {}
-        self._config = config
-        self._menu_data = MenuData(self._config)
+        if data_types_config is None:
+            self._data_type_config = DataTypeConfig(config.get('data_types'))
+        else:
+            self._data_type_config = data_types_config
         
-    def flatten(self, menu_tree: List[Dict[str, Any]] | None = None) -> List[FlatNode]:
+    def flatten(self, menu_tree: List[Dict[str, Any]]) -> List[FlatNode]:
         """Преобразует дерево в плоский список с установленными связями"""
         self.flat_nodes.clear()
         self.node_dict.clear()
 
-        menu = menu_tree
-        if menu is None:
-            menu = self._config.menu_tree
-
-        if menu is None:
-            raise FlattenerError("Дерево меню пустое!")
-
         self.root_node = FlatNode({
-                "id": "root",
-                "title": "root",
-                "items": menu,
+                'id': 'root',
+                'name': 'root',
+                'items': menu_tree,
+                'type_info': None
             },
-            self._config,
-            self._menu_data
+            self._data_type_config
         )
-        self.root_node.navigate = self._config.default_navigate
-        self.root_node.control = self._config.default_control
-
         self.flat_nodes.append(self.root_node)
         self.node_dict['root'] = self.root_node
         
         # Рекурсивный обход дерева
-        self._process_node(self.root_node, None, menu)
+        self._process_node(self.root_node, None, menu_tree)
 
         self._make_cyclic_links()
         
         return self.flat_nodes
+
+    def _append_type_info(self, node_data: Dict[str, Any]) -> bool:
+        if node_data.get('type', None) is not None:
+            node_data['type_info'] = self._data_type_config.get_by_type(node_data['type'])
+            return True
+        return False
 
 
     def _process_node(self, parent: Optional[FlatNode], prev_sibling: Optional[FlatNode], 
@@ -62,13 +55,8 @@ class MenuFlattener:
         
         for i, node_data in enumerate(nodes):
             # Создаем плоский узел
-            flat_node = FlatNode(node_data, self._config, self._menu_data)
-
-            if flat_node.navigate is None:
-                flat_node.navigate = self._config.default_navigate
-            if flat_node.control is None:
-                flat_node.control = self._config.default_control
-
+            self._append_type_info(node_data)
+            flat_node = FlatNode(node_data, self._data_type_config)
             self.flat_nodes.append(flat_node)
             self.node_dict[flat_node.id] = flat_node
             
@@ -116,13 +104,8 @@ class MenuFlattener:
         prev_sibling = None
         
         for child_data in children_data:
-            flat_child = FlatNode(child_data, self._config, self._menu_data)
-
-            if flat_child.navigate is None:
-                flat_child.navigate = self._config.default_navigate
-            if flat_child.control is None:
-                flat_child.control = self._config.default_control
-
+            self._append_type_info(child_data)
+            flat_child = FlatNode(child_data, self._data_type_config)
             self.flat_nodes.append(flat_child)
             self.node_dict[flat_child.id] = flat_child
             
@@ -140,8 +123,8 @@ class MenuFlattener:
             parent.last_child = flat_child
             
             # Рекурсивно обрабатываем детей детей
-            if 'items' in child_data and child_data["items"]:
-                self._process_children(flat_child, child_data["items"])
+            if 'items' in child_data and child_data['items']:
+                self._process_children(flat_child, child_data['items'])
             
             prev_sibling = flat_child
     
@@ -165,33 +148,21 @@ class MenuFlattener:
                 break
 
 
-# Пример использования
-def main(config_file: str):
-    try:
-        config = MenuConfig(config_file)
-        print(f"✅ Конфигурация {config_file} успешно загружена")
-        validator = MenuValidator(config=config)
-        errors = validator.validate()
-        if errors:
-            print(f"❌ Конфигурация содержит ошибки:")
-            for id, items in errors.items():
-                print(f"❌ {id}:")
-                for item in items:
-                    print(f"\t➤ {item}")
-            return 2
-        else:
-            print("✅ и проверена")
-            flattener = MenuFlattener(config)
-            flat_menu = flattener.flatten()
-            for node in flat_menu:
-                print(f"- {node}")    
+def flat_menu(menu_tree):
+    config = load_json_data('config/config.json')
+    flattener = Flattener(config=config)
+    flat_menu = flattener.flatten(menu_tree)
+    
+    print("Плоский список узлов:")
+    for node in flat_menu:
+        print(f"- {node}")    
 
-    except ConfigError as e:
-        print(f"❌ {e}")
-        return 1
-    # except Exception as e:
-    #     print(f"💥 Неожиданная ошибка: {e}")
-    #     return 1
+
+# Пример использования
+def main():
+    menu_data = load_json_data('menu/menu.json')        
+    if menu_data.get('menu', None) is not None:
+        flat_menu(menu_data.get('menu', []))
     
 if __name__ == "__main__":
-    main('./config/config.json')
+    main()

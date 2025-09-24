@@ -1,205 +1,95 @@
-from typing import Dict, Set, List, Optional, Any
+from typing import Dict, List, Set, Optional, Any
 import json
 
-from menu_flattener import FlatNode, Flattener
+from flat_node import FlatNode
 from menu_validator import MenuValidator
-from data_types import DataTypeConfig
-from common import load_json_data
+from menu_config import MenuConfig, ConfigError
+from menu_flattener import MenuFlattener, FlattenerError
 
 class ProcessorError(Exception):
-    """Выбрасывается при ошибках валидации меню"""
-    def __init__(self, errors: List[str]):
-        super().__init__("Menu validation failed")
-        self.errors = errors
-
+    """Исключение для ошибок конфигурации"""
+    def __init__(self, message: str):
+        super().__init__(message)
 
 class MenuProcessor:
-
-    def __init__(self, config:Dict, data_types_config: DataTypeConfig = None, validator: MenuValidator = None):
-
-        self.config = config
-
-        if data_types_config is None:
-            self._data_types_config = DataTypeConfig(self.config.get('data_types'))
+    def __init__(self, config_name: str):
+        self._config_name = config_name
+        self._config = MenuConfig(self._config_name)
+        print(f"✅ Конфигурация {self._config_name} успешно загружена")
+        self._validator = MenuValidator(config=self._config)
+        errors = self._validator.validate()
+        if errors:
+            print(f"❌ Конфигурация содержит ошибки:")
+            for id, items in errors.items():
+                print(f"❌ {id}:")
+                for item in items:
+                    print(f"\t➤ {item}")
+            raise ProcessorError(f"❌ Ошибка конфигурации")
         else:
-            self._data_types_config = data_types_config
-
-        if validator is None:
-            self._validator = MenuValidator(self.config.get('menu_schema'))
-            self._validator.load_data_type_config(self._data_types_config)
-        else:
-            self._validator = validator
-
-        self._flattener = Flattener(config=config, data_types_config=data_types_config)
-        self._nodes = []
-        self._menu_config = []
-        self._menu_data = []
-        self.errors = []
-        self._leaf_items = {}
-        self.first_item = None
-        self.first_item_template = None
-
-    def process(self, nodes: List[FlatNode]):
-        self._nodes = nodes
-        self._generate_leaf_items()
-
-    def load_config(self, input_file: str = None):
-        self._menu_config = load_json_data(self.config.get('menu_config'))
-        self._menu_data = self._menu_config.get('menu', None)
-
-        if self._menu_config is None:
-            raise('Ошибка загрузки конфигурации меню')
-        
-        if not self._menu_data:
-            raise('Отсутствует дерево меню')
-        
-        if not self._validate_config():
-            raise('Ошибка валидации меню')
-            
-        if not self._flattern_menu():
-            raise('Ошибка уплощения меню')
-
-    def _validate_config(self)->bool:
-        if self._menu_data == None:
-            return False
-
-        try:
-            self.errors = self._validator.validate_menu(self._menu_config)
-            if self.errors:
-                for error in self.errors:
-                    print(error)
-                raise('Ошибка синтаксического разбора')
-            return True
-        except Exception as error:
-            print(f"❌ Общая ошибка: {error}")
-            return False
-
-    def _flattern_menu(self)->bool:
-        try:
-            self._nodes = self._flattener.flatten(self._menu_data)
-            return True
-        except Exception as e:
-            print(f"❌ Ошибка уплощения меню: {e}")
-            return False
-
-    def _process_menu_data(data: List[Dict])->List[FlatNode] | None:
-        preproc = MenuProcessor()
-        try:
-            preproc.process(data)
-            return None
-        except Exception as e:
-            print(f"❌ Ошибка уплощения меню: {e}")
-            return None
-        
-    def save_flattern_json(self, output_path: str = None)->bool:
-        try:
-            with open(self.config.get('output_flattern') if output_path is None else output_path, 'w', encoding='utf-8') as f:
-                json.dump(self.get_template_nodes, f, indent=2, ensure_ascii=False)
-                pass
-            print(f"✅ Конфигурация сохранена в {output_path}")
-        except Exception as e:
-            print(f'❌ Ошибка сохранения файла: {e}')
+            print("✅ и проверена")
+            self._flattener = MenuFlattener(self._config)
+            self._flat_nodes = self._flattener.flatten()
+            for node in self._flat_nodes:
+                print(f"- {node}")    
 
     @property
-    def get_unique_types(self) -> Dict[str, Dict] | None:
-        if not self._nodes:
-            return None
-        return {
-            type_name: self._data_types_config.get_by_type(type_name) 
-            for type_name in {n.type for n in self._nodes if n.type is not None}
-        }
-    
-    def get_unique_meta_list(self, meta_name:str)->List[str] | None:
-        if not self._nodes:
-            return None
-        return  {n.type_info.get(meta_name) for n in self._nodes if n.type_info and n.type_info.get(meta_name, None) is not None}
+    def config(self)->Dict:
+        return self._config
 
-    @property 
-    def get_unique_categories(self)->Set[str] | None:
-        if not self._nodes:
-            return None
-        return self.get_unique_meta_list('category')
-        
-    @property 
-    def get_unique_medias(self)->Set[str] | None:
-        if not self._nodes:
-            return None
-        return self.get_unique_meta_list('media')
-
-    @property 
-    def get_unique_media_types(self)->Set[str] | None:
-        if not self._nodes:
-            return None
-        return self.get_unique_meta_list('media_type')
+    @property
+    def menu(self)->Dict[str,FlatNode] | None:
+        return { n.id : n for n in self._flat_nodes if n.id != 'root' }
     
     @property
-    def get_types_config(self):
-        return self._data_types_config.get_config()
+    def functions(self)->Dict[str,Any] | None:
+        items = {}
+        for node in self._flat_nodes:
+            name = node.function_name
+            props = node.function_info
+            if name is None or props is None or name in items.keys():
+                continue
+            items[name] = props
+        return items
     
     @property
-    def get_nodes(self)->Dict[str, FlatNode] | None:
-        if not self._nodes:
-            return None
-        return {n.id: n for n in self._nodes if n.id != 'root'}
+    def categories(self)->Dict[str, Any] | None:
+        items = {}
+        for node in self._flat_nodes:
+            name = node.category_name
+            props = node.category
+            if name is not None and props is not None:
+                items[name] = props
+        return items
     
     @property
-    def get_leafs(self)->Dict[str, FlatNode] |None:
-        if not self._nodes:
-            return None
-        return {n.id: n for n in self._nodes if n.id != 'root' and n.first_child is None}
+    def leafs(self)->Dict[str, FlatNode] | None:
+        return { n.id : n for n in self._flat_nodes if n.is_leaf if n.id != 'root' }
     
     @property
-    def get_branches(self)->Dict[str, FlatNode] | None:
-        if not self._nodes:
-            return None
-        return {n.id: n for n in self._nodes if n.id != 'root' and n.first_child is not None}
-    
-    @property
-    def get_template_nodes(self)->Dict[str, Dict]|None:
-        if not self._nodes:
-            return None
-        return {n.id: n.get_template_data for n in self._nodes if n.id != 'root'}
+    def branches(self)->Dict[str, FlatNode] | None:
+        return { n.id : n for n in self._flat_nodes if n.is_branch  if n.id != 'root' }
 
     @property
-    def get_template_leafs(self)->Dict[str, Dict]|None:
-        if not self._nodes:
-            return None
-        return {n.id: n.get_template_data for n in self._nodes if n.id != 'root' and n.first_child is None}
-
-    @property
-    def get_template_branches(self)->Dict[str, Dict]|None:
-        if not self._nodes:
-            return None
-        return {n.id: n.get_template_data for n in self._nodes if n.id != 'root' and n.first_child is not None}
-
-    @property
-    def get_first_node(self)->str | None:
-        for node in self._nodes:
+    def first(self)->FlatNode | None:
+        for node in self._flat_nodes:
             # Проверяем что все необходимые атрибуты существуют
             if (hasattr(node, 'prev_sibling') and 
-                hasattr(node, 'parent') and 
-                node.prev_sibling is None and 
+                hasattr(node, 'parent') and
                 node.parent is not None and
                 hasattr(node.parent, 'id') and
                 node.parent.id == 'root'):
-                return node.id
+                return node.parent.first_child
         return None
 
-def main() -> bool:
-    config = load_json_data('config/config.json')
-    processor = MenuProcessor(config=config)
-    processor.load_config()
-    processor.save_flattern_json()
-
-    for node in processor._nodes:
-        print(node)
-
-    print(processor.get_unique_categories)
-    print(processor.get_unique_medias)
-    print(processor.get_unique_media_types)
-
-    return True
 
 
-if __name__ == '__main__':
-    main()
+def main(config_name:str)->int:
+    try:
+        processor = MenuProcessor(config_name)
+        for id, item in processor.categories.items():
+            print(id, item)
+    except Exception as e:
+        print(f"Error: {e}")
+
+if __name__ == "__main__":
+    main("./config/config.json")

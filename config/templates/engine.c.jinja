@@ -1,0 +1,111 @@
+#include "menu_engine.h"
+#include "menu_config.h"
+#include "menu_struct.h"
+
+typedef struct {
+    menu_id_t current;
+    menu_id_t prev;    
+    menu_state_t state;
+    bool dirty;
+} enjine_context_t;
+
+static enjine_context_t s_context = {
+    .current = MENU_ID_{{first.id.upper()}},
+    .prev = MENU_ID_COUNT,
+    .state = MENU_STATE_NAVIGATION,
+    .dirty = false
+};
+
+static menu_id_t s_navigate_siblings(menu_id_t start_id, int8_t steps, bool backward);
+
+void menu_handle_position(int8_t delta) {
+    menu_id_t current_id = menu_get_current();
+    if (s_context.state == MENU_STATE_NAVIGATION) {
+        menu_navigate_sibling(id, delta);
+    } else if (s_context.state == MENU_STATE_EDIT) {
+        menu_handle_position_cb(current_id, delta);
+    }
+}
+
+void menu_handle_enter(void) {
+    menu_id_t current_id = menu_get_current();
+    menu_tree_type_t type = menu_get_tree_type(current_id);
+    if (type == MENU_TREE_TYPE_LEAF) {
+        if (s_context.state == MENU_STATE_NAVIGATION) {
+            s_context.state == MENU_STATE_EDIT;
+            menu_update();
+        } else if (s_context.state == MENU_STATE_EDIT) {
+            menu_handle_click_cb(current_id);
+            menu_update();
+        }
+    } else if (type == MENU_TREE_TYPE_BRANCH) {
+        menu_id_t target_id = menu_get_child(current_id);
+        menu_go_to(target_id);
+    }
+}
+
+void menu_handle_out(void) {
+    menu_id_t current_id = menu_get_current();
+    menu_tree_type_t type = menu_get_tree_type(current_id);
+    if (type == MENU_TREE_TYPE_LEAF) {
+        if (s_context.state == MENU_STATE_EDIT) {
+            s_context.state = MENU_STATE_NAVIGATION;
+            menu_update();
+        } else if (s_context.state == MENU_STATE_NAVIGATION) {
+            menu_id_t target_id = menu_get_parent(current_id);
+            menu_go_to(target_id);
+        }
+    }
+}
+
+void menu_update(void) {
+    s_context.dirty = true;
+}
+
+void reset_dirty(void) {
+    s_context.dirty = false;
+}
+
+void menu_navigate_sibling(menu_id_t id, int8_t delta) {
+    if (delta == 0) return;
+    
+    bool is_back = delta > 0;
+    int8_t steps = is_back ? delta : -delta;
+    
+    menu_id_t target_id = s_navigate_menu(id, steps, is_back);
+    
+    return target_id;
+}
+
+// Статические функции
+static menu_id_t s_navigate_siblings(menu_id_t start_id, int8_t steps, bool backward) {
+    menu_id_t current_id = start_id;
+    
+    for (int8_t i = 0; i < steps; i++) {
+        menu_id_t next_id = backward ? menu_get_prev(current_id) : menu_get_next(current_id);
+        
+        if (next_id == MENU_ID_COUNT) {
+            return current_id; // Останавливаемся на последнем валидном пункте
+        }
+        current_id = next_id;
+    }
+    return current_id;
+}
+
+void menu_go_to(menu_id_t id) {
+    if (id >= MENU_ID_COUNT)
+        return;
+    if (id == s_context.current)
+        return;
+    s_context.prev = s_context.current;
+    s_context.current = id;
+    menu_update(s_context.current);
+}
+
+menu_id_t menu_get_current(void) {
+    return s_context.current;
+}
+
+menu_id_t menu_get_prev(void) {
+    return s_context.prev;
+}

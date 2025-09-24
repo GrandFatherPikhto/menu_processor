@@ -7,6 +7,7 @@ typedef struct menu_node {
     menu_id_t prev;
     menu_id_t next;
     const char *title;
+    menu_tree_type_t type;
 } menu_node_t;
 
 static const menu_node_t s_menu_nodes[] = {
@@ -17,6 +18,7 @@ static const menu_node_t s_menu_nodes[] = {
         .child = MENU_ID_{{ first.id.upper() }},
         .prev = MENU_ID_COUNT,
         .next = MENU_ID_COUNT,
+        .type = MENU_TREE_TYPE_BRANCH
     },
 {% for item_id, item in menu.items() %}
     [MENU_ID_{{ item_id.upper()}}] = {
@@ -26,6 +28,8 @@ static const menu_node_t s_menu_nodes[] = {
         .child = {% if item.first_child %}MENU_ID_{{ item.first_child.id.upper() }}{% else %}MENU_ID_COUNT{% endif %},
         .prev = {% if item.prev_sibling %}MENU_ID_{{ item.prev_sibling.id.upper() }}{% else %}MENU_ID_COUNT{% endif %},
         .next = {% if item.next_sibling %}MENU_ID_{{ item.next_sibling.id.upper() }}{% else %}MENU_ID_COUNT{% endif %},
+        .type = MENU_TREE_TYPE_{% if item.is_leaf %}LEAF{% else %}BRANCH{% endif %}
+
     },
 {% endfor %}    
 }; 
@@ -74,4 +78,10 @@ const char *menu_get_title(menu_id_t id) {
     if (id >= MENU_ID_COUNT)
         return 0;
     return s_menu_nodes[id].title;
+}
+
+menu_tree_type_t menu_get_tree_type(menu_id_t id) {
+    if (id > MENU_ID_COUNT)
+        return MENU_TREE_TYPE_NONE;
+    return s_menu_nodes[id].type;
 }

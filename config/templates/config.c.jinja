@@ -16,13 +16,19 @@ static const menu_item_config_t s_nodes_data[] = {
 {% for leaf_id, leaf in leafs.items() if leaf.type != 'callback' %}
     [MENU_ID_{{leaf_id.upper()}}] = {        
         .id = MENU_ID_{{leaf_id.upper()}},
-{% if leaf.control == 'click' %}{# control block #}
-        .click_cb = {{leaf.click_function_name}}_cb,
+        .category = MENU_CATEGORY_{{leaf.category.name.upper()}},
+{% if leaf.category.role == "factor" %}{# FACTOR: Единственный случай, когда работают ОБЕ функции. Обрабатывается и клик и позиция #}
+        .click_cb = {{leaf.function_click_name}}_cb,
+        .position_cb = {{leaf.function_position_name}}_cb,
+{% else %}{# Если любая роль, кроме FACTOR #}
+{% if leaf.category.control == "click" %}{# Здесь вызывается только функция click #}
+        .click_cb = {{leaf.function_click_name}}_cb,
         .position_cb = 0,
-{% elif leaf.control == 'position' %}
+{% elif leaf.category.control == "position" %}{# Здесь вызывается только функция position #}
         .click_cb = 0,
-        .position_cb = {{leaf.position_function_name}}_cb,
-{% endif %}{# end control block #}
+        .position_cb = {{leaf.function_position_name}}_cb,
+{% endif %}{# category #}
+{% endif %}{# role #}
         .data.{{leaf.category_name}} = {
 {% if leaf.role == 'simple' %}{# media_type number simple block #}
             .step = {{leaf.step}},
@@ -52,6 +58,34 @@ const menu_item_config_t *menu_get_config(menu_id_t id) {
     if (id >= MENU_ID_COUNT)
         return 0;
     return &(s_nodes_data[id]);
+}
+
+menu_click_cb_t menu_get_click_cb(menu_id_t id) {
+    if (id >= MENU_ID_COUNT)
+        return 0;
+    return s_menu_nodes[id].click_cb;
+}
+
+menu_position_cb_t menu_get_position_cb(menu_id_t id) {
+    if (id >= MENU_ID_COUNT)
+        return 0;
+    return s_menu_nodes[id].position_cb_cb;
+}
+
+void menu_handle_position_cb(menu_id_t id, int8_t delta) {
+    if (id >= MENU_ID_COUNT)
+        return;
+    if (s_menu_nodes[id].position_cb) {
+        s_menu_nodes[id].position_cb(id, delta);
+    }
+}
+
+void menu_handle_click_cb(menu_id_t id) {
+    if (id >= MENU_ID_COUNT)
+        return;
+    if (s_menu_nodes[id].click_cb) {
+        s_menu_nodes[id].click_cb(id);
+    }
 }
 
 const menu_id_t get_first_id(void) {

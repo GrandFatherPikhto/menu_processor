@@ -7,6 +7,16 @@
 #include "menu_struct.h"
 #include "menu_edit.h"
 
+{% set ns = namespace(count=1) %}{# Initialize the namespace object with a 'count' attribute #}
+typedef enum {
+    MENU_CATEGORY_NONE = 0,
+{% for category_name, category in categories.items() %}
+    MENU_CATEGORY_{{category_name.upper()}} = {{ns.count}},
+{% set ns.count = ns.count + 1 %}{# Increment the count within the namespace #}
+{% endfor %}
+    MENU_CATEGORY_COUNT = {{ns.count}}
+} menu_category_t;
+
 typedef struct stub_config {} stub_config_t;
 
 {% for category_name, category in categories.items() if category.type != "callback" %}
@@ -33,10 +43,14 @@ typedef struct {
 } {{category_name}}_config_t;
 {% endfor %}{# types #}
 
+typedef void (*menu_click_cb_t)(menu_id_t id);
+typedef void (*menu_position_cb_t)(menu_id_t id, int8_t delta);
+
 typedef struct menu_config {
     menu_id_t id;
-    void (*click_cb)(menu_id_t id);
-    void (*position_cb)(menu_id_t id, int8_t delta);
+    menu_category_t category;
+    menu_click_cb_t click_cb;
+    menu_position_cb_t position_cb;
     union {        
         stub_config_t stub_config;
 {% for category_name, category in categories.items() if category.type != "callback" %}
@@ -47,6 +61,9 @@ typedef struct menu_config {
 
 const menu_id_t get_first_id(void);
 const menu_item_config_t *menu_get_config(menu_id_t id);
-
+menu_click_cb_t menu_get_click_cb(menu_id_t id);
+menu_position_cb_t menu_get_position_cb(menu_id_t id);
+void menu_handle_position_cb(menu_id_t id, int8_t delta);
+void menu_handle_click_cb(menu_id_t id);
 
 #endif /* MENU_CONFIG_H */

@@ -7,6 +7,13 @@
 #define MENU_TITLE_LEN 0x10
 
 typedef enum {
+    MENU_TREE_TYPE_NONE = 0,
+    MENU_TREE_TYPE_BRANCH = 1,
+    MENU_TREE_TYPE_LEAF = 2,
+    MENU_TREE_TYPE_COUNT = 3
+} menu_tree_type_t;
+
+typedef enum {
     MENU_ID_ROOT,
 {% for item_id, item in menu.items() %}
     MENU_ID_{{item_id.upper()}},
@@ -22,5 +29,6 @@ menu_id_t menu_get_prev(menu_id_t id);
 menu_id_t menu_get_parent(menu_id_t id);
 menu_id_t menu_get_child(menu_id_t id);
 const char *menu_get_title(menu_id_t id);
+menu_tree_type_t menu_get_tree_type(menu_id_t id);
 
 #endif /* MENU_STRUCT_H */

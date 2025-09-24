@@ -20,6 +20,10 @@ typedef enum {
     MENU_EVENT_CHANGE_VALUE = 7
 } menu_event_t;
 
-void menu_update(menu_id_t id);
+void menu_update();
+menu_id_t menu_get_current(void);
+menu_id_t menu_get_prev(void);
+void menu_get_sibling(menu_id_t id, int8_t delta);
+void menu_go_to(menu_id_t id);
 
 #endif // MENU_H

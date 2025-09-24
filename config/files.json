@@ -1,17 +1,15 @@
 {
     "templates": "./templates/",
     "files": {
-        "struct.h.j2": "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_struct.h",
-        "struct.c.j2": "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_struct.c",
-        "config.h.j2": "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_config.h",
-        "config.c.j2": "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_config.c",
-        "values.h.j2": "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_values.h",
-        "values.c.j2": "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_values.c",
-        "engine.h.j2": "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_engine.h",
-        "engine.c.j2": "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_engine.c",
-        "navigate.h.j2": "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_navigate.h",
-        "navigate.c.j2": "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_navigate.c",
-        "edit.h.j2": "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_edit.h",
-        "edit.c.j2": "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_edit.c"
+        "struct.h.jinja": "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_struct.h",
+        "struct.c.jinja": "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_struct.c",
+        "config.h.jinja": "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_config.h",
+        "config.c.jinja": "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_config.c",
+        "values.h.jinja": "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_values.h",
+        "values.c.jinja": "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_values.c",
+        "engine.h.jinja": "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_engine.h",
+        "engine.c.jinja": "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_engine.c",
+        "edit.h.jinja": "../../CCPP/STM32/GeneratirveMenu/menu/src/include/menu_edit.h",
+        "edit.c.jinja": "../../CCPP/STM32/GeneratirveMenu/menu/src/menu_edit.c"
     }
 }

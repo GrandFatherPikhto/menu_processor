@@ -1,0 +1,7 @@
+#include "menu_type.h"
+
+const char *menu_type_get_node_id_name(menu_context_t *ctx, menu_id_t id) {
+    if (id >= MENU_ID_COUNT)
+        return 0;
+    return ctx->id_names[id].name;
+}

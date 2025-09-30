@@ -4,7 +4,8 @@
         "author": "Embedded Team",
         "default_navigate": "limit",
         "default_control": "position",
-        "root_navigate": "limit"
+        "default_branch_navigate": "cyclic",
+        "root_navigate": "cyclic"
     },
     "menu": [
         {
@@ -14,7 +15,6 @@
             "role": "fixed",
             "values": ["Start", "Started"],
             "default_idx": 0,
-            "control": "click",
             "navigate": "cyclic"
         },
         {
@@ -23,7 +23,7 @@
             "type": "string",
             "role": "fixed",
             "values": ["Simple", "Strong", "Quality"],
-            "control": "position",
+            "controls": ["position"],
             "navigate": "cyclic",
             "default_idx": 2
         },
@@ -43,8 +43,8 @@
                     "title": "PWM Frequency",
                     "type": "callback",
                     "role": "callback",
-                    "control": "position",
-                    "navigate": "cyclic"
+                    "controls": ["position"],
+                    "navigate": "limit"
                 },
                 {
                     "id": "hi_channel",
@@ -78,7 +78,8 @@
                             "role": "fixed",
                             "navigate": "cyclic",
                             "values": ["Off", "On"],
-                            "default_idx": 0
+                            "default_idx": 0,
+                            "event_cb": "my_event_cb"
                         },
                         {
                             "id" : "hi_duty",
@@ -86,6 +87,7 @@
                             "type": "ubyte",
                             "role": "simple",
                             "step": 1,
+                            "controls": ["position"],
                             "default": 30,
                             "min": 0,
                             "max": 95
@@ -123,12 +125,14 @@
                             "role": "fixed",
                             "navigate": "cyclic",
                             "values": ["Off", "On"],
-                            "default_idx": 0
+                            "default_idx": 0,
+                            "event_cb": "my_event_cb"
                         },
                         {
                             "id" : "lo_duty",
                             "title" : "PWM Duty",
                             "type": "ubyte",
+                            "controls": ["position"],
                             "role": "simple",
                             "step": 1,
                             "default": 30,

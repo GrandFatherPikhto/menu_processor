@@ -53,6 +53,9 @@
             },
             "root_navigate": {
                 "$ref": "#/$defs/navigateType"
+            },
+            "default_branch_navigate": {
+                "$ref": "#/$defs/navigateType"
             }
         },
         "additionalProperties": false
@@ -74,12 +77,42 @@
         "role": {
             "$ref": "#/$defs/roleType"
         },
-        "control": {
-            "$ref": "#/$defs/controlType"
+        "controls": {
+          "type": "array",
+          "items": {
+              "$ref": "#/$defs/controlType"
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "Список разрешенных типов управления для элемента"
         },
         "navigate": {
             "$ref": "#/$defs/navigateType"
         },
+        "click_cb": {
+          "type": "string",
+          "description": "Пользовательская функция обработки клика"
+        },
+        "position_cb": {
+          "type": "string", 
+          "description": "Пользовательская функция обработки позиции энкодера"
+        },
+        "double_click_cb": {
+          "type": "string",
+          "description": "Пользовательская функция обработки двойного клика"
+        },
+        "long_click_cb": {
+          "type": "string",
+          "description": "Пользовательская функция обработки долгого клика"
+        },
+        "event_cb": {
+          "type": "string",
+          "description": "Пользовательская функция обработки событий меню"
+        },
+        "draw_value_cb": {
+          "type": "string",
+          "description": "Пользовательская функция отрисовки значения"
+        },        
         "default": {
           "type": ["number", "string"]
         },

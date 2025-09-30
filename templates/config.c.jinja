@@ -1,0 +1,77 @@
+#include "menu_config.h"
+#include "menu_struct.h"
+#include "menu_edit.h"
+#include "menu_context.h"
+
+const menu_node_config_t *menu_config_get_config(menu_context_t *ctx, menu_id_t id) {
+    if (id >= MENU_ID_COUNT)
+        return NULL;
+    return ctx->configs[id];
+}
+
+bool menu_config_handle_position_cb(menu_context_t *ctx, menu_id_t id, int8_t delta) {
+    if (id >= MENU_ID_COUNT)
+        return;
+    if (ctx->configs[id].position_cb) {
+        ctx->configs[id].position_cb(id, delta);
+        return true;
+    }
+
+    return false;
+}
+
+void menu_config_handle_click_cb(menu_context_t *ctx, menu_id_t id) {
+    if (id >= MENU_ID_COUNT)
+        return;
+    if (ctx->configs[id].click_cb) {
+        ctx->configs[id].click_cb(id);
+        return true;
+    }
+
+    return false;
+}
+
+bool menu_config_handle_long_click_cb(menu_context_t *ctx, menu_id_t id, int8_t delta) {
+    if (id >= MENU_ID_COUNT)
+        return;
+    if (ctx->configs[id].long_click_cb) {
+        ctx->configs[id].long_click_cb(id, delta);
+        return true;
+    }
+
+    return false;
+}
+
+bool menu_config_handle_double_click_cb(menu_context_t *ctx, menu_id_t id, int8_t delta) {
+    if (id >= MENU_ID_COUNT)
+        return;
+    if (ctx->configs[id].double_click_cb) {
+        ctx->configs[id].double_click_cb(id, delta);
+        return true;
+    }
+
+    return false;
+}
+
+bool menu_config_handle_draw_value_cb(menu_context_t *ctx, menu_id_t id, int8_t delta) {
+    if (id >= MENU_ID_COUNT)
+        return;
+    if (ctx->configs[id].draw_value_cb) {
+        ctx->configs[id].draw_value_cb(id, delta);
+        return true;
+    }
+
+    return false;
+}
+
+bool menu_config_handle_event_cb(menu_context_t *ctx, menu_id_t id, int8_t delta) {
+    if (id >= MENU_ID_COUNT)
+        return;
+    if (ctx->configs[id].handle_event_cb) {
+        ctx->configs[id].handle_event_cb(id, delta);
+        return true;
+    }
+
+    return false;
+}
+

@@ -1,0 +1,53 @@
+#include "menu_tree.h"
+
+const menu_node_t *menu_tree_get_node(menu_context_t *ctx, menu_id_t id) {
+    if (id >= MENU_ID_COUNT)
+        return 0;
+    return &(ctx->nodes[id]);
+}
+
+menu_id_t menu_tree_get_next(menu_context_t *ctx, menu_id_t id) {
+    const menu_node_t *node = menu_tree_get_node(ctx, id);
+    if (node == 0)
+        return MENU_ID_COUNT;
+
+    if (node->next == MENU_ID_COUNT)
+        return node->prev;
+    
+    return node->next;
+}
+
+menu_id_t menu_tree_get_prev(menu_context_t *ctx, menu_id_t id) {
+    const menu_node_t *node = menu_tree_get_node(ctx, id);
+    if (node == 0)
+        return MENU_ID_COUNT;
+    return node->prev;
+}
+
+menu_id_t menu_tree_get_parent (menu_context_t *ctx, menu_id_t id) {
+    const menu_node_t *node = menu_tree_get_node(ctx, id);
+    if (node == 0)
+        return MENU_ID_COUNT;
+    if (node->parent == MENU_ID_ROOT)
+        return MENU_ID_COUNT;
+    return node->parent;
+}
+
+menu_id_t menu_tree_get_child (menu_id_t id) {
+    const menu_node_t *node = menu_get_node(ctx, id);
+    if (node == 0)
+        return MENU_ID_COUNT;
+    return node->child;
+}
+
+const char *menu_tree_get_title(menu_context_t *ctx, menu_id_t id) {
+    if (id >= MENU_ID_COUNT)
+        return 0;
+    return ctx->nodes[id].title;
+}
+
+menu_tree_type_t menu_tree_get_type(menu_context_t *ctx, menu_id_t id) {
+    if (id > MENU_ID_COUNT)
+        return MENU_TREE_TYPE_NONE;
+    return ctx->nodes[id].type;
+}

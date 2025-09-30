@@ -1,0 +1,58 @@
+#ifndef MENU_COMMON_H
+#define MENU_COMMON_H
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+
+typedef enum {
+    MENU_TREE_TYPE_NONE = 0,
+    MENU_TREE_TYPE_BRANCH = 1,
+    MENU_TREE_TYPE_LEAF = 2,
+    MENU_TREE_TYPE_COUNT = 3
+} menu_tree_type_t;
+
+typedef enum {
+    MENU_ID_ROOT,
+{% for item_id, item in menu.items() %}
+    MENU_ID_{{item_id.upper()}},
+{% endfor %}
+    MENU_ID_COUNT
+} menu_id_t;
+
+typedef enum {
+    MENU_EVENT_NONE = 0,
+    MENU_EVENT_CHANGE_VALUE = 1,
+    MENU_EVENT_FOCUSED = 2,
+    MENU_EVENT_UNFOCUSED = 3,
+    MENU_EVENT_START_EDIT = 4,
+    MENU_EVENT_STOP_EDIT = 5,
+    MENU_EVENT_COUNT = 6
+} menu_event_t;
+
+typedef enum {
+    MENU_STATE_NONE = 0,
+    MENU_STATE_NAVIGATION = 1,
+    MENU_STATE_EDIT = 2,
+    MENU_STATE_COUNT = 3
+} menu_state_t;
+
+#define LCD_STRING_LEN 0x20
+#define LCD_NUM_STRINGS 2
+
+typedef struct s_menu_id_name_t {
+    menu_id_t id;
+    const char name[0x20];
+} menu_id_name_t;
+
+// Базовые структуры (только forward declarations)
+typedef struct s_menu_context_t menu_context_t;
+typedef struct s_menu_node_t menu_node_t;
+typedef struct s_menu_node_config_t menu_node_config_t;
+typedef struct s_menu_node_value_t menu_node_value_t;
+typedef struct s_menu_callback_t menu_callback_t;
+
+const char *menu_types_get_name(menu_id_t id);
+
+
+#endif /* MENU_COMMON_H */

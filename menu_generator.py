@@ -15,7 +15,7 @@ class MenuGenerator:
         self._processor = MenuProcessor(config_json)
         self._config:MenuConfig = self._processor.config
         self._env = Environment(
-            loader=FileSystemLoader(self._config.templates_path),  # Ищем шаблоны в текущей директории
+            loader=FileSystemLoader(str(self._config.templates_path)),
             trim_blocks=True,
             lstrip_blocks=True,
             extensions=['jinja2.ext.debug']
@@ -29,8 +29,8 @@ class MenuGenerator:
         self._build_template_context()
         self._generate_code()
 
-    def save_flatterned_menu(self, output_path: str = None):
-        self._processor.save_flattern_json(self.config.get('output_flattern') if output_path is None else output_path)
+    def save_flatterned_menu(self, output_path: str | None = None):
+        self._processor.save_flattern_json(output_path)
     
     def _build_template_context(self):
         self._context = {
@@ -42,9 +42,10 @@ class MenuGenerator:
         }
 
     def _generate_code(self):
-        for template, output in self._files.items():
-            print(f"Generate: {template} => {output}")
-            self._generate_file(template, output, self._context)
+        if self._files is not None:
+            for template, output in self._files.items():
+                print(f"Generate: {template} => {output}")
+                self._generate_file(template, output, self._context)
 
     def _generate_file(self, template_path: str, output_path: str, template_data):
         """Генерация конкретного файла"""

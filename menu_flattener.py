@@ -14,9 +14,8 @@ class FlattenerError(Exception):
 class MenuFlattener:
     """Преобразует дерево меню в плоскую структуру с настраиваемыми циклическими связями"""
     
-    def __init__(self, config:MenuConfig):
+    def __init__(self, config: MenuConfig):
         self.flat_nodes: List[FlatNode] = []
-        self.node_dict = {}
         self.node_dict: Dict[str, FlatNode] = {}
         self._config = config
         self._menu_data = MenuData(self._config)
@@ -33,6 +32,7 @@ class MenuFlattener:
         if menu is None:
             raise FlattenerError("Дерево меню пустое!")
 
+        # Создаем корневую ноду с настройкой root_navigate
         self.root_node = FlatNode({
                 "id": "root",
                 "title": "root",
@@ -41,8 +41,8 @@ class MenuFlattener:
             self._config,
             self._menu_data
         )
-        self.root_node.navigate = self._config.default_navigate
-        self.root_node.control = self._config.default_control
+        # Устанавливаем навигацию для корневой ноды
+        self.root_node.navigate = self._config.root_navigate
 
         self.flat_nodes.append(self.root_node)
         self.node_dict['root'] = self.root_node
@@ -50,10 +50,52 @@ class MenuFlattener:
         # Рекурсивный обход дерева
         self._process_node(self.root_node, None, menu)
 
+        # ПРИМЕНЯЕМ ПРАВИЛА НАВИГАЦИИ ДЛЯ ВЕТВЕЙ
+        self._apply_branch_navigation_rules()
+        
+        # Создаем циклические связи
         self._make_cyclic_links()
         
         return self.flat_nodes
+    
+    def _apply_parent_navigation_rules(self):
+        """Применяет правила навигации для родительских ветвей"""
+        for node in self.flat_nodes:
+            # Если узел является ветвью (имеет детей) и у него не указано navigate
+            if node.is_branch and node.navigate is None:
+                # Используем default_branch_navigate из конфига
+                node.navigate = self._config.default_branch_navigate
+                print(f"🔧 Установлено navigate='{node.navigate}' для родительской ветви {node.id} (default_branch_navigate)")
 
+    def _make_cyclic_links(self):
+        """Замыкает циклические связи для sibling'ов на основе настроек родителей"""
+        processed_parents = set()
+        
+        for node in self.flat_nodes:
+            parent = node.parent
+            
+            # Пропускаем если нет родителя или родитель уже обработан
+            if not parent or parent.id in processed_parents:
+                continue
+                
+            # Обрабатываем только если у родителя navigate = cyclic и есть дети
+            if parent.navigate == "cyclic" and parent.children:
+                processed_parents.add(parent.id)
+                self._create_cyclic_siblings(parent)
+                
+    def _create_cyclic_siblings(self, parent: FlatNode):
+        """Создает циклические связи для детей родительского узла с navigate=cyclic"""
+        if len(parent.children) < 2:
+            return  # Нужно как минимум 2 ребенка для циклической связи
+            
+        first_child = parent.children[0]
+        last_child = parent.children[-1]
+        
+        # Замыкаем циклические связи
+        first_child._prev_sibling = last_child
+        last_child._next_sibling = first_child
+        
+        print(f"🔁 Созданы циклические связи для детей родителя {parent.id} (first<->last)")
 
     def _process_node(self, parent: Optional[FlatNode], prev_sibling: Optional[FlatNode], 
                      nodes: List[Dict[str, Any]]) -> Optional[FlatNode]:
@@ -64,10 +106,9 @@ class MenuFlattener:
             # Создаем плоский узел
             flat_node = FlatNode(node_data, self._config, self._menu_data)
 
+            # Устанавливаем значения по умолчанию для навигации и контроля
             if flat_node.navigate is None:
                 flat_node.navigate = self._config.default_navigate
-            if flat_node.control is None:
-                flat_node.control = self._config.default_control
 
             self.flat_nodes.append(flat_node)
             self.node_dict[flat_node.id] = flat_node
@@ -96,20 +137,15 @@ class MenuFlattener:
             last_node = flat_node
         
         return last_node
-    
-    def _make_cyclic_links(self):
-        """Замыкает циклические связи для всех sibling'ов на основе настроек родителей"""
+
+    def _apply_branch_navigation_rules(self):
+        """Применяет правила навигации для ветвей (узлов с детьми)"""
         for node in self.flat_nodes:
-            # print(node.name, node.navigate)
-            if node.parent and node.parent.navigate == "cyclic" and node.parent.children:
-                # print(f'Делаем цикличиские связи {node}')
-                # Делаем циклические связи для siblings, если родитель имеет cyclic_siblings=True
-                first_child = node.parent.children[0]
-                last_child = node.parent.children[-1]
-                
-                if len(node.parent.children) > 1:
-                    first_child._prev_sibling = last_child
-                    last_child._next_sibling = first_child    
+            # Если узел является ветвью (имеет детей) и у него не указана навигация
+            if node.is_branch and node.navigate is None:
+                # Используем default_branch_navigate из конфига, или 'limit' по умолчанию
+                node.navigate = self._config.default_branch_navigate or 'limit'
+                print(f"🔧 Установлено navigate='{node.navigate}' для ветви {node.id}")    
 
     def _process_children(self, parent: FlatNode, children_data: List[Dict[str, Any]]):
         """Обрабатывает дочерние узлы"""
@@ -118,10 +154,9 @@ class MenuFlattener:
         for child_data in children_data:
             flat_child = FlatNode(child_data, self._config, self._menu_data)
 
+            # Устанавливаем значения по умолчанию
             if flat_child.navigate is None:
                 flat_child.navigate = self._config.default_navigate
-            if flat_child.control is None:
-                flat_child.control = self._config.default_control
 
             self.flat_nodes.append(flat_child)
             self.node_dict[flat_child.id] = flat_child
@@ -156,13 +191,44 @@ class MenuFlattener:
             print(f"Узел {node_id} не найден")
             return
         
-        print(f"Цепочка sibling'ов для {node_id} (cyclic: {node.has_cyclic_siblings}):")
+        parent_navigate = node.parent.navigate if node.parent else 'N/A'
+        print(f"Цепочка sibling'ов для {node_id} (parent navigate: {parent_navigate}):")
+        
         current = node
+        visited = set()
+        
         for i in range(count):
-            print(f"  {i}: {current.id}")
-            current = current.next_sibling
-            if not current or current == node:
+            if current.id in visited:
+                print(f"  ... цикл обнаружен ...")
                 break
+                
+            visited.add(current.id)
+            prev_id = current.prev_sibling.id if current.prev_sibling else 'None'
+            next_id = current.next_sibling.id if current.next_sibling else 'None'
+            print(f"  {i}: {current.id} (prev: {prev_id}, next: {next_id})")
+            
+            if not current.next_sibling or current.next_sibling == node:
+                break
+                
+            current = current.next_sibling
+
+    def print_navigation_summary(self):
+        """Печатает сводку по навигации"""
+        print("\n🧭 Сводка по навигации:")
+        print(f"  Корневая нода (root): {self.root_node.navigate}")
+        
+        branches = [node for node in self.flat_nodes if node.is_branch and node.id != 'root']
+        if branches:
+            print(f"  Родительские ветви ({len(branches)}):")
+            for branch in branches:
+                children_count = len(branch.children) if branch.children else 0
+                print(f"    - {branch.id}: {branch.navigate} ({children_count} детей)")
+        
+        cyclic_parents = [node for node in self.flat_nodes if node.navigate == "cyclic" and node.children]
+        if cyclic_parents:
+            print(f"  Циклические родители ({len(cyclic_parents)}):")
+            for parent in cyclic_parents:
+                print(f"    - {parent.id}: {len(parent.children)} детей")
 
 
 # Пример использования

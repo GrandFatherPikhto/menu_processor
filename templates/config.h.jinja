@@ -7,12 +7,12 @@
 #include "menu_struct.h"
 #include "menu_edit.h"
 
-{% set ns = namespace(count=1) %}{# Initialize the namespace object with a 'count' attribute #}
+{% set ns = namespace(count=1) %}
 typedef enum {
     MENU_CATEGORY_NONE = 0,
 {% for category_name, category in categories.items() %}
     MENU_CATEGORY_{{category_name.upper()}} = {{ns.count}},
-{% set ns.count = ns.count + 1 %}{# Increment the count within the namespace #}
+{% set ns.count = ns.count + 1 %}
 {% endfor %}
     MENU_CATEGORY_COUNT = {{ns.count}}
 } menu_category_t;
@@ -20,7 +20,7 @@ typedef enum {
 typedef struct stub_config {} stub_config_t;
 
 {% for category_name, category in categories.items() if category.type != "callback" %}
-// {{config_name}}
+// {{category_name}}
 typedef struct {
 {% if category.role == "simple" %}
     {{category.c_type}} default_value;
@@ -38,32 +38,42 @@ typedef struct {
 {% elif category.role == "fixed" %}
     uint8_t count;
     uint8_t default_idx;
-    const {{category.c_type}} *values;
-{% endif %}{# role #}
+    const {{category.c_type}} *values; {# Исправлено: должно быть указателем #}
+{% endif %}
 } {{category_name}}_config_t;
-{% endfor %}{# types #}
+{% endfor %}
 
+// Объявления callback-функций
 typedef void (*menu_click_cb_t)(menu_id_t id);
 typedef void (*menu_position_cb_t)(menu_id_t id, int8_t delta);
+typedef void (*menu_double_click_cb_t)(menu_id_t id);
+typedef void (*menu_long_click_cb_t)(menu_id_t id);
+typedef void (*menu_draw_value_cb_t)(menu_id_t id);
+typedef void (*menu_handle_event_cb_t)(menu_id_t id, menu_event_t event);
 
 typedef struct menu_config {
     menu_id_t id;
     menu_category_t category;
     menu_click_cb_t click_cb;
     menu_position_cb_t position_cb;
+    menu_double_click_cb_t double_click_cb;
+    menu_long_click_cb_t long_click_cb;
+    menu_draw_value_cb_t draw_value_cb;
+    menu_handle_event_cb_t handle_event_cb;
     union {        
         stub_config_t stub_config;
 {% for category_name, category in categories.items() if category.type != "callback" %}
         {{category_name}}_config_t {{category_name}};
 {% endfor %}
     } data;
-} menu_item_config_t;
+} menu_node_config_t;
 
-const menu_id_t get_first_id(void);
-const menu_item_config_t *menu_get_config(menu_id_t id);
-menu_click_cb_t menu_get_click_cb(menu_id_t id);
-menu_position_cb_t menu_get_position_cb(menu_id_t id);
-void menu_handle_position_cb(menu_id_t id, int8_t delta);
-void menu_handle_click_cb(menu_id_t id);
+// Прототипы функций
+bool menu_config_handle_position_cb(menu_context_t *ctx, menu_id_t id, int8_t delta);
+bool menu_config_handle_click_cb(menu_context_t *ctx, menu_id_t id);
+bool menu_config_handle_double_click_cb(menu_context_t *ctx, menu_id_t id);
+bool menu_config_handle_long_click_cb(menu_context_t *ctx, menu_id_t id);
+bool menu_config_handle_draw_value_cb(menu_context_t *ctx, menu_id_t id);
+bool menu_config_handle_handle_event_cb(menu_context_t *ctx, menu_id_t id);
 
 #endif /* MENU_CONFIG_H */

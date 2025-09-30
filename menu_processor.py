@@ -29,68 +29,437 @@ class MenuProcessor:
             print("✅ и проверена")
             self._flattener = MenuFlattener(self._config)
             self._flat_nodes = self._flattener.flatten()
-            for node in self._flat_nodes:
-                print(f"- {node}")    
+            
+            # Отладочная информация о контролах
+            self._print_control_summary()
+    
+    def _print_control_summary(self):
+        """Печатает сводку по контролам для отладки"""
+        print("\n📊 Сводка по контролам:")
+        for node in self._flat_nodes:
+            if node.id == 'root':
+                continue
+            print(f"- {node}")
+            if hasattr(node, 'print_control_info'):
+                node.print_control_info()
+        print()
+
+    def save_flattern_json(self, file_name: str | None = None):
+        """Сохраняет плоское представление меню в JSON (опционально)"""
+        if file_name is None and self._config.output_flattern:
+            file_name = self._config.output_flattern
+        
+        if file_name:
+            flat_data = {
+                "nodes": [
+                    {
+                        "id": node.id,
+                        "name": node.name,
+                        "type": node.type,
+                        "role": node.role,
+                        "parent": node.parent.id if node.parent else None,
+                        "prev_sibling": node.prev_sibling.id if node.prev_sibling else None,
+                        "next_sibling": node.next_sibling.id if node.next_sibling else None,
+                        "children": [child.id for child in node.children],
+                        "is_leaf": node.is_leaf,
+                        "is_branch": node.is_branch,
+                        "controls": [
+                            {
+                                "type": control["type"].value,
+                                "purpose": control["purpose"],
+                                "navigate": control["navigate"].value,
+                                "required": control["required"]
+                            }
+                            for control in getattr(node, '_controls', [])
+                        ]
+                    }
+                    for node in self._flat_nodes if node.id != 'root'
+                ]
+            }
+            
+            try:
+                with open(file_name, 'w', encoding='utf-8') as f:
+                    json.dump(flat_data, f, indent=2, ensure_ascii=False)
+                print(f"✅ Плоское меню сохранено в {file_name}")
+            except Exception as e:
+                print(f"❌ Ошибка сохранения плоского меню: {e}")
 
     @property
-    def config(self)->Dict:
+    def config(self) -> MenuConfig:
         return self._config
 
     @property
-    def menu(self)->Dict[str,FlatNode] | None:
-        return { n.id : n for n in self._flat_nodes if n.id != 'root' }
-    
-    @property
-    def functions(self)->Dict[str,Any] | None:
-        items = {}
-        for node in self._flat_nodes:
-            if node.type == "callback":
-                continue
-            if click_info := node.function_click_info:
-                items[click_info["name"]] = click_info
-            if position_info := node.function_position_info:
-                items[position_info["name"]] = position_info
-        return items
-    
-    @property
-    def categories(self)->Dict[str, Any] | None:
-        items = {}
-        for node in self._flat_nodes:
-            name = node.category_name
-            props = node.category
-            if name is not None and props is not None:
-                items[name] = props
-        return items
-    
-    @property
-    def leafs(self)->Dict[str, FlatNode] | None:
-        return { n.id : n for n in self._flat_nodes if n.is_leaf if n.id != 'root' }
-    
-    @property
-    def branches(self)->Dict[str, FlatNode] | None:
-        return { n.id : n for n in self._flat_nodes if n.is_branch  if n.id != 'root' }
+    def menu(self) -> Dict[str, FlatNode]:
+        """Все узлы меню (исключая root)"""
+        return {n.id: n for n in self._flat_nodes if n.id != 'root'}
 
     @property
-    def first(self)->FlatNode | None:
+    def functions(self) -> Dict[str, Dict[str, Any]]:
+        """Все функции обработки, сгруппированные по имени"""
+        items = {}
+        
         for node in self._flat_nodes:
-            # Проверяем что все необходимые атрибуты существуют
-            if (hasattr(node, 'prev_sibling') and 
-                hasattr(node, 'parent') and
-                node.parent is not None and
-                hasattr(node.parent, 'id') and
-                node.parent.id == 'root'):
-                return node.parent.first_child
+            if node.id == 'root':
+                continue
+                
+            # Добавляем все доступные функции узла
+            for function_info in node.all_function_infos:
+                items[function_info["name"]] = function_info
+            
+            # Для callback роли - добавляем информацию о внешних callback'ах
+            if node.role == "callback":
+                callback_info = {
+                    "name": f"{node.id}_callback",
+                    "category": node.category,
+                    "type": node.type,
+                    "role": node.role,
+                    "purpose": "external_callback",
+                    "node_id": node.id
+                }
+                items[callback_info["name"]] = callback_info
+        
+        return items
+
+    @property
+    def categories(self) -> Dict[str, Dict[str, Any]]:
+        """Все категории меню (тип + роль)"""
+        items = {}
+        for node in self._flat_nodes:
+            if node.id == 'root':
+                continue
+                
+            category = node.category
+            if category is not None:
+                items[category["name"]] = category
+                
+                # Добавляем информацию о доступных контролах для категории
+                items[category["name"]]["available_controls"] = [
+                    {
+                        "type": control["type"].value,
+                        "purpose": control["purpose"],
+                        "navigate": control["navigate"].value
+                    }
+                    for control in getattr(node, '_controls', [])
+                ]
+        
+        return items
+
+    @property
+    def leafs(self) -> Dict[str, FlatNode]:
+        """Все листовые узлы (конечные пункты меню)"""
+        return {n.id: n for n in self._flat_nodes if n.is_leaf and n.id != 'root'}
+
+    @property
+    def branches(self) -> Dict[str, FlatNode]:
+        """Все ветви меню (узлы с детьми)"""
+        return {n.id: n for n in self._flat_nodes if n.is_branch and n.id != 'root'}
+
+    @property
+    def first(self) -> Optional[FlatNode]:
+        """Первый узел меню (после root)"""
+        root_node = next((node for node in self._flat_nodes if node.id == 'root'), None)
+        if root_node and root_node.first_child:
+            return root_node.first_child
         return None
 
+    @property 
+    def callback_nodes(self) -> Dict[str, FlatNode]:
+        """Все узлы с ролью callback"""
+        return {n.id: n for n in self._flat_nodes if n.role == 'callback' and n.id != 'root'}
 
+    @property
+    def required_functions(self) -> Dict[str, List[Dict[str, Any]]]:
+        """Функции, сгруппированные по категориям с указанием обязательных"""
+        required = {}
+        
+        for node in self._flat_nodes:
+            if node.id == 'root':
+                continue
+                
+            for control in getattr(node, '_controls', []):
+                if control.get("required", False):
+                    category = node.category_name
+                    if category not in required:
+                        required[category] = []
+                    
+                    function_info = {
+                        "node_id": node.id,
+                        "control": control["type"].value,
+                        "purpose": control["purpose"],
+                        "function_name": getattr(node, f"function_{control['type'].value}_name", None)
+                    }
+                    required[category].append(function_info)
+        
+        return required
 
-def main(config_name:str)->int:
+    @property
+    def custom_callbacks(self) -> Dict[str, Dict[str, Any]]:
+        """Все пользовательские callback-функции"""
+        callbacks = {}
+        
+        for node in self._flat_nodes:
+            if node.id == 'root':
+                continue
+                
+            node_callbacks = node.custom_callbacks_summary
+            for cb_type, cb_name in node_callbacks.items():
+                if cb_name and cb_type != "auto_draw_value_cb":  # Исключаем автоматические
+                    callbacks[cb_name] = {
+                        "node_id": node.id,
+                        "callback_type": cb_type,
+                        "function_name": cb_name,
+                        "node": node
+                    }
+        
+        return callbacks
+
+    @property
+    def auto_generated_functions(self) -> Dict[str, Dict[str, Any]]:
+        """Все автоматически сгенерированные функции"""
+        auto_funcs = {}
+        
+        for node in self._flat_nodes:
+            if node.id == 'root':
+                continue
+                
+            # Автоматические функции обработки
+            for func_info in node.all_function_infos:
+                auto_funcs[func_info["name"]] = {
+                    **func_info,
+                    "node_id": node.id,
+                    "source": "auto_generated"
+                }
+            
+            # Автоматические функции отрисовки
+            if node.auto_draw_value_cb_name and not node.draw_value_cb:
+                auto_funcs[node.auto_draw_value_cb_name] = {
+                    "name": node.auto_draw_value_cb_name,
+                    "category": node.category,
+                    "node_id": node.id,
+                    "source": "auto_draw",
+                    "purpose": "draw_value"
+                }
+        
+        return auto_funcs
+
+    @property
+    def nodes_with_custom_callbacks(self) -> Dict[str, FlatNode]:
+        """Все узлы с пользовательскими callback'ами"""
+        return {n.id: n for n in self._flat_nodes if n.has_custom_callbacks and n.id != 'root'}
+
+    def get_callbacks_by_type(self, callback_type: str) -> Dict[str, str]:
+        """Получить callback'и определенного типа"""
+        result = {}
+        for node in self._flat_nodes:
+            if node.id == 'root':
+                continue
+                
+            callback_value = getattr(node, callback_type, None)
+            if callback_value:
+                result[node.id] = callback_value
+        return result
+
+    @property
+    def auto_generated_functions(self) -> Dict[str, Dict[str, Any]]:
+        """Все автоматически сгенерированные функции"""
+        auto_funcs = {}
+        
+        for node in self._flat_nodes:
+            if node.id == 'root':
+                continue
+                
+            # Автоматические функции обработки
+            for func_info in node.all_function_infos:
+                auto_funcs[func_info["name"]] = {
+                    **func_info,
+                    "node_id": node.id,
+                    "source": "auto_generated"
+                }
+            
+            # Автоматические функции отрисовки - исправленная строка
+            if node.callback_manager.auto_draw_value_cb_name and not node.callback_manager.draw_value_cb:
+                auto_funcs[node.callback_manager.auto_draw_value_cb_name] = {
+                    "name": node.callback_manager.auto_draw_value_cb_name,
+                    "category": node.category,
+                    "node_id": node.id,
+                    "source": "auto_draw",
+                    "purpose": "draw_value"
+                }
+        
+        return auto_funcs
+    
+    def print_callback_summary(self):
+        """Печатает сводку по callback'ам"""
+        print("\n🎛️ Сводка по callback-функциям:")
+        
+        custom_callbacks = self.custom_callbacks
+        if custom_callbacks:
+            print("Пользовательские callback'и:")
+            for cb_name, cb_info in custom_callbacks.items():
+                print(f"  - {cb_name} ({cb_info['callback_type']}) -> {cb_info['node_id']}")
+        else:
+            print("Пользовательские callback'и: нет")
+        
+        auto_funcs = self.auto_generated_functions
+        if auto_funcs:
+            print("Автоматически сгенерированные функции:")
+            for func_name, func_info in auto_funcs.items():
+                print(f"  - {func_name} ({func_info['source']}) -> {func_info['node_id']}")
+        
+        nodes_with_callbacks = self.nodes_with_custom_callbacks
+        if nodes_with_callbacks:
+            print(f"Узлы с пользовательскими callback'ами: {len(nodes_with_callbacks)}")
+        else:
+            print("Узлы с пользовательскими callback'ами: нет")
+
+    def get_functions_by_category(self, category_name: str) -> List[Dict[str, Any]]:
+        """Все функции для указанной категории"""
+        return [
+            func_info for func_info in self.functions.values()
+            if func_info.get("category", {}).get("name") == category_name
+        ]
+
+    def validate_required_functions(self) -> bool:
+        """Проверяет, что все обязательные функции сгенерированы"""
+        missing_functions = []
+        
+        for node in self._flat_nodes:
+            if node.id == 'root':
+                continue
+                
+            for control in getattr(node, '_controls', []):
+                if control.get("required", False):
+                    function_name = getattr(node, f"function_{control['type'].value}_name", None)
+                    if not function_name:
+                        missing_functions.append({
+                            "node": node.id,
+                            "control": control["type"].value,
+                            "purpose": control["purpose"]
+                        })
+        
+        if missing_functions:
+            print("❌ Отсутствуют обязательные функции:")
+            for missing in missing_functions:
+                print(f"   - {missing['node']}: {missing['control']} ({missing['purpose']})")
+            return False
+        
+        print("✅ Все обязательные функции присутствуют")
+        return True
+
+    @property
+    def detailed_callback_infos(self) -> Dict[str, List[Dict[str, Any]]]:
+        """Детальная информация о всех callback-функциях, сгруппированная по типам"""
+        callback_types = [
+            'click_cb', 'position_cb', 'double_click_cb', 
+            'long_click_cb', 'event_cb', 'draw_value_cb'
+        ]
+        
+        result = {cb_type: [] for cb_type in callback_types}
+        
+        for node in self._flat_nodes:
+            if node.id == 'root':
+                continue
+                
+            for cb_type in callback_types:
+                info = node.get_callback_info(cb_type)
+                if info:
+                    result[cb_type].append(info)
+        
+        return result
+
+    @property
+    def callback_summary_by_category(self) -> Dict[str, Dict[str, List[Dict[str, Any]]]]:
+        """Сводка callback-функций по категориям"""
+        categories = {}
+        
+        for node in self._flat_nodes:
+            if node.id == 'root':
+                continue
+                
+            category = node.category_name
+            if category not in categories:
+                categories[category] = {}
+            
+            # Группируем callback'и по типу для каждой категории
+            for cb_type, info in node.defined_callback_infos.items():
+                if cb_type not in categories[category]:
+                    categories[category][cb_type] = []
+                categories[category][cb_type].append(info)
+        
+        return categories
+
+    def get_callbacks_by_category(self, category_name: str) -> Dict[str, List[Dict[str, Any]]]:
+        """Все callback-функции для указанной категории"""
+        result = {}
+        
+        for node in self._flat_nodes:
+            if node.id == 'root' or node.category_name != category_name:
+                continue
+                
+            for cb_type, info in node.defined_callback_infos.items():
+                if cb_type not in result:
+                    result[cb_type] = []
+                result[cb_type].append(info)
+        
+        return result
+
+    def print_detailed_callback_summary(self):
+        """Печатает детальную сводку по всем callback-функциям"""
+        print("\n📋 Детальная сводка по callback-функциям:")
+        
+        # Сводка по типам callback'ов
+        detailed_infos = self.detailed_callback_infos
+        for cb_type, infos in detailed_infos.items():
+            if infos:
+                custom_count = sum(1 for info in infos if info["custom"])
+                auto_count = len(infos) - custom_count
+                print(f"\n{cb_type.upper()}:")
+                print(f"  Всего: {len(infos)} (🎛️ {custom_count} пользовательских, ⚙️ {auto_count} автоматических)")
+                
+                for info in infos[:3]:  # Показываем первые 3 для примера
+                    custom_flag = "🎛️" if info["custom"] else "⚙️"
+                    print(f"    - {info['name']} {custom_flag} -> {info['node_id']} ({info['category']})")
+                
+                if len(infos) > 3:
+                    print(f"    ... и ещё {len(infos) - 3}")
+
+        # Сводка по категориям
+        print("\n📊 Сводка по категориям:")
+        category_summary = self.callback_summary_by_category
+        for category, callbacks in category_summary.items():
+            total = sum(len(cb_list) for cb_list in callbacks.values())
+            if total > 0:
+                print(f"\n  {category}:")
+                for cb_type, cb_list in callbacks.items():
+                    custom_count = sum(1 for cb in cb_list if cb["custom"])
+                    auto_count = len(cb_list) - custom_count
+                    print(f"    {cb_type}: {len(cb_list)} (🎛️ {custom_count}, ⚙️ {auto_count})")
+
+def main(config_name: str) -> int:
     try:
         processor = MenuProcessor(config_name)
-        for id, item in processor.categories.items():
-            print(id, item)
+        
+        print("\n📋 Сводка данных для генератора:")
+        print(f"• Узлов меню: {len(processor.menu)}")
+        print(f"• Категорий: {len(processor.categories)}")
+        print(f"• Функций: {len(processor.functions)}")
+        print(f"• Листьев: {len(processor.leafs)}")
+        print(f"• Ветвей: {len(processor.branches)}")
+        print(f"• Callback узлов: {len(processor.callback_nodes)}")
+        
+        # Проверка обязательных функций
+        processor.validate_required_functions()
+
+        processor.print_detailed_callback_summary()
+        
+        # Сохраняем плоское представление
+        processor.save_flattern_json("./output/flatterned.json")
+        
+        return 0
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"❌ Error: {e}")
+        return 1
+
 
 if __name__ == "__main__":
     main("./config/config.json")

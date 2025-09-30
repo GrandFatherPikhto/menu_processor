@@ -1,0 +1,319 @@
+{
+  "nodes": [
+    {
+      "id": "start",
+      "name": "Start",
+      "type": "string",
+      "role": "fixed",
+      "parent": "root",
+      "prev_sibling": "settings",
+      "next_sibling": "regimes",
+      "children": [],
+      "is_leaf": true,
+      "is_branch": false,
+      "controls": [
+        {
+          "type": "click",
+          "purpose": "change_index",
+          "navigate": "cyclic",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "regimes",
+      "name": "Regimes",
+      "type": "string",
+      "role": "fixed",
+      "parent": "root",
+      "prev_sibling": "start",
+      "next_sibling": "version",
+      "children": [],
+      "is_leaf": true,
+      "is_branch": false,
+      "controls": [
+        {
+          "type": "position",
+          "purpose": "change_index",
+          "navigate": "cyclic",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "version",
+      "name": "Firmware version",
+      "type": "callback",
+      "role": "callback",
+      "parent": "root",
+      "prev_sibling": "regimes",
+      "next_sibling": "settings",
+      "children": [],
+      "is_leaf": true,
+      "is_branch": false,
+      "controls": []
+    },
+    {
+      "id": "settings",
+      "name": "Settings",
+      "type": null,
+      "role": null,
+      "parent": "root",
+      "prev_sibling": "version",
+      "next_sibling": null,
+      "children": [
+        "pwm_frequency",
+        "hi_channel",
+        "lo_channel"
+      ],
+      "is_leaf": false,
+      "is_branch": true,
+      "controls": []
+    },
+    {
+      "id": "pwm_frequency",
+      "name": "PWM Frequency",
+      "type": "callback",
+      "role": "callback",
+      "parent": "settings",
+      "prev_sibling": "lo_channel",
+      "next_sibling": "hi_channel",
+      "children": [],
+      "is_leaf": true,
+      "is_branch": false,
+      "controls": []
+    },
+    {
+      "id": "hi_channel",
+      "name": "Hi Channel",
+      "type": null,
+      "role": null,
+      "parent": "settings",
+      "prev_sibling": "pwm_frequency",
+      "next_sibling": "lo_channel",
+      "children": [
+        "hi_delay",
+        "hi_duration",
+        "hi_pwm_on",
+        "hi_duty"
+      ],
+      "is_leaf": false,
+      "is_branch": true,
+      "controls": []
+    },
+    {
+      "id": "hi_delay",
+      "name": "Delay",
+      "type": "udword",
+      "role": "factor",
+      "parent": "hi_channel",
+      "prev_sibling": null,
+      "next_sibling": "hi_duration",
+      "children": [],
+      "is_leaf": true,
+      "is_branch": false,
+      "controls": [
+        {
+          "type": "click",
+          "purpose": "change_factor_index",
+          "navigate": "cyclic",
+          "required": true
+        },
+        {
+          "type": "position",
+          "purpose": "change_value",
+          "navigate": "limit",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "hi_duration",
+      "name": "Duration",
+      "type": "udword",
+      "role": "factor",
+      "parent": "hi_channel",
+      "prev_sibling": "hi_delay",
+      "next_sibling": "hi_pwm_on",
+      "children": [],
+      "is_leaf": true,
+      "is_branch": false,
+      "controls": [
+        {
+          "type": "click",
+          "purpose": "change_factor_index",
+          "navigate": "cyclic",
+          "required": true
+        },
+        {
+          "type": "position",
+          "purpose": "change_value",
+          "navigate": "limit",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "hi_pwm_on",
+      "name": "PWM On/Off",
+      "type": "string",
+      "role": "fixed",
+      "parent": "hi_channel",
+      "prev_sibling": "hi_duration",
+      "next_sibling": "hi_duty",
+      "children": [],
+      "is_leaf": true,
+      "is_branch": false,
+      "controls": [
+        {
+          "type": "click",
+          "purpose": "change_index",
+          "navigate": "cyclic",
+          "required": false
+        },
+        {
+          "type": "position",
+          "purpose": "change_index",
+          "navigate": "cyclic",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "hi_duty",
+      "name": "PWM Duty",
+      "type": "ubyte",
+      "role": "simple",
+      "parent": "hi_channel",
+      "prev_sibling": "hi_pwm_on",
+      "next_sibling": null,
+      "children": [],
+      "is_leaf": true,
+      "is_branch": false,
+      "controls": [
+        {
+          "type": "position",
+          "purpose": "change_value",
+          "navigate": "limit",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "lo_channel",
+      "name": "Lo Channel",
+      "type": null,
+      "role": null,
+      "parent": "settings",
+      "prev_sibling": "hi_channel",
+      "next_sibling": null,
+      "children": [
+        "lo_delay",
+        "lo_duration",
+        "lo_pwm_on",
+        "lo_duty"
+      ],
+      "is_leaf": false,
+      "is_branch": true,
+      "controls": []
+    },
+    {
+      "id": "lo_delay",
+      "name": "Delay",
+      "type": "udword",
+      "role": "factor",
+      "parent": "lo_channel",
+      "prev_sibling": null,
+      "next_sibling": "lo_duration",
+      "children": [],
+      "is_leaf": true,
+      "is_branch": false,
+      "controls": [
+        {
+          "type": "click",
+          "purpose": "change_factor_index",
+          "navigate": "cyclic",
+          "required": true
+        },
+        {
+          "type": "position",
+          "purpose": "change_value",
+          "navigate": "limit",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "lo_duration",
+      "name": "Duration",
+      "type": "udword",
+      "role": "factor",
+      "parent": "lo_channel",
+      "prev_sibling": "lo_delay",
+      "next_sibling": "lo_pwm_on",
+      "children": [],
+      "is_leaf": true,
+      "is_branch": false,
+      "controls": [
+        {
+          "type": "click",
+          "purpose": "change_factor_index",
+          "navigate": "cyclic",
+          "required": true
+        },
+        {
+          "type": "position",
+          "purpose": "change_value",
+          "navigate": "limit",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "lo_pwm_on",
+      "name": "PWM On/Off",
+      "type": "string",
+      "role": "fixed",
+      "parent": "lo_channel",
+      "prev_sibling": "lo_duration",
+      "next_sibling": "lo_duty",
+      "children": [],
+      "is_leaf": true,
+      "is_branch": false,
+      "controls": [
+        {
+          "type": "click",
+          "purpose": "change_index",
+          "navigate": "cyclic",
+          "required": false
+        },
+        {
+          "type": "position",
+          "purpose": "change_index",
+          "navigate": "cyclic",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "lo_duty",
+      "name": "PWM Duty",
+      "type": "ubyte",
+      "role": "simple",
+      "parent": "lo_channel",
+      "prev_sibling": "lo_pwm_on",
+      "next_sibling": null,
+      "children": [],
+      "is_leaf": true,
+      "is_branch": false,
+      "controls": [
+        {
+          "type": "position",
+          "purpose": "change_value",
+          "navigate": "limit",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

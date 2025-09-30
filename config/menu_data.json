@@ -1,92 +1,79 @@
 {
-    "types": {
-        "bool": {
-            "c_type": "bool",
-            "min": false,
-            "max": true
-        },
-        "byte": {
-            "c_type": "int8_t",
-            "min": -128,
-            "max": 127
-        },
-        "ubyte": {
-            "c_type": "uint8_t",
-            "min": 0,
-            "max": 255
-        },
-        "word": {
-            "c_type": "int16_t",
-            "min": -32768,
-            "max": 32767
-        },
-        "uword": {
-            "c_type": "uint16_t",
-            "min": 0,
-            "max": 65535
-        },
-        "dword": {
-            "c_type": "int32_t",
-            "min": -2147483648,
-            "max": 2147483647
-        },
-        "udword": {
-            "c_type": "uint32_t",
-            "min": 0,
-            "max": 4294967295
-        },
-        "float": {
-            "c_type": "float",
-            "min": -3.4e38,
-            "max": 3.4e38
-        },
-        "string": {
-            "c_type": "char",
-            "min_len": 1,
-            "max_len": 32
-        },
-        "callback": {
-            "c_type": "void (*)(void)"
-        },
-        "pointer": {
-            "c_type": "void *"
-        }
+  "types": {
+    "byte": {"c_type": "int8_t"},
+    "ubyte": {"c_type": "uint8_t"},
+    "word": {"c_type": "int16_t"},
+    "uword": {"c_type": "uint16_t"},
+    "dword": {"c_type": "uint32_t"},
+    "udword": {"c_type": "uint32_t"},
+    "string": {"c_type": "char*"},
+    "callback": {"c_type": "void*"}
+  },
+  "roles": {
+    "simple": ["byte", "ubyte", "word", "uword", "dword", "udword"],
+    "fixed": ["string", "byte", "ubyte", "word", "uword", "dword", "udword"],
+    "factor": ["byte", "ubyte", "word", "uword", "dword", "udword"],
+    "callback": ["callback"]
+  },
+  "controls": {
+    "simple": ["click", "position"],
+    "fixed": ["click", "position"],
+    "factor": ["click", "position"],
+    "callback": []
+  },
+  "navigation_rules": {
+    "click": {
+      "allowed_navigate": ["cyclic"],
+      "default": "cyclic"
     },
-    "numbers": ["bool", "byte", "ubyte", "word", "uword", "dword", "udword", "float"],
-    "roles": {
-        "simple": [
-            "byte",
-            "ubyte",
-            "word",
-            "uword",
-            "dword",
-            "udword",
-            "float"
-        ],
-        "factor": [
-            "byte",
-            "ubyte",
-            "word",
-            "uword",
-            "dword",
-            "udword",
-            "float"
-        ],
-        "fixed": [
-            "string",
-            "byte",
-            "ubyte",
-            "word",
-            "uword",
-            "dword",
-            "udword",
-            "float"
-        ],
-        "callback": [
-            "callback"
-        ],
-        "pointer": [
-            "pointer"
-        ]
+    "position": {
+      "allowed_navigate": ["limit", "cyclic"],
+      "default": "limit"
     }
+  },
+  "role_rules": {
+    "simple": {
+      "allowed_controls": ["click", "position"],
+      "click": {
+        "purpose": "change_value",
+        "navigate": "cyclic",
+        "required": false
+      },
+      "position": {
+        "purpose": "change_value",
+        "navigate": "limit",
+        "required": false
+      }
+    },
+    "fixed": {
+      "allowed_controls": ["click", "position"],
+      "click": {
+        "purpose": "change_index",
+        "navigate": "cyclic",
+        "required": false
+      },
+      "position": {
+        "purpose": "change_index",
+        "navigate": "cyclic",
+        "required": false
+      }
+    },
+    "factor": {
+      "allowed_controls": ["click", "position"],
+      "click": {
+        "purpose": "change_factor_index",
+        "navigate": "cyclic",
+        "required": true
+      },
+      "position": {
+        "purpose": "change_value",
+        "navigate": "limit",
+        "required": true
+      }
+    },
+    "callback": {
+      "allowed_controls": [],
+      "external_callbacks": ["click_cb", "position_cb", "display_cb"]
+    }
+  }
 }

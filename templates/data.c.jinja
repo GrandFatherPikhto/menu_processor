@@ -1,0 +1,133 @@
+#include "menu_data.h"
+#include "menu_value.h"
+#include "menu_tree.h"
+#include "menu_config.h"
+
+static menu_context_t *s_context = 0;
+
+static const menu_node_t s_menu_tree[] = {
+    [MENU_ID_ROOT] = {
+        .id = MENU_ID_ROOT,
+        .title = "root",
+        .parent = MENU_ID_COUNT,
+        .child = MENU_ID_{{ first.id.upper() }},
+        .prev = MENU_ID_COUNT,
+        .next = MENU_ID_COUNT,
+        .type = MENU_TREE_TYPE_BRANCH
+    },
+{% for item_id, item in menu.items() %}
+    [MENU_ID_{{ item_id.upper()}}] = {
+        .id = MENU_ID_{{ item_id.upper()}},
+        .title = "{{ item.name }}",
+        .parent = {% if item.parent %}MENU_ID_{{ item.parent.id.upper() }}{% else %}MENU_ID_COUNT{% endif %},
+        .child = {% if item.first_child %}MENU_ID_{{ item.first_child.id.upper() }}{% else %}MENU_ID_COUNT{% endif %},
+        .prev = {% if item.prev_sibling %}MENU_ID_{{ item.prev_sibling.id.upper() }}{% else %}MENU_ID_COUNT{% endif %},
+        .next = {% if item.next_sibling %}MENU_ID_{{ item.next_sibling.id.upper() }}{% else %}MENU_ID_COUNT{% endif %},
+        .type = MENU_TREE_TYPE_{% if item.is_leaf %}LEAF{% else %}BRANCH{% endif %}
+
+    },
+{% endfor %}    
+};
+
+{% for leaf_id, leaf in leafs.items() if leaf.c_str_factors is not none %}
+static const {{leaf.c_type}} s_factors_{{leaf_id}}[] = { {{leaf.c_str_factors}} };
+{% endfor %}
+
+{% for leaf_id, leaf in leafs.items() if leaf.c_str_values is not none %}
+static const char *s_values_str_{{leaf_id}}[] = { {{ leaf.c_str_values }} };
+{% endfor %}
+
+static const menu_node_config_t s_menu_config[] = {
+{% for leaf_id, leaf in leafs.items() %}
+    [MENU_ID_{{leaf_id.upper()}}] = {        
+        .id = MENU_ID_{{leaf_id.upper()}},
+        .category = MENU_CATEGORY_{{leaf.category.name.upper()}},
+        .click_cb = {% if leaf.effective_click_cb_name %}{{ leaf.effective_click_cb_name }}{% else %}NULL{% endif %},
+        .position_cb = {% if leaf.effective_position_cb_name %}{{ leaf.effective_position_cb_name }}{% else %}NULL{% endif %},
+        .double_click_cb = {% if leaf.effective_double_click_cb_name %}{{ leaf.effective_double_click_cb_name }}{% else %}NULL{% endif %},
+        .long_click_cb = {% if leaf.effective_long_click_cb_name %}{{ leaf.effective_long_click_cb_name }}{% else %}NULL{% endif %},
+        .draw_value_cb = {% if leaf.effective_draw_value_cb_name %}{{ leaf.effective_draw_value_cb_name }}{% else %}NULL{% endif %},
+        .handle_event_cb = {% if leaf.effective_event_cb_name %}{{ leaf.effective_event_cb_name }}{% else %}NULL{% endif %},
+        {% if leaf.type != 'callback' %}
+        .data.{{leaf.category_name}} = {
+            {% if leaf.role == 'simple' %}
+            .default_value = {{ leaf.default }},
+            .step = {{ leaf.step }},
+            .min = {{ leaf.min }},
+            .max = {{ leaf.max }}
+            {% elif leaf.role == 'factor' %}
+            .default_value = {{ leaf.default }},
+            .min = {{ leaf.min }},
+            .max = {{ leaf.max }},
+            .step = {{ leaf.step }},
+            .default_idx = {{ leaf.factors_default_idx }},
+            .count = {{ leaf.fixed_count }},
+            .factors = s_factors_{{leaf_id}}
+            {% elif leaf.role == 'fixed' %}
+            .default_idx = {{ leaf.values_default_idx }},
+            .count = {{ leaf.values_count }},
+            .values = s_values_str_{{ leaf_id }}
+            {% endif %}
+        }
+        {% else %}
+        .data.stub_config = {}
+        {% endif %}
+    }{% if not loop.last %},{% endif %}
+{% endfor %}
+};
+
+
+static menu_node_value_t s_menu_values[] = {
+{% for leaf_id, leaf in leafs.items() %}{# leafs #}
+    // {{leaf_id}} {{leaf.role}}
+    [MENU_ID_{{leaf_id.upper()}}] = {
+        .id = MENU_ID_{{leaf_id.upper()}},
+        .data.{{leaf.category_name}} = {
+{% if leaf.role == 'simple' %}{# roles #}
+            .value = {{leaf.default}}
+{% elif leaf.role == 'factor'%}
+            .idx = {{ leaf.factors_default_idx }},
+            .value = {{leaf.default}}
+{% elif leaf.role == 'fixed' %}
+            .idx = {{leaf.values_default_idx}}
+{% elif leaf.role == 'callback' %}
+            .value_ptr = 0
+{% endif %}
+        }
+    },
+{% endfor %}
+};
+
+static const menu_id_name_t s_menu_id_names[] = {
+    [MENU_ID_ROOT] = {MENU_ID_ROOT, "MENU_ID_ROOT"},
+{% for item_id, item in menu.items() %}
+    [MENU_ID_{{ item_id.upper()}}] = {
+            .id = MENU_ID_{{ item_id.upper() }},
+            .name = "MENU_ID_{{ item_id.upper() }}",
+    },
+{% endfor %}    
+};
+
+const menu_node_t *menu_data_get_tree(void) {
+    return s_menu_tree;
+}
+
+menu_node_value_t *menu_data_get_values(void) {
+    return s_menu_values;
+}
+
+const menu_node_config_t *menu_data_get_config(void) {
+    return s_menu_config;
+}
+
+const menu_id_name_t *menu_data_get_id_names(void) {
+    return s_menu_id_names;
+}
+
+menu_context_t *menu_data_get_context(void) {
+    return s_context;
+}
+
+void menu_data_set_context(menu_context_t *ctx) {
+    s_context = ctx;
+}

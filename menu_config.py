@@ -22,7 +22,9 @@ class MenuConfig:
         self._menu_data = self._load_required_file("menu", "данные меню")
         self._menu_tree = self._menu_data.get("menu")
         self._data_config = self._load_required_file("menu_config", "данные и роли элементов меню")
-        self._init_generation_files()
+        self._generation_config = self._load_required_file("generation_files", "данные и роли элементов меню")
+        self._generation_files = self._generation_config.get("files")
+        self._templates_path = self._generation_config.get("templates")
     
     def _load_required_file(self, config_key: str, description: str) -> Dict[str, Any]:
         """Загружает обязательный файл из пути, указанного в конфиге"""
@@ -33,19 +35,7 @@ class MenuConfig:
         # Создаем путь относительно основного конфиг-файла
         file_path = self._config_path.parent / file_path_str
         return self._load_json_file(file_path, description)
-    
-    def _init_generation_files(self):
-        self._generation_config = self._load_required_file("generation_files", "данные и роли элементов меню")
-        self._generation_files = self._generation_config.get("files")
-        if self._generation_files is None:
-            raise ConfigError("Не определены файлы для генерации")
-        templates_path = self._generation_config.get("templates")
-        if templates_path is None:
-            raise ConfigError("Не определена директория шаблонов")
-        self._templates_path = Path(self._config_path.parent / Path(templates_path))
-        for template, output in self._generation_files.items():
-            self._check_file_path(Path(self._templates_path / template))
-    
+        
     def _load_json_file(self, file_path: Path, description: str) -> Dict[str, Any]:
         """Загружает и валидирует JSON файл"""
         try:
@@ -71,13 +61,29 @@ class MenuConfig:
         if not file_path.exists():
             raise ConfigError(f"Файл не найден", file_path)
     
-    def menu_config_param(self, param_name: str, default_value: str)->str:
+    def menu_config_param(self, param_name: str, default_value: str) -> str:
         if self._menu_data.get("config") is None:
             return default_value
         config = self._menu_data["config"]
         if config.get(param_name) is None:
             return default_value
         return config[param_name]
+
+    @property
+    def default_navigate(self) -> str:
+        return self.menu_config_param("default_navigate", "cyclic")
+    
+    @property
+    def default_control(self) -> str:
+        return self.menu_config_param("default_control", "position")
+    
+    @property
+    def default_branch_navigate(self) -> str:
+        return self.menu_config_param("default_branch_navigate", "limit")
+    
+    @property
+    def root_navigate(self) -> str:
+        return self.menu_config_param("root_navigate", "limit")
 
     @property
     def menu_schema(self) -> Dict[str, Any]:
@@ -100,38 +106,26 @@ class MenuConfig:
         return self._data_config
     
     @property
-    def generatrion_files(self) -> Dict[str, Any]:
+    def generatrion_files(self) -> Dict[str, Any] | None:
         return self._generation_files
     
     @property
-    def menu_tree(self) -> Dict[str, Any]:
+    def menu_tree(self) -> Dict[str, Any] | None:
         return self._menu_tree
-    
+        
     @property
-    def default_navigate(self) ->str:
-        return self.menu_config_param("default_navigate", "cyclic")
-    
-    @property
-    def default_control(self) ->str:
-        return self.menu_config_param("default_control", "position")
-    
-    @property
-    def root_navigate(self) ->str:
-        return self.menu_config_param("root_navigate", "cyclic")
-    
-    @property
-    def templates_path(self)->str:
+    def templates_path(self)->Path | None:
         return self._templates_path
     
     @property
-    def generation_files(self)->Dict[str, str]:
-        return self._generation_files
+    def output_flattern(self)->str | None:
+        return self._main_config.get("output_flattern")
 
 def main(json_file: str):
     try:
         config = MenuConfig(json_file)
         print("✅ Конфигурация успешно загружена")
-        print(config.generation_files)
+        print(config._main_config)
         
     except ConfigError as e:
         print(f"❌ {e}")

@@ -1,0 +1,16 @@
+#ifndef MENU_DATA_H
+#define MENU_DATA_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "menu_type.h"
+
+const menu_node_t *menu_data_get_tree(void);
+const menu_node_config_t *menu_data_get_config(void);
+menu_node_value_t *menu_data_get_values(void);
+const menu_id_name_t *menu_data_get_id_names(void);
+menu_context_t *menu_data_get_context(void);
+void menu_data_set_context(menu_context_t *ctx);
+
+#endif /* MENU_DATA_H */

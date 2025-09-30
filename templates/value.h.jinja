@@ -1,10 +1,10 @@
-#ifndef MENU_VALUES_H
-#define MENU_VALUES_H
+#ifndef MENU_VALUE_H
+#define MENU_VALUE_H
 
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "menu_struct.h"
+#include "menu_type.h"
 
 typedef struct stub_value_t {} stub_value_t;
 {%  for category_name, category in categories.items() %}{# categories #}
@@ -40,4 +40,4 @@ typedef struct menu_value {
 
 menu_item_value_t *menu_get_value(menu_id_t id);
 
-#endif // MENU_VALUES_H
+#endif // MENU_VALUE_H

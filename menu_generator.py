@@ -41,6 +41,7 @@ class MenuGenerator:
             'functions': self._processor.functions
         }
 
+
     def _generate_code(self):
         if self._files is not None:
             for template, output in self._files.items():

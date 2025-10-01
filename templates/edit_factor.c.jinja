@@ -1,34 +1,93 @@
-/** @brief Функция для простейших числовых типов.
+{% if function_info.event_type == "click" %}
+/** @brief Функция для изменения простого числового типа при помощи множителя.
+  * Здесь обрабатывается клик.
   * Изменение значение изменяется пропорционально выбранному значению factor
-  * Если control == click, то navigation _только_ cycle.
+  * Если control == click, то navigation _только_ cycle. И для factor клик меняет
+  * индекс factor (множителя) из массива factors
   * @param id Идентификтор меню Определён, в enum в menu_struct.h
   * @param delta Количество "щелчков" энкодера. Передаётся только если control==position
+  * {{function_info.event_type}}
   */
-void {{function_name}}_cb(menu_id_t id{% if function_info.control == "position" %}, int8_t delta{% endif %}) {
-    menu_item_config_t *config = menu_get_config(id);
-    menu_item_value_t  *value  = menu_get_value(id);
-    {{function_info.category.c_type}} *val  = &(value->data.{{function_info.category.name}}.value);
-    {{function_info.category.c_type}}  step = config->data.{{function_info.category.name}}.step;
-    {{function_info.category.c_type}}   min = config->data.{{function_info.category.name}}.min;
-    {{function_info.category.c_type}}   max = config->data.{{function_info.category.name}}.max;
-    uint8_t *idx = &(value->data.{{function_info.category.name}}.idx);
-{% if function_info.control == "click" %}{# control==click для factor click обрабатывается кольцевым изменением значения индекса #}
-    {{function_info.category.c_type}}  count = config->data.{{function_info.category.name}}.count;
-    *idx = (*idx + 1) % count; // Кольцевое изменение индекса фактора по клику
-{% elif function_info.control == "position" %}{# control==position для factor позиция обрабатывает ТОЛЬКО значение поля #}
-    {{function_info.category.c_type}} factor = config->data.{{function_info.category.name}}.factors[*idx];
-{% if function_info.navigate == "limit" %}{# navigate limit #}
-    if (delta < 0)
-        *val = (*val + delta * factor) > min ? (*val + delta * factor) : min;
-    else if (delta > 0)
-        *val = (*val + delta * factor) < max ? (*val + delta * factor) : max;
-{% elif function_info.navigate == "cyclic" %}{# navigate cyclic #}
-    if (delta < 0)
-        *val = (*val + delta * factor) > min ? (*val + delta * factor) : max;
-    else if (delta > 0)
-        *val = (*val + delta * factor) < max ? (*val + delta * factor) : min;
-{% endif %}{# navigate #}
-{% endif %}{# control #}
+void {{function_name}}(menu_context_t *ctx, menu_id_t id) {
+    uint8_t *idx  = menu_value_get_{{function_info.category}}_factor_idx(ctx, id);
+    uint8_t count = menu_config_get_{{function_info.category}}_count(ctx, id);
+    uint8_t old_idx = *idx;
 
-    menu_update();
+    if ((*idx + 1) >= count) {
+        *idx = 0;
+    } else {
+        *idx = *idx + 1;
+    }
+
+    if (*idx != old_idx) {
+        menu_context_set_dirty (ctx);
+    }
 }
+
+{% elif function_info.event_type == "position" %}{# control==position для factor позиция обрабатывает ТОЛЬКО значение поля #}
+/** @brief Функция для изменения простого числового типа при помощи множителя.
+  * Здесь обрабатывается позиция энкодера. 
+  * Изменение значение изменяется пропорционально выбранному значению factor
+  * Значение value может изменяться по кругу, т.е., достигнув максимального значения max становится min
+  * Достигнув минимального значения min становится max
+  * @param id Идентификтор меню Определён, в enum в menu_struct.h
+  * @param delta Количество "щелчков" энкодера. Передаётся только если control==position
+  * {{function_info.event_type}}
+  */
+void {{function_name}}(menu_context_t *ctx, menu_id_t id, int8_t delta) {
+    uint8_t *idx  = menu_value_get_{{function_info.category}}_factor_idx(ctx, id);
+    {{function_info.c_type}} min = menu_config_get_{{function_info.category}}_min(ctx, id);
+    {{function_info.c_type}} max = menu_config_get_{{function_info.category}}_max(ctx, id);
+    {{function_info.c_type}} factor = menu_config_get_{{function_info.category}}_current(ctx, id, *idx);
+    {{function_info.c_type}} *val = menu_value_get_{{function_info.category}}_value(ctx, id);
+    {{function_info.c_type}} old_value = *val;
+{% if function_info.navigate == "limit" %}{# navigate limit #}
+    if (delta > 0) {
+        // Увеличение с проверкой переполнения
+        if (*val <= max - (uint32_t)(delta * factor)) {
+            *val += delta * factor;
+        } else {
+            *val = max;
+        }
+    } else {
+        // Уменьшение с проверкой underflow
+        if (*val >= min + (uint32_t)(-delta * factor)) {
+            *val += delta * factor;  // delta отрицательный
+        } else {
+            *val = min;
+        }
+    }
+{% elif function_info.navigate == "cyclic" %}{# navigate cyclic #}
+    // Если нет изменений или factor = 0 - выходим
+    if (delta == 0 || factor == 0) {
+        return;
+    }
+
+    // Вычисляем диапазон
+    uint32_t range = max - min + 1;
+    
+    // Вычисляем изменение с учётом множителя
+    int64_t change = (int64_t)delta * (int64_t)factor;
+    
+    // Вычисляем новое значение с зацикливанием
+    int64_t new_value = (int64_t)*val + change;
+    
+    // Нормализуем значение в диапазоне [min, max] с зацикливанием
+    if (new_value < (int64_t)min) {
+        // Если ушли ниже min - переходим к max
+        int64_t underflow = (int64_t)min - new_value - 1;
+        new_value = (int64_t)max - (underflow % range);
+    } else if (new_value > (int64_t)max) {
+        // Если превысили max - переходим к min
+        int64_t overflow = new_value - (int64_t)max - 1;
+        new_value = (int64_t)min + (overflow % range);
+    }
+    
+    // Присваиваем новое значение
+    *val = (uint32_t)new_value;
+{% endif %}{# navigate #}
+    if (*val != old_value) {
+        menu_context_set_dirty(ctx);
+    }
+}
+{% endif %}{# event_type #}

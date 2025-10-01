@@ -1,0 +1,163 @@
+{
+    "string_fixed_click_cyclic_cb": {
+        "name": "string_fixed_click_cyclic_cb",
+        "node_id": "lo_pwm_on",
+        "event_type": "click",
+        "navigate": "cyclic",
+        "purpose": "change_index",
+        "source": "auto_generated",
+        "type": "string",
+        "role": "fixed",
+        "c_type": "char*",
+        "category": "string_fixed"
+    },
+    "string_fixed_position_cyclic_cb": {
+        "name": "string_fixed_position_cyclic_cb",
+        "node_id": "lo_pwm_on",
+        "event_type": "position",
+        "navigate": "cyclic",
+        "purpose": "change_index",
+        "source": "auto_generated",
+        "type": "string",
+        "role": "fixed",
+        "c_type": "char*",
+        "category": "string_fixed"
+    },
+    "menu_draw_string_fixed_value_cb": {
+        "name": "menu_draw_string_fixed_value_cb",
+        "node_id": "lo_pwm_on",
+        "event_type": "draw_value",
+        "navigate": null,
+        "purpose": "draw_value",
+        "source": "auto_generated",
+        "type": "string",
+        "role": "fixed",
+        "c_type": "char*",
+        "category": "string_fixed"
+    },
+    "draw_version_cb": {
+        "name": "draw_version_cb",
+        "node_id": "version",
+        "event_type": "draw_value",
+        "navigate": null,
+        "purpose": "user_defined",
+        "source": "custom",
+        "type": "callback",
+        "role": "callback",
+        "category": "callback_callback"
+    },
+    "version_callback": {
+        "name": "version_callback",
+        "category": {
+            "name": "callback_callback",
+            "type": "callback",
+            "role": "callback",
+            "c_type": "void*"
+        },
+        "type": "callback",
+        "role": "callback",
+        "purpose": "external_callback",
+        "node_id": "version",
+        "event_type": "callback",
+        "navigate": null,
+        "source": "external"
+    },
+    "draw_frequency_cb": {
+        "name": "draw_frequency_cb",
+        "node_id": "pwm_frequency",
+        "event_type": "draw_value",
+        "navigate": null,
+        "purpose": "user_defined",
+        "source": "custom",
+        "type": "callback",
+        "role": "callback",
+        "category": "callback_callback"
+    },
+    "pwm_frequency_callback": {
+        "name": "pwm_frequency_callback",
+        "category": {
+            "name": "callback_callback",
+            "type": "callback",
+            "role": "callback",
+            "c_type": "void*"
+        },
+        "type": "callback",
+        "role": "callback",
+        "purpose": "external_callback",
+        "node_id": "pwm_frequency",
+        "event_type": "callback",
+        "navigate": null,
+        "source": "external"
+    },
+    "udword_factor_click_cyclic_factor_cb": {
+        "name": "udword_factor_click_cyclic_factor_cb",
+        "node_id": "lo_duration",
+        "event_type": "click",
+        "navigate": "cyclic",
+        "purpose": "change_factor_index",
+        "source": "auto_generated",
+        "type": "udword",
+        "role": "factor",
+        "c_type": "uint32_t",
+        "category": "udword_factor"
+    },
+    "udword_factor_position_limit_cb": {
+        "name": "udword_factor_position_limit_cb",
+        "node_id": "lo_duration",
+        "event_type": "position",
+        "navigate": "limit",
+        "purpose": "change_value",
+        "source": "auto_generated",
+        "type": "udword",
+        "role": "factor",
+        "c_type": "uint32_t",
+        "category": "udword_factor"
+    },
+    "menu_draw_udword_factor_value_cb": {
+        "name": "menu_draw_udword_factor_value_cb",
+        "node_id": "lo_duration",
+        "event_type": "draw_value",
+        "navigate": null,
+        "purpose": "draw_value",
+        "source": "auto_generated",
+        "type": "udword",
+        "role": "factor",
+        "c_type": "uint32_t",
+        "category": "udword_factor"
+    },
+    "my_event_cb": {
+        "name": "my_event_cb",
+        "node_id": "lo_pwm_on",
+        "event_type": "event",
+        "navigate": null,
+        "purpose": "user_defined",
+        "source": "custom",
+        "type": "string",
+        "role": "fixed",
+        "category": "string_fixed"
+    },
+    "ubyte_simple_position_limit_cb": {
+        "name": "ubyte_simple_position_limit_cb",
+        "node_id": "lo_duty",
+        "event_type": "position",
+        "navigate": "limit",
+        "purpose": "change_value",
+        "source": "auto_generated",
+        "type": "ubyte",
+        "role": "simple",
+        "c_type": "uint8_t",
+        "category": "ubyte_simple"
+    },
+    "menu_draw_ubyte_simple_value_cb": {
+        "name": "menu_draw_ubyte_simple_value_cb",
+        "node_id": "lo_duty",
+        "event_type": "draw_value",
+        "navigate": null,
+        "purpose": "draw_value",
+        "source": "auto_generated",
+        "type": "ubyte",
+        "role": "simple",
+        "c_type": "uint8_t",
+        "category": "ubyte_simple"
+    }
+}

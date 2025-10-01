@@ -31,7 +31,8 @@
             "id": "version",
             "title": "Firmware version",
             "type": "callback",
-            "role": "callback"
+            "role": "callback",
+            "draw_value_cb": "draw_version_cb"
         },
         {
             "id" : "settings",
@@ -43,8 +44,7 @@
                     "title": "PWM Frequency",
                     "type": "callback",
                     "role": "callback",
-                    "controls": ["position"],
-                    "navigate": "limit"
+                    "draw_value_cb": "draw_frequency_cb"
                 },
                 {
                     "id": "hi_channel",

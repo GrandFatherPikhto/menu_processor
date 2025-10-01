@@ -9,28 +9,63 @@
   * @param id Идентификтор меню Определён, в enum в menu_struct.h
   * @param delta Количество "щелчков" энкодера. Передаётся только если control==position
   */
-void {{function_name}}_cb(menu_id_t id{% if function_info.control == "position" %}, int8_t delta{% endif %}) {
-    menu_item_config_t *config = menu_get_config(id);
-    menu_item_value_t  *value  = menu_get_value(id);
-    {{function_info.category.c_type}} *val  = &(value->data.{{function_info.category.name}}.value);
-    {{function_info.category.c_type}}  step = config->data.{{function_info.category.name}}.step;
-    {{function_info.category.c_type}}   min = config->data.{{function_info.category.name}}.min;
-    {{function_info.category.c_type}}   max = config->data.{{function_info.category.name}}.max;
-{% if function_info.control == "click" %}{# control==click для factor click обрабатывается кольцевым изменением значения индекса #}
-    *val = (*val + step) < max ? (*val + step) : min; ///< Шагаем только вперёд. Зациклено
-{% elif function_info.control == "position" %}{# #}
-{% if function_info.navigate == "limit" %}{# navigate limit #}
-    if (delta < 0)
-        *val = (*val + delta * step) > min ? (*val + delta * step) : min;
-    else if (delta > 0)
-        *val = (*val + delta * step) < max ? (*val + delta * step) : max;
-{% elif function_info.navigate == "cyclic" %}{# navigate cyclic #}
-    if (delta < 0)
-        *val = (*val + delta * step) > min ? (*val + delta * step) : max;
-    else if (delta > 0)
-        *val = (*val + delta * step) < max ? (*val + delta * step) : min;
-{% endif %}{# navigate #}
-{% endif %}{# control #}
-
-    menu_update();
+{% if function_info.event_type == "click" %}
+void {{function_name}}(menu_context_t *ctx, menu_id_t id) {
+    {{function_info.c_type}} *val  = menu_value_get_{{function_info.category}}_value(ctx, id);
+    {{function_info.c_type}}  step = menu_config_get_{{function_info.category}}_step(ctx, id);
+    {{function_info.c_type}}   min = menu_config_get_{{function_info.category}}_min(ctx, id);
+    {{function_info.c_type}}   max = menu_config_get_{{function_info.category}}_max(ctx, id);
+    {{function_info.c_type}} old_value = *val;
+    if ((*val + step) > max)
+      *val = min;
+    else
+      *val = *val + step;
+    if (*val != old_value) {
+      menu_context_set_dirty(ctx);
+    }
 }
+{% elif function_info.event_type == "position" %}
+void {{function_name}}(menu_context_t *ctx, menu_id_t id, int8_t delta) {
+    {{function_info.c_type}} *val  = menu_value_get_{{function_info.category}}_value(ctx, id);
+    {{function_info.c_type}}  step = menu_config_get_{{function_info.category}}_step(ctx, id);
+    {{function_info.c_type}}   min = menu_config_get_{{function_info.category}}_min(ctx, id);
+    {{function_info.c_type}}   max = menu_config_get_{{function_info.category}}_max(ctx, id);
+    {{function_info.c_type}} old_value = *val;  
+{% if function_info.navigate == "limit" %}{# navigate limit #}
+    if (delta > 0) {
+      if ((*val + step * delta) > max) {
+        *val = max;
+      } else {
+        *val = *val + step * delta;
+      }
+    }
+
+    if (delta < 0) {
+      if ((*val + step * delta) < min) {
+        *val = min;
+      } else {
+        *val = *val + step * delta;
+      }
+    }
+{% elif function_info.navigate == "cyclic" %}{# navigate cyclic #}
+    if (delta > 0) {
+      if ((*val + step * delta) > max) {
+        *val = min;
+      } else {
+        *val = *val + step * delta;
+      }
+    }
+
+    if (delta < 0) {
+      if ((*val + step * delta) < min) {
+        *val = max;
+      } else {
+        *val = *val + step * delta;
+      }
+    }
+{% endif %}{# navigate #}
+    if (*val != old_value) {
+      menu_context_set_dirty(ctx);
+    }
+}
+{% endif %}{# event_type #}

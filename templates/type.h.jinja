@@ -1,9 +1,12 @@
-#ifndef MENU_COMMON_H
-#define MENU_COMMON_H
+#ifndef MENU_TYPE_H
+#define MENU_TYPE_H
 
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+
+#define LCD_STRING_LEN 0x20
+#define LCD_NUM_STRINGS 2
 
 typedef enum {
     MENU_TREE_TYPE_NONE = 0,
@@ -12,12 +15,24 @@ typedef enum {
     MENU_TREE_TYPE_COUNT = 3
 } menu_tree_type_t;
 
+{% set ns = namespace(count=1) %}
 typedef enum {
-    MENU_ID_ROOT,
-{% for item_id, item in menu.items() %}
-    MENU_ID_{{item_id.upper()}},
+    MENU_CATEGORY_NONE = 0,
+{% for category_name, category in categories.items() %}
+    MENU_CATEGORY_{{category_name.upper()}} = {{ns.count}},
+{% set ns.count = ns.count + 1 %}
 {% endfor %}
-    MENU_ID_COUNT
+    MENU_CATEGORY_COUNT = {{ns.count}}
+} menu_category_t;
+
+typedef enum {
+    MENU_ID_ROOT = 0,
+{% set ns = namespace(count=1) %}    
+{% for item_id, item in menu.items() %}
+    MENU_ID_{{item_id.upper()}} = {{ns.count}},
+{% set ns.count = ns.count + 1 %}    
+{% endfor %}
+    MENU_ID_COUNT = {{ns.count}}
 } menu_id_t;
 
 typedef enum {
@@ -37,22 +52,16 @@ typedef enum {
     MENU_STATE_COUNT = 3
 } menu_state_t;
 
-#define LCD_STRING_LEN 0x20
-#define LCD_NUM_STRINGS 2
-
 typedef struct s_menu_id_name_t {
     menu_id_t id;
     const char name[0x20];
-} menu_id_name_t;
+} menu_node_name_t;
 
 // Базовые структуры (только forward declarations)
-typedef struct s_menu_context_t menu_context_t;
-typedef struct s_menu_node_t menu_node_t;
-typedef struct s_menu_node_config_t menu_node_config_t;
-typedef struct s_menu_node_value_t menu_node_value_t;
-typedef struct s_menu_callback_t menu_callback_t;
+typedef struct menu_context menu_context_t;
+typedef struct menu_node menu_node_t;
+typedef struct menu_node_config menu_node_config_t;
+typedef struct menu_node_value menu_node_value_t;
+// typedef struct menu_node_name menu_node_name_t;
 
-const char *menu_types_get_name(menu_id_t id);
-
-
-#endif /* MENU_COMMON_H */
+#endif /* MENU_TYPE_H */

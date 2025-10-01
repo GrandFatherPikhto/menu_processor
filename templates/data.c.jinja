@@ -2,6 +2,10 @@
 #include "menu_value.h"
 #include "menu_tree.h"
 #include "menu_config.h"
+#include "menu_edit.h"
+#include "menu_draw.h"
+
+#include "lcd1602_data.h"
 
 static menu_context_t *s_context = 0;
 
@@ -72,7 +76,9 @@ static const menu_node_config_t s_menu_config[] = {
         {% else %}
         .data.stub_config = {}
         {% endif %}
-    }{% if not loop.last %},{% endif %}
+    },{% if not loop.last %}
+{% endif %}
+
 {% endfor %}
 };
 
@@ -98,7 +104,7 @@ static menu_node_value_t s_menu_values[] = {
 {% endfor %}
 };
 
-static const menu_id_name_t s_menu_id_names[] = {
+static const menu_node_name_t s_menu_id_names[] = {
     [MENU_ID_ROOT] = {MENU_ID_ROOT, "MENU_ID_ROOT"},
 {% for item_id, item in menu.items() %}
     [MENU_ID_{{ item_id.upper()}}] = {
@@ -112,6 +118,10 @@ const menu_node_t *menu_data_get_tree(void) {
     return s_menu_tree;
 }
 
+menu_id_t menu_data_get_first_id(void) {
+    return MENU_ID_{{ first.id.upper() }};
+}
+
 menu_node_value_t *menu_data_get_values(void) {
     return s_menu_values;
 }
@@ -120,7 +130,7 @@ const menu_node_config_t *menu_data_get_config(void) {
     return s_menu_config;
 }
 
-const menu_id_name_t *menu_data_get_id_names(void) {
+const menu_node_name_t *menu_data_get_node_names(void) {
     return s_menu_id_names;
 }
 
@@ -131,3 +141,4 @@ menu_context_t *menu_data_get_context(void) {
 void menu_data_set_context(menu_context_t *ctx) {
     s_context = ctx;
 }
+

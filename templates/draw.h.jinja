@@ -1,0 +1,16 @@
+#ifndef MENU_DRAW_H
+#define MENU_DRAW_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "menu_type.h"
+
+bool menu_draw_update(menu_context_t *ctx, menu_id_t id);
+{% for function_name, function_info  in functions.items() %}
+{% if function_info.event_type == "draw_value" %}
+void {{function_name}}(menu_context_t *ctx, menu_id_t id);
+{% endif %}
+{% endfor %}
+
+#endif /* MENU_DRAW_H */

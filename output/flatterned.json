@@ -11,14 +11,7 @@
       "children": [],
       "is_leaf": true,
       "is_branch": false,
-      "controls": [
-        {
-          "type": "click",
-          "purpose": "change_index",
-          "navigate": "cyclic",
-          "required": false
-        }
-      ]
+      "controls": []
     },
     {
       "id": "regimes",
@@ -31,14 +24,7 @@
       "children": [],
       "is_leaf": true,
       "is_branch": false,
-      "controls": [
-        {
-          "type": "position",
-          "purpose": "change_index",
-          "navigate": "cyclic",
-          "required": false
-        }
-      ]
+      "controls": []
     },
     {
       "id": "version",
@@ -60,7 +46,7 @@
       "role": null,
       "parent": "root",
       "prev_sibling": "version",
-      "next_sibling": null,
+      "next_sibling": "start",
       "children": [
         "pwm_frequency",
         "hi_channel",
@@ -76,7 +62,7 @@
       "type": "callback",
       "role": "callback",
       "parent": "settings",
-      "prev_sibling": "lo_channel",
+      "prev_sibling": null,
       "next_sibling": "hi_channel",
       "children": [],
       "is_leaf": true,
@@ -112,20 +98,7 @@
       "children": [],
       "is_leaf": true,
       "is_branch": false,
-      "controls": [
-        {
-          "type": "click",
-          "purpose": "change_factor_index",
-          "navigate": "cyclic",
-          "required": true
-        },
-        {
-          "type": "position",
-          "purpose": "change_value",
-          "navigate": "limit",
-          "required": true
-        }
-      ]
+      "controls": []
     },
     {
       "id": "hi_duration",
@@ -138,20 +111,7 @@
       "children": [],
       "is_leaf": true,
       "is_branch": false,
-      "controls": [
-        {
-          "type": "click",
-          "purpose": "change_factor_index",
-          "navigate": "cyclic",
-          "required": true
-        },
-        {
-          "type": "position",
-          "purpose": "change_value",
-          "navigate": "limit",
-          "required": true
-        }
-      ]
+      "controls": []
     },
     {
       "id": "hi_pwm_on",
@@ -164,20 +124,7 @@
       "children": [],
       "is_leaf": true,
       "is_branch": false,
-      "controls": [
-        {
-          "type": "click",
-          "purpose": "change_index",
-          "navigate": "cyclic",
-          "required": false
-        },
-        {
-          "type": "position",
-          "purpose": "change_index",
-          "navigate": "cyclic",
-          "required": false
-        }
-      ]
+      "controls": []
     },
     {
       "id": "hi_duty",
@@ -190,14 +137,7 @@
       "children": [],
       "is_leaf": true,
       "is_branch": false,
-      "controls": [
-        {
-          "type": "position",
-          "purpose": "change_value",
-          "navigate": "limit",
-          "required": false
-        }
-      ]
+      "controls": []
     },
     {
       "id": "lo_channel",
@@ -228,20 +168,7 @@
       "children": [],
       "is_leaf": true,
       "is_branch": false,
-      "controls": [
-        {
-          "type": "click",
-          "purpose": "change_factor_index",
-          "navigate": "cyclic",
-          "required": true
-        },
-        {
-          "type": "position",
-          "purpose": "change_value",
-          "navigate": "limit",
-          "required": true
-        }
-      ]
+      "controls": []
     },
     {
       "id": "lo_duration",
@@ -254,20 +181,7 @@
       "children": [],
       "is_leaf": true,
       "is_branch": false,
-      "controls": [
-        {
-          "type": "click",
-          "purpose": "change_factor_index",
-          "navigate": "cyclic",
-          "required": true
-        },
-        {
-          "type": "position",
-          "purpose": "change_value",
-          "navigate": "limit",
-          "required": true
-        }
-      ]
+      "controls": []
     },
     {
       "id": "lo_pwm_on",
@@ -280,20 +194,7 @@
       "children": [],
       "is_leaf": true,
       "is_branch": false,
-      "controls": [
-        {
-          "type": "click",
-          "purpose": "change_index",
-          "navigate": "cyclic",
-          "required": false
-        },
-        {
-          "type": "position",
-          "purpose": "change_index",
-          "navigate": "cyclic",
-          "required": false
-        }
-      ]
+      "controls": []
     },
     {
       "id": "lo_duty",
@@ -306,14 +207,7 @@
       "children": [],
       "is_leaf": true,
       "is_branch": false,
-      "controls": [
-        {
-          "type": "position",
-          "purpose": "change_value",
-          "navigate": "limit",
-          "required": false
-        }
-      ]
+      "controls": []
     }
   ]
 }

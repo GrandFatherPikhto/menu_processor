@@ -4,13 +4,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "menu_struct.h"
+#include "menu_type.h"
 
-void menu_navigate_sibling(int8_t delta);
-void menu_navigate_child(menu_id_t id);
-void menu_navigate_parent(menu_id_t id);
-void menu_navigate_to(menu_id_t id);
-menu_id_t menu_get_current(void);
-menu_id_t menu_get_prev(void)
+menu_id_t menu_navigate_get_sibling(menu_context_t *ctx, menu_id_t id, int8_t delta);
+void menu_navigate_handle_position(menu_context_t *ctx, menu_id_t id, int8_t delta);
+void menu_navigate_handle_enter(menu_context_t *ctx, menu_id_t id);
+void menu_navigate_handle_back(menu_context_t *ctx, menu_id_t id);
+void menu_navigate_go_to(menu_context_t *ctx, menu_id_t id);
 
-#endif // MENU_NAVIGATE_H
+#endif /* MENU_NAVIGATE_H */

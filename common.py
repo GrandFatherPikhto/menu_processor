@@ -16,7 +16,7 @@ def load_json_data(config_file: str)->Dict | None:
 def save_json_data(data: Dict | Set, output_path: str = None)->bool:
     try:
         with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+            json.dump(data, f, indent=4, ensure_ascii=False)
             pass
         print(f"✅ Данные сохранены в файл {output_path}")
         return True

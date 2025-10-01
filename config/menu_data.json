@@ -6,7 +6,7 @@
     "uword": {"c_type": "uint16_t"},
     "dword": {"c_type": "uint32_t"},
     "udword": {"c_type": "uint32_t"},
-    "string": {"c_type": "char*"},
+    "string": {"c_type": "const char*"},
     "callback": {"c_type": "void*"}
   },
   "roles": {

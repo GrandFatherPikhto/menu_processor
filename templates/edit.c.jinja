@@ -1,9 +1,12 @@
+#include "menu_tree.h"
 #include "menu_edit.h"
-#include "menu_struct.h"
 #include "menu_config.h"
-#include "menu_values.h"
+#include "menu_value.h"
+#include "menu_context.h"
+#include "menu_data.h"
 
 {% for function_name, function_info in functions.items() %}{# functions #}
+{% if function_info.purpose is in ["change_index", "change_factor_index", "change_value"] %}
 {% if function_info.role == "simple" %}
 {% include "edit_simple.c.jinja" %}
 
@@ -16,6 +19,7 @@
 {% include "edit_fixed.c.jinja" %}
 
 
-{% endif %}
+{% endif %}{# role #}
+{% endif %}{# purpose #}
 {% endfor %}{# functions #}
 

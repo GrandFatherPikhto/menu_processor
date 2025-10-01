@@ -5,6 +5,7 @@ from flat_node import FlatNode
 from menu_validator import MenuValidator
 from menu_config import MenuConfig, ConfigError
 from menu_data import MenuData
+from base_flat_node import BaseFlatNode
 
 class FlattenerError(Exception):
     """Исключение для ошибок конфигурации"""
@@ -20,7 +21,7 @@ class MenuFlattener:
         self._config = config
         self._menu_data = MenuData(self._config)
         
-    def flatten(self, menu_tree: List[Dict[str, Any]] | None = None) -> List[FlatNode]:
+    def flatten(self, menu_tree: List[Dict[str, Any]] | None = None) -> List[BaseFlatNode]:
         """Преобразует дерево в плоский список с установленными связями"""
         self.flat_nodes.clear()
         self.node_dict.clear()
@@ -32,25 +33,24 @@ class MenuFlattener:
         if menu is None:
             raise FlattenerError("Дерево меню пустое!")
 
-        # Создаем корневую ноду с настройкой root_navigate
-        self.root_node = FlatNode({
+        # Создаем корневую ноду как BaseFlatNode
+        self.root_node = BaseFlatNode({
                 "id": "root",
-                "title": "root",
+                "title": "root", 
                 "items": menu,
             },
             self._config,
             self._menu_data
         )
-        # Устанавливаем навигацию для корневой ноды
         self.root_node.navigate = self._config.root_navigate
 
         self.flat_nodes.append(self.root_node)
         self.node_dict['root'] = self.root_node
         
-        # Рекурсивный обход дерева
+        # Рекурсивный обход дерева (остается без изменений)
         self._process_node(self.root_node, None, menu)
 
-        # ПРИМЕНЯЕМ ПРАВИЛА НАВИГАЦИИ ДЛЯ ВЕТВЕЙ
+        # Применяем правила навигации для ветвей
         self._apply_branch_navigation_rules()
         
         # Создаем циклические связи
@@ -103,23 +103,23 @@ class MenuFlattener:
         last_node = None
         
         for i, node_data in enumerate(nodes):
-            # Создаем плоский узел
+            # Создаем плоский узел (используем обновленный FlatNode)
             flat_node = FlatNode(node_data, self._config, self._menu_data)
 
-            # Устанавливаем значения по умолчанию для навигации и контроля
+            # Устанавливаем значения по умолчанию для навигации
             if flat_node.navigate is None:
                 flat_node.navigate = self._config.default_navigate
 
             self.flat_nodes.append(flat_node)
             self.node_dict[flat_node.id] = flat_node
             
-            # Устанавливаем связи
+            # Устанавливаем связи через navigation_manager
             flat_node.parent = parent
-            flat_node.prev_sibling = prev_sibling
+            flat_node.prev_sibling = prev_sibling  # Используем свойство, которое делегирует к navigation_manager
             
             # Устанавливаем next_sibling для предыдущего sibling'а
             if prev_sibling:
-                prev_sibling.next_sibling = flat_node
+                prev_sibling.next_sibling = flat_node  # Используем свойство, которое делегирует к navigation_manager
             
             # Добавляем к родительским детям
             if parent:
@@ -161,12 +161,12 @@ class MenuFlattener:
             self.flat_nodes.append(flat_child)
             self.node_dict[flat_child.id] = flat_child
             
-            # Устанавливаем связи
+            # Устанавливаем связи через navigation_manager
             flat_child.parent = parent
-            flat_child.prev_sibling = prev_sibling
+            flat_child.prev_sibling = prev_sibling  # Используем свойство
             
             if prev_sibling:
-                prev_sibling.next_sibling = flat_child
+                prev_sibling.next_sibling = flat_child  # Используем свойство
             
             # Добавляем к родительским детям
             parent.children.append(flat_child)

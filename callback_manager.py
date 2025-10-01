@@ -28,13 +28,115 @@ class CallbackManager:
         # Автоматически сгенерированные функции (будут установлены позже)
         self._auto_click_function = None
         self._auto_position_function = None
+        self._auto_click_info = None
+        self._auto_position_info = None
 
-    def set_auto_functions(self, click_function: Optional[str] = None, 
-                          position_function: Optional[str] = None):
-        """Устанавливает автоматически сгенерированные функции"""
-        self._auto_click_function = click_function
-        self._auto_position_function = position_function
+    def set_auto_functions(self, click_info: Optional[Dict] = None, 
+                          position_info: Optional[Dict] = None):
+        """Устанавливает автоматически сгенерированные функции с дополнительной информацией"""
+        self._auto_click_info = click_info
+        self._auto_position_info = position_info
+        
+        # Устанавливаем имена функций для обратной совместимости
+        self._auto_click_function = click_info["name"] if click_info and "name" in click_info else None
+        self._auto_position_function = position_info["name"] if position_info and "name" in position_info else None
 
+    def get_callback_info(self, callback_type: str) -> Optional[Dict[str, Any]]:
+        """
+        Возвращает детальную информацию о ЛЮБОЙ callback-функции
+        """
+        # Для click_cb и position_cb проверяем как пользовательские, так и автоматические
+        if callback_type in ['click_cb', 'position_cb']:
+            # Пользовательский callback
+            callback_value = getattr(self, callback_type, None)
+            is_custom = callback_value is not None
+            
+            # Если пользовательский не задан, проверяем автоматический
+            if not is_custom:
+                if callback_type == 'click_cb':
+                    callback_value = self._auto_click_function
+                    auto_info = self._auto_click_info
+                else:  # position_cb
+                    callback_value = self._auto_position_function
+                    auto_info = self._auto_position_info
+                is_custom = False
+            else:
+                auto_info = None
+        else:
+            # Для остальных callback-типов
+            callback_value = getattr(self, callback_type, None)
+            is_custom = callback_value is not None
+            
+            # Для draw_value_cb может быть автоматическая функция
+            if callback_type == 'draw_value_cb' and not is_custom:
+                callback_value = self.auto_draw_value_cb_name
+                is_custom = False
+                auto_info = None
+            else:
+                auto_info = None
+        
+        if not callback_value:
+            return None
+        
+        # Базовая информация
+        info = {
+            "name": callback_value,
+            "type": self._node_type,
+            "role": self._node_role,
+            "c_type": self._node_category.get("c_type") if self._node_category else None,
+            "category": self._node_category.get("name") if self._node_category else None,
+            "custom": is_custom,
+            "callback_type": callback_type,
+            "node_id": self._original_node.get("id"),
+            "event_type": callback_type.replace('_cb', '')  # click_cb -> click
+        }
+        
+        # Добавляем информацию о навигации для автоматических функций
+        if not is_custom and auto_info:
+            info["navigate"] = auto_info.get("navigate")
+            info["purpose"] = auto_info.get("purpose")
+        
+        return info
+
+    # Добавляем свойство для получения информации о всех автоматических функциях
+    @property
+    def auto_functions_info(self) -> List[Dict[str, Any]]:
+        """Информация о всех автоматически сгенерированных функциях"""
+        auto_funcs = []
+        
+        if self._auto_click_function and self._auto_click_info:
+            auto_funcs.append({
+                "name": self._auto_click_function,
+                "event_type": "click",
+                "navigate": self._auto_click_info.get("navigate"),
+                "purpose": self._auto_click_info.get("purpose"),
+                "node_id": self._original_node.get("id"),
+                "category": self._node_category.get("name") if self._node_category else None
+            })
+        
+        if self._auto_position_function and self._auto_position_info:
+            auto_funcs.append({
+                "name": self._auto_position_function,
+                "event_type": "position", 
+                "navigate": self._auto_position_info.get("navigate"),
+                "purpose": self._auto_position_info.get("purpose"),
+                "node_id": self._original_node.get("id"),
+                "category": self._node_category.get("name") if self._node_category else None
+            })
+        
+        # Автоматическая функция отрисовки
+        if self.auto_draw_value_cb_name and not self.draw_value_cb:
+            auto_funcs.append({
+                "name": self.auto_draw_value_cb_name,
+                "event_type": "draw_value",
+                "navigate": None,  # Для отрисовки навигация не применима
+                "purpose": "draw_value",
+                "node_id": self._original_node.get("id"),
+                "category": self._node_category.get("name") if self._node_category else None
+            })
+        
+        return auto_funcs
+    
     @property
     def auto_draw_value_cb_name(self) -> Optional[str]:
         """Автоматически сгенерированное имя функции отрисовки с постфиксом _cb"""
@@ -54,47 +156,6 @@ class CallbackManager:
             self.click_cb, self.position_cb, self.double_click_cb,
             self.long_click_cb, self.event_cb, self.draw_value_cb
         ])
-
-    def get_callback_info(self, callback_type: str) -> Optional[Dict[str, Any]]:
-        """
-        Возвращает детальную информацию о ЛЮБОЙ callback-функции
-        """
-        # Для click_cb и position_cb проверяем как пользовательские, так и автоматические
-        if callback_type in ['click_cb', 'position_cb']:
-            # Пользовательский callback
-            callback_value = getattr(self, callback_type, None)
-            is_custom = callback_value is not None
-            
-            # Если пользовательский не задан, проверяем автоматический
-            if not is_custom:
-                if callback_type == 'click_cb':
-                    callback_value = self._auto_click_function
-                else:  # position_cb
-                    callback_value = self._auto_position_function
-                is_custom = False
-        else:
-            # Для остальных callback-типов
-            callback_value = getattr(self, callback_type, None)
-            is_custom = callback_value is not None
-            
-            # Для draw_value_cb может быть автоматическая функция
-            if callback_type == 'draw_value_cb' and not is_custom:
-                callback_value = self.auto_draw_value_cb_name
-                is_custom = False
-        
-        if not callback_value:
-            return None
-        
-        return {
-            "name": callback_value,
-            "type": self._node_type,
-            "role": self._node_role,
-            "c_type": self._node_category.get("c_type") if self._node_category else None,
-            "category": self._node_category.get("name") if self._node_category else None,
-            "custom": is_custom,
-            "callback_type": callback_type,
-            "node_id": self._original_node.get("id")
-        }
 
     # Специализированные методы для удобства
     def get_draw_value_info(self) -> Optional[Dict[str, Any]]:

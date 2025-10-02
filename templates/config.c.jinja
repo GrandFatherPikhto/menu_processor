@@ -82,64 +82,83 @@ bool menu_config_handle_event_cb(menu_context_t *ctx, menu_id_t id, menu_event_t
 
 {%  for category_name, category in categories.items() %}{# categories #}
 {% if category.role == "simple" %}
-{{category.c_type}} *menu_config_get_{{category_name}}_min(menu_context_t *ctx, menu_id_t id) {
+{{category.c_type}} menu_config_get_{{category_name}}_min(menu_context_t *ctx, menu_id_t id) {
     if (id >= MENU_ID_COUNT)
-        return NULL;
-    return &(ctx->configs[id].data.{{category_name}}.min);
+        return 0;
+    return ctx->configs[id].data.{{category_name}}.min;
 }
 
-{{category.c_type}} *menu_config_get_{{category_name}}_max(menu_context_t *ctx, menu_id_t id) {
+{{category.c_type}} menu_config_get_{{category_name}}_max(menu_context_t *ctx, menu_id_t id) {
     if (id >= MENU_ID_COUNT)
-        return NULL;
-    return &(ctx->configs[id].data.{{category_name}}.max);
+        return 0;
+    return ctx->configs[id].data.{{category_name}}.max;
 }
 
-{{category.c_type}} *menu_value_get_{{category_name}}_step(menu_context_t *ctx, menu_id_t id) {
+{{category.c_type}} menu_config_get_{{category_name}}_step(menu_context_t *ctx, menu_id_t id) {
     if (id >= MENU_ID_COUNT)
-        return NULL;
-    return &(ctx->configs[id].data.{{category_name}}.step);
+        return 0;
+    return ctx->configs[id].data.{{category_name}}.step;
 }
 
-{{category.c_type}} *menu_value_get_{{category_name}}_default_value(menu_context_t *ctx, menu_id_t id) {
+{{category.c_type}} menu_config_get_{{category_name}}_default_value(menu_context_t *ctx, menu_id_t id) {
     if (id >= MENU_ID_COUNT)
-        return NULL;
-    return &(ctx->configs[id].data.{{category_name}}.default_value);
+        return 0;
+    return ctx->configs[id].data.{{category_name}}.default_value;
 }
 
 {% elif category.role == "factor" %}
-{{category.c_type}} *menu_value_get_{{category_name}}_count(menu_context_t *ctx, menu_id_t id) {
+uint8_t menu_config_get_{{category_name}}_count(menu_context_t *ctx, menu_id_t id) {
     if (id >= MENU_ID_COUNT)
-        return NULL;
-    return &(ctx->configs[id].data.{{category_name}}.count);
+        return 0;
+    return ctx->configs[id].data.{{category_name}}.count;
 }
 
-{{category.c_type}} *menu_value_get_{{category_name}}_default_idx(menu_context_t *ctx, menu_id_t id) {
+uint8_t menu_config_get_{{category_name}}_default_idx(menu_context_t *ctx, menu_id_t id) {
     if (id >= MENU_ID_COUNT)
-        return NULL;
-    return &(ctx->configs[id].data.{{category_name}}.default_idx);
+        return 0;
+    return ctx->configs[id].data.{{category_name}}.default_idx;
 }
 
-uint8_t *menu_value_get_{{category_name}}_current(menu_context_t *ctx, menu_id_t id, uint8_t factor_idx) {
+{{category.c_type}} menu_config_get_{{category_name}}_min(menu_context_t *ctx, menu_id_t id) {
     if (id >= MENU_ID_COUNT)
-        return NULL;
+        return 0;
+    return ctx->configs[id].data.{{category_name}}.min;
+}
+
+{{category.c_type}} menu_config_get_{{category_name}}_max(menu_context_t *ctx, menu_id_t id) {
+    if (id >= MENU_ID_COUNT)
+        return 0;
+    return ctx->configs[id].data.{{category_name}}.max;
+}
+
+{{category.c_type}} menu_config_get_{{category_name}}_current(menu_context_t *ctx, menu_id_t id, uint8_t factor_idx) {
+    if (id >= MENU_ID_COUNT)
+        return 0;
     return ctx->configs[id].data.{{category_name}}.factors[factor_idx];
 }
+
+{{category.c_type}} menu_config_get_{{category_name}}_default_value(menu_context_t *ctx, menu_id_t id) {
+    if (id >= MENU_ID_COUNT)
+        return 0;
+    return ctx->configs[id].data.{{category_name}}.default_value;
+}
+
 {% elif category.role == "fixed" %}
-{{category.c_type}} *menu_value_get_{{category_name}}_count(menu_context_t *ctx, menu_id_t id) {
+uint8_t menu_config_get_{{category_name}}_count(menu_context_t *ctx, menu_id_t id) {
     if (id >= MENU_ID_COUNT)
-        return NULL;
-    return &(ctx->configs[id].data.{{category_name}}.count);
+        return 0;
+    return ctx->configs[id].data.{{category_name}}.count;
 }
 
-{{category.c_type}} *menu_value_get_{{category_name}}_default_idx(menu_context_t *ctx, menu_id_t id) {
+uint8_t menu_config_get_{{category_name}}_default_idx(menu_context_t *ctx, menu_id_t id) {
     if (id >= MENU_ID_COUNT)
-        return NULL;
-    return &(ctx->configs[id].data.{{category_name}}.default_idx);
+        return 0;
+    return ctx->configs[id].data.{{category_name}}.default_idx;
 }
 
-{{category.c_type}} menu_value_get_{{category_name}}_current(menu_context_t *ctx, menu_id_t id, uint8_t idx) {
+{{category.c_type}} menu_config_get_{{category_name}}_current(menu_context_t *ctx, menu_id_t id, uint8_t idx) {
     if (id >= MENU_ID_COUNT)
-        return NULL;
+        return 0;
     return ctx->configs[id].data.{{category_name}}.values[idx];
 }
 

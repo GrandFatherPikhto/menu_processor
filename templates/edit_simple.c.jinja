@@ -11,60 +11,60 @@
   */
 {% if function_info.event_type == "click" %}
 void {{function_name}}(menu_context_t *ctx, menu_id_t id) {
-    {{function_info.c_type}} *val  = menu_value_get_{{function_info.category}}_value(ctx, id);
+    {{function_info.c_type}} *value  = menu_value_get_{{function_info.category}}_value(ctx, id);
     {{function_info.c_type}}  step = menu_config_get_{{function_info.category}}_step(ctx, id);
     {{function_info.c_type}}   min = menu_config_get_{{function_info.category}}_min(ctx, id);
     {{function_info.c_type}}   max = menu_config_get_{{function_info.category}}_max(ctx, id);
-    {{function_info.c_type}} old_value = *val;
-    if ((*val + step) > max)
-      *val = min;
+    {{function_info.c_type}} old_value = *value;
+    if ((*value + step) > max)
+      *value = min;
     else
-      *val = *val + step;
-    if (*val != old_value) {
+      *value = *value + step;
+    if (*value != old_value) {
       menu_context_set_dirty(ctx);
     }
 }
 {% elif function_info.event_type == "position" %}
 void {{function_name}}(menu_context_t *ctx, menu_id_t id, int8_t delta) {
-    {{function_info.c_type}} *val  = menu_value_get_{{function_info.category}}_value(ctx, id);
+    {{function_info.c_type}} *value  = menu_value_get_{{function_info.category}}_value(ctx, id);
     {{function_info.c_type}}  step = menu_config_get_{{function_info.category}}_step(ctx, id);
     {{function_info.c_type}}   min = menu_config_get_{{function_info.category}}_min(ctx, id);
     {{function_info.c_type}}   max = menu_config_get_{{function_info.category}}_max(ctx, id);
-    {{function_info.c_type}} old_value = *val;  
+    {{function_info.c_type}} old_value = *value;  
 {% if function_info.navigate == "limit" %}{# navigate limit #}
     if (delta > 0) {
-      if ((*val + step * delta) > max) {
-        *val = max;
+      if ((*value + step * delta) > max) {
+        *value = max;
       } else {
-        *val = *val + step * delta;
+        *value = *value + step * delta;
       }
     }
 
     if (delta < 0) {
-      if ((*val + step * delta) < min) {
-        *val = min;
+      if ((*value + step * delta) < min) {
+        *value = min;
       } else {
-        *val = *val + step * delta;
+        *value = *value + step * delta;
       }
     }
 {% elif function_info.navigate == "cyclic" %}{# navigate cyclic #}
     if (delta > 0) {
-      if ((*val + step * delta) > max) {
-        *val = min;
+      if ((*value + step * delta) > max) {
+        *value = min;
       } else {
-        *val = *val + step * delta;
+        *value = *value + step * delta;
       }
     }
 
     if (delta < 0) {
-      if ((*val + step * delta) < min) {
-        *val = max;
+      if ((*value + step * delta) < min) {
+        *value = max;
       } else {
-        *val = *val + step * delta;
+        *value = *value + step * delta;
       }
     }
 {% endif %}{# navigate #}
-    if (*val != old_value) {
+    if (*value != old_value) {
       menu_context_set_dirty(ctx);
     }
 }

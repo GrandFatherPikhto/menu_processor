@@ -74,18 +74,26 @@ bool menu_config_handle_double_click_cb(menu_context_t *ctx, menu_id_t id);
 bool menu_config_handle_long_click_cb(menu_context_t *ctx, menu_id_t id);
 bool menu_config_handle_draw_value_cb(menu_context_t *ctx, menu_id_t id);
 bool menu_config_handle_handle_event_cb(menu_context_t *ctx, menu_id_t id, menu_event_t event);
-{%  for category_name, category in categories.items() if category.event_type is in ["click", "position"] %}{# categories #}
+
+{%  for category_name, category in categories.items() %}{# categories #}
+// {{category_name}}
 {% if category.role == "simple" %}
-{{category.c_type}} *menu_config_get_{{category_name}}_min(menu_context_t *ctx, menu_id_t id);
-{{category.c_type}} *menu_config_get_{{category_name}}_max(menu_context_t *ctx, menu_id_t id);
-{{category.c_type}} *menu_value_get_{{category_name}}_step(menu_context_t *ctx, menu_id_t id);
+{{category.c_type}} menu_config_get_{{category_name}}_min(menu_context_t *ctx, menu_id_t id);
+{{category.c_type}} menu_config_get_{{category_name}}_max(menu_context_t *ctx, menu_id_t id);
+{{category.c_type}} menu_config_get_{{category_name}}_step(menu_context_t *ctx, menu_id_t id);
+{{category.c_type}} menu_config_get_{{category_name}}_default_value(menu_context_t *ctx, menu_id_t id);
 {% elif category.role == "factor" %}
-{{category.c_type}} *menu_value_get_{{category_name}}_value(menu_context_t *ctx, menu_id_t id);
-{{category.c_type}} *menu_value_get_{{category_name}}_count(menu_context_t *ctx, menu_id_t id);
-{{category.c_type}}  menu_value_get_{{category_name}}_current(menu_context_t *ctx, menu_id_t id, uint8_t factor_idx);
+{{category.c_type}} menu_config_get_{{category_name}}_value(menu_context_t *ctx, menu_id_t id);
+{{category.c_type}} menu_config_get_{{category_name}}_min(menu_context_t *ctx, menu_id_t id);
+{{category.c_type}} menu_config_get_{{category_name}}_max(menu_context_t *ctx, menu_id_t id);
+{{category.c_type}} menu_config_get_{{category_name}}_default_value(menu_context_t *ctx, menu_id_t id);
+uint8_t menu_config_get_{{category_name}}_count(menu_context_t *ctx, menu_id_t id);
+uint8_t menu_config_get_{{category_name}}_default_idx(menu_context_t *ctx, menu_id_t id);
+{{category.c_type}} menu_config_get_{{category_name}}_current(menu_context_t *ctx, menu_id_t id, uint8_t factor_idx);
 {% elif category.role == "fixed" %}
-{{category.c_type}} *menu_value_get_{{category_name}}_count(menu_context_t *ctx, menu_id_t id);
-{{category.c_type}}  menu_value_get_{{category_name}}_current(menu_context_t *ctx, menu_id_t id, uint8_t idx);
+{{category.c_type}} menu_config_get_{{category_name}}_current(menu_context_t *ctx, menu_id_t id, uint8_t idx);
+uint8_t menu_config_get_{{category_name}}_count(menu_context_t *ctx, menu_id_t id);
+uint8_t menu_config_get_{{category_name}}_default_idx(menu_context_t *ctx, menu_id_t id);
 {% endif %}{# role #}
 {% endfor %}{# category #}
 

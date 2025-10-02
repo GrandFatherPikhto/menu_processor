@@ -44,7 +44,7 @@
                     "title": "PWM Frequency",
                     "type": "callback",
                     "role": "callback",
-                    "draw_value_cb": "draw_frequency_cb"
+                    "draw_value_cb": "pwm_frequency_display_cb"
                 },
                 {
                     "id": "hi_channel",

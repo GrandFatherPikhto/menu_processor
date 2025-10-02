@@ -1,0 +1,38 @@
+void {{function_name}}(menu_context_t *ctx, menu_id_t id) {
+    const char *value_str = menu_context_get_value_str(ctx);
+    uint8_t *idx  = menu_value_get_{{function_info.category}}_idx(ctx, id);
+    {{function_info.c_type}} value = menu_config_get_{{function_info.category}}_current(ctx, id, *idx);
+{% if function_info.type in ["byte", "word", "dword"] %}
+    int len = snprintf(NULL, 0, "(%u)%d", *idx, value);
+    snprintf((char *)value_str, LCD_STRING_LEN, "(%u)%d%*c",
+        *idx,
+        value,
+        15 - len > 0 ? 15 - len : 0,
+        menu_context_get_state(ctx) == MENU_STATE_EDIT ? '*' : '>'
+    );
+{% elif function_info.type in ["ubyte", "uword", "udword"]%}
+    int len = snprintf(NULL, 0, "(%u)%u", *idx, value);
+    snprintf((char *)value_str, LCD_STRING_LEN, "(%u)%u%*c",
+        *idx,
+        value,
+        15 - len > 0 ? 15 - len : 0,
+        menu_context_get_state(ctx) == MENU_STATE_EDIT ? '*' : '>'
+    );
+{% elif function_info.type == "float" %}
+    int len = snprintf(NULL, 0, "(%u)%2.2f", *idx, value);
+    snprintf((char *)value_str, LCD_STRING_LEN, "(%u)%2.2f%*c",
+        *idx,
+        value,
+        15 - len > 0 ? 15 - len : 0,
+        menu_context_get_state(ctx) == MENU_STATE_EDIT ? '*' : '>'
+    );
+{% elif function_info.type == "string" %}
+    int len = snprintf(NULL, 0, "(%u)%s", *idx, value);
+    snprintf((char *)value_str, LCD_STRING_LEN, "(%u)%s%*c",
+        *idx,
+        value,
+        15 - len > 0 ? 15 - len : 0,
+        menu_context_get_state(ctx) == MENU_STATE_EDIT ? '*' : '>'
+    );
+{% endif %}{# type #}
+}

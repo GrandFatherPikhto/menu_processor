@@ -9,7 +9,7 @@
   * {{function_info.event_type}}
   */
 void {{function_name}}(menu_context_t *ctx, menu_id_t id) {
-    uint8_t *idx  = menu_value_get_{{function_info.category}}_factor_idx(ctx, id);
+    uint8_t *idx  = menu_value_get_{{function_info.category}}_idx(ctx, id);
     uint8_t count = menu_config_get_{{function_info.category}}_count(ctx, id);
     uint8_t old_idx = *idx;
 
@@ -35,26 +35,26 @@ void {{function_name}}(menu_context_t *ctx, menu_id_t id) {
   * {{function_info.event_type}}
   */
 void {{function_name}}(menu_context_t *ctx, menu_id_t id, int8_t delta) {
-    uint8_t *idx  = menu_value_get_{{function_info.category}}_factor_idx(ctx, id);
+    uint8_t *idx  = menu_value_get_{{function_info.category}}_idx(ctx, id);
     {{function_info.c_type}} min = menu_config_get_{{function_info.category}}_min(ctx, id);
     {{function_info.c_type}} max = menu_config_get_{{function_info.category}}_max(ctx, id);
     {{function_info.c_type}} factor = menu_config_get_{{function_info.category}}_current(ctx, id, *idx);
-    {{function_info.c_type}} *val = menu_value_get_{{function_info.category}}_value(ctx, id);
-    {{function_info.c_type}} old_value = *val;
+    {{function_info.c_type}} *value = menu_value_get_{{function_info.category}}_value(ctx, id);
+    {{function_info.c_type}} old_value = *value;
 {% if function_info.navigate == "limit" %}{# navigate limit #}
     if (delta > 0) {
         // Увеличение с проверкой переполнения
-        if (*val <= max - (uint32_t)(delta * factor)) {
-            *val += delta * factor;
+        if (*value <= max - (uint32_t)(delta * factor)) {
+            *value += delta * factor;
         } else {
-            *val = max;
+            *value = max;
         }
     } else {
         // Уменьшение с проверкой underflow
-        if (*val >= min + (uint32_t)(-delta * factor)) {
-            *val += delta * factor;  // delta отрицательный
+        if (*value >= min + (uint32_t)(-delta * factor)) {
+            *value += delta * factor;  // delta отрицательный
         } else {
-            *val = min;
+            *value = min;
         }
     }
 {% elif function_info.navigate == "cyclic" %}{# navigate cyclic #}
@@ -70,7 +70,7 @@ void {{function_name}}(menu_context_t *ctx, menu_id_t id, int8_t delta) {
     int64_t change = (int64_t)delta * (int64_t)factor;
     
     // Вычисляем новое значение с зацикливанием
-    int64_t new_value = (int64_t)*val + change;
+    int64_t new_value = (int64_t)*value + change;
     
     // Нормализуем значение в диапазоне [min, max] с зацикливанием
     if (new_value < (int64_t)min) {
@@ -84,9 +84,9 @@ void {{function_name}}(menu_context_t *ctx, menu_id_t id, int8_t delta) {
     }
     
     // Присваиваем новое значение
-    *val = (uint32_t)new_value;
+    *value = (uint32_t)new_value;
 {% endif %}{# navigate #}
-    if (*val != old_value) {
+    if (*value != old_value) {
         menu_context_set_dirty(ctx);
     }
 }

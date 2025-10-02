@@ -23,7 +23,7 @@ static const menu_node_config_t s_menu_config[] = {
         .double_click_cb = {% if leaf.effective_double_click_cb_name %}{{ leaf.effective_double_click_cb_name }}{% else %}NULL{% endif %},
         .long_click_cb = {% if leaf.effective_long_click_cb_name %}{{ leaf.effective_long_click_cb_name }}{% else %}NULL{% endif %},
         .draw_value_cb = {% if leaf.effective_draw_value_cb_name %}{{ leaf.effective_draw_value_cb_name }}{% else %}NULL{% endif %},
-        .handle_event_cb = {% if leaf.effective_event_cb_name %}{{ leaf.effective_event_cb_name }}{% else %}NULL{% endif %},
+        .event_cb = {% if leaf.effective_event_cb_name %}{{ leaf.effective_event_cb_name }}{% else %}NULL{% endif %},
         {% if leaf.type != 'callback' %}
         .data.{{leaf.category_name}} = {
             {% if leaf.role == 'simple' %}

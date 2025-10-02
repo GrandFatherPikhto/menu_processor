@@ -2,7 +2,7 @@
 #include "menu_context.h"
 
 menu_node_value_t *menu_value_get_by_id(menu_context_t *ctx, menu_id_t id) {
-    if (id >= MENU_ID_COUNT)
+    if (ctx == NULL || id >= MENU_ID_COUNT)
         return NULL;
 
     return &(ctx->values[id]);
@@ -11,7 +11,7 @@ menu_node_value_t *menu_value_get_by_id(menu_context_t *ctx, menu_id_t id) {
 {%  for category_name, category in categories.items() %}{# categories #}
 {% if category.role == "simple" %}
 {{category.c_type}} *menu_value_get_{{category_name}}_value(menu_context_t *ctx, menu_id_t id) {
-    if (id >= MENU_ID_COUNT)
+    if (ctx == NULL || id >= MENU_ID_COUNT)
         return NULL;
     return &(ctx->values[id].data.{{category_name}}.value);
 }
@@ -19,20 +19,20 @@ menu_node_value_t *menu_value_get_by_id(menu_context_t *ctx, menu_id_t id) {
 
 {% elif category.role == "factor" %}
 {{category.c_type}} *menu_value_get_{{category_name}}_value(menu_context_t *ctx, menu_id_t id) {
-    if (id >= MENU_ID_COUNT)
+    if (ctx == NULL || id >= MENU_ID_COUNT)
         return NULL;
     return &(ctx->values[id].data.{{category_name}}.value);
 }
 
 uint8_t *menu_value_get_{{category_name}}_idx(menu_context_t *ctx, menu_id_t id) {
-    if (id >= MENU_ID_COUNT)
+    if (ctx == NULL || id >= MENU_ID_COUNT)
         return NULL;
     return &(ctx->values[id].data.{{category_name}}.idx);
 }
 
 {% elif category.role == "fixed" %}
 uint8_t *menu_value_get_{{category_name}}_idx(menu_context_t *ctx, menu_id_t id) {
-    if (id >= MENU_ID_COUNT)
+    if (ctx == NULL || id >= MENU_ID_COUNT)
         return NULL;
     return &(ctx->values[id].data.{{category_name}}.idx);
 }

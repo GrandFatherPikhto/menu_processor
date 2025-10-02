@@ -2,7 +2,7 @@
 #include "menu_context.h"
 
 const menu_node_t *menu_tree_get_by_id(menu_context_t *ctx, menu_id_t id) {
-    if (id >= MENU_ID_COUNT)
+    if (ctx == NULL || id >= MENU_ID_COUNT)
         return 0;
     return &(ctx->nodes[id]);
 }
@@ -42,7 +42,7 @@ menu_id_t menu_tree_get_child (menu_context_t *ctx, menu_id_t id) {
 }
 
 const char *menu_tree_get_title(menu_context_t *ctx, menu_id_t id) {
-    if (id >= MENU_ID_COUNT)
+    if (ctx == NULL || id >= MENU_ID_COUNT)
         return 0;
     return ctx->nodes[id].title;
 }

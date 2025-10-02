@@ -13,16 +13,18 @@ void menu_navigate_handle_position(menu_context_t *ctx, menu_id_t id, int8_t del
         menu_id_t sibling_id = menu_navigate_get_sibling(ctx, id, delta);
         menu_navigate_go_to(ctx, sibling_id);
     } else if (ctx->state == MENU_STATE_EDIT) {
-        menu_config_handle_position_cb(ctx, id, delta);
-        menu_config_handle_event_cb(ctx, id, MENU_EVENT_CHANGE_VALUE);
+        menu_config_call_position_cb(ctx, id, delta);
+        menu_config_call_event_cb(ctx, id, MENU_EVENT_CHANGE_VALUE);
     }
 }
 
 void menu_navigate_handle_enter(menu_context_t *ctx, menu_id_t id) {
-    if (id >= MENU_ID_COUNT)
+    if (ctx == NULL || id >= MENU_ID_COUNT)
         return;
-    const menu_node_config_t *config = &(ctx->configs[id]);
-    const menu_node_t *node = &(ctx->nodes[id]);
+    
+    const menu_node_config_t *config = menu_config_get_by_id(ctx, id);
+    const menu_node_t *node = menu_tree_get_by_id(ctx, id);
+
     if (config == 0 || node == 0)
         return;
 
@@ -30,9 +32,9 @@ void menu_navigate_handle_enter(menu_context_t *ctx, menu_id_t id) {
         if (ctx->state == MENU_STATE_NAVIGATION) {
             ctx->state = MENU_STATE_EDIT;
             ctx->dirty = true;
-            menu_config_handle_event_cb(ctx, id, MENU_EVENT_START_EDIT);
+            menu_config_call_event_cb(ctx, id, MENU_EVENT_START_EDIT);
         } else if (ctx->state == MENU_STATE_EDIT) {
-            menu_config_handle_click_cb(ctx, id);
+            menu_config_call_click_cb(ctx, id);
             ctx->dirty = true;
         }
     } else {
@@ -43,10 +45,12 @@ void menu_navigate_handle_enter(menu_context_t *ctx, menu_id_t id) {
 }
 
 void menu_navigate_handle_back(menu_context_t *ctx, menu_id_t id) {
-    if (id >= MENU_ID_COUNT)
+    if (ctx == NULL || id >= MENU_ID_COUNT)
         return;
-    const menu_node_config_t *config = &(ctx->configs[id]);
-    const menu_node_t *node = &(ctx->nodes[id]);
+
+    const menu_node_config_t *config = menu_config_get_by_id(ctx, id);
+    const menu_node_t *node = menu_tree_get_by_id(ctx, id);
+
     if (config == 0 || node == 0)
         return;
 
@@ -54,7 +58,7 @@ void menu_navigate_handle_back(menu_context_t *ctx, menu_id_t id) {
         if (ctx->state == MENU_STATE_EDIT) {
             ctx->state = MENU_STATE_NAVIGATION;
             ctx->dirty = true;
-            menu_config_handle_event_cb(ctx, id, MENU_EVENT_STOP_EDIT);
+            menu_config_call_event_cb(ctx, id, MENU_EVENT_STOP_EDIT);
         } else if (ctx->state == MENU_STATE_NAVIGATION) {
             menu_id_t target_id = node->parent;
             if (target_id != MENU_ID_COUNT)
@@ -64,15 +68,15 @@ void menu_navigate_handle_back(menu_context_t *ctx, menu_id_t id) {
 }
 
 void menu_navigate_go_to(menu_context_t *ctx, menu_id_t id) {
-    if (id >= MENU_ID_COUNT)
+    if (ctx == NULL || id >= MENU_ID_COUNT)
         return;
     if (id == ctx->current)
         return;
 
-    menu_config_handle_event_cb(ctx, ctx->current, MENU_EVENT_UNFOCUSED);
+    menu_config_call_event_cb(ctx, ctx->current, MENU_EVENT_UNFOCUSED);
     ctx->previous = ctx->current;
     ctx->current = id;
-    menu_config_handle_event_cb(ctx, ctx->current, MENU_EVENT_FOCUSED);
+    menu_config_call_event_cb(ctx, ctx->current, MENU_EVENT_FOCUSED);
 
     ctx->dirty = true;
 }
@@ -85,7 +89,7 @@ menu_id_t menu_navigate_get_sibling(menu_context_t *ctx, menu_id_t id, int8_t de
     
     menu_id_t current_id = id;
     for (int8_t i = 0; i < steps; i++) {
-        const menu_node_t *node = &(ctx->nodes[current_id]);
+        const menu_node_t *node = menu_tree_get_by_id(ctx, id);
         if (node == 0)
             return MENU_ID_COUNT;
 

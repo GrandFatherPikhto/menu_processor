@@ -2,7 +2,11 @@
 #include "menu_tree.h"
 #include "menu_config.h"
 #include "menu_value.h"
-#include "menu_data.h"
+#include "menu_data_tree.h"
+#include "menu_data_config.h"
+#include "menu_data_name.h"
+#include "menu_data_value.h"
+#include "menu_data_context.h"
 
 void menu_context_init(menu_context_t *ctx) {
 
@@ -19,7 +23,7 @@ void menu_context_init(menu_context_t *ctx) {
     menu_data_set_context(ctx);
 }
 
-bool menu_context_is_dirty(menu_context_t *ctx) {
+bool menu_context_get_dirty(menu_context_t *ctx) {
     return ctx->dirty;
 }
 
@@ -39,7 +43,7 @@ void menu_context_reset_update(menu_context_t *ctx) {
     ctx->update = false;
 }
 
-bool menu_context_is_update(menu_context_t *ctx) {
+bool menu_context_get_update(menu_context_t *ctx) {
     return ctx->update;
 }
 
@@ -73,4 +77,12 @@ const menu_node_name_t *menu_context_get_name_nodes(menu_context_t *ctx) {
 
 menu_state_t menu_context_get_state(menu_context_t *ctx) {
     return ctx->state;
+}
+
+menu_id_t menu_context_get_current_id(menu_context_t *ctx) {
+    return ctx->current;
+}
+
+menu_id_t menu_context_get_previous_id(menu_context_t *ctx) {
+    return ctx->previous;
 }

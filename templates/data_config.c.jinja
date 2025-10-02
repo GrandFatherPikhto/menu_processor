@@ -1,0 +1,61 @@
+#include "menu_data_config.h"
+#include "menu_config.h"
+#include "menu_edit.h"
+#include "menu_draw.h"
+
+#include "lcd1602_data.h" ///< Сделать этот инклуд в шапке меню
+
+{% for leaf_id, leaf in leafs.items() if leaf.c_str_factors is not none %}
+static const {{leaf.c_type}} s_factors_{{leaf_id}}[] = { {{leaf.c_str_factors}} };
+{% endfor %}
+
+{% for leaf_id, leaf in leafs.items() if leaf.c_str_values is not none %}
+static const char *s_values_str_{{leaf_id}}[] = { {{ leaf.c_str_values }} };
+{% endfor %}
+
+static const menu_node_config_t s_menu_config[] = {
+{% for leaf_id, leaf in leafs.items() %}
+    [MENU_ID_{{leaf_id.upper()}}] = {        
+        .id = MENU_ID_{{leaf_id.upper()}},
+        .category = MENU_CATEGORY_{{leaf.category.name.upper()}},
+        .click_cb = {% if leaf.effective_click_cb_name %}{{ leaf.effective_click_cb_name }}{% else %}NULL{% endif %},
+        .position_cb = {% if leaf.effective_position_cb_name %}{{ leaf.effective_position_cb_name }}{% else %}NULL{% endif %},
+        .double_click_cb = {% if leaf.effective_double_click_cb_name %}{{ leaf.effective_double_click_cb_name }}{% else %}NULL{% endif %},
+        .long_click_cb = {% if leaf.effective_long_click_cb_name %}{{ leaf.effective_long_click_cb_name }}{% else %}NULL{% endif %},
+        .draw_value_cb = {% if leaf.effective_draw_value_cb_name %}{{ leaf.effective_draw_value_cb_name }}{% else %}NULL{% endif %},
+        .handle_event_cb = {% if leaf.effective_event_cb_name %}{{ leaf.effective_event_cb_name }}{% else %}NULL{% endif %},
+        {% if leaf.type != 'callback' %}
+        .data.{{leaf.category_name}} = {
+            {% if leaf.role == 'simple' %}
+            .default_value = {{ leaf.default }},
+            .step = {{ leaf.step }},
+            .min = {{ leaf.min }},
+            .max = {{ leaf.max }}
+            {% elif leaf.role == 'factor' %}
+            .default_value = {{ leaf.default }},
+            .min = {{ leaf.min }},
+            .max = {{ leaf.max }},
+            .step = {{ leaf.step }},
+            .default_idx = {{ leaf.factors_default_idx }},
+            .count = {{ leaf.fixed_count }},
+            .factors = s_factors_{{leaf_id}}
+            {% elif leaf.role == 'fixed' %}
+            .default_idx = {{ leaf.values_default_idx }},
+            .count = {{ leaf.values_count }},
+            .values = s_values_str_{{ leaf_id }}
+            {% endif %}
+        }
+        {% else %}
+        .data.stub_config = {}
+        {% endif %}
+    },{% if not loop.last %}
+{% endif %}
+
+{% endfor %}
+};
+
+
+const menu_node_config_t *menu_data_get_config(void) {
+    return s_menu_config;
+}
+

@@ -1,0 +1,27 @@
+#include "menu_data_value.h"
+#include "menu_value.h"
+
+static menu_node_value_t s_menu_values[] = {
+{% for leaf_id, leaf in leafs.items() %}{# leafs #}
+    // {{leaf_id}} {{leaf.role}}
+    [MENU_ID_{{leaf_id.upper()}}] = {
+        .id = MENU_ID_{{leaf_id.upper()}},
+        .data.{{leaf.category_name}} = {
+{% if leaf.role == 'simple' %}{# roles #}
+            .value = {{leaf.default}}
+{% elif leaf.role == 'factor'%}
+            .idx = {{ leaf.factors_default_idx }},
+            .value = {{leaf.default}}
+{% elif leaf.role == 'fixed' %}
+            .idx = {{leaf.values_default_idx}}
+{% elif leaf.role == 'callback' %}
+            .value_ptr = 0
+{% endif %}
+        }
+    },
+{% endfor %}
+};
+
+menu_node_value_t *menu_data_get_values(void) {
+    return s_menu_values;
+}

@@ -1,0 +1,12 @@
+#ifndef DATA_VALUES_H
+#define DATA_VALUES_H
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+
+#include "menu_type.h"
+
+menu_node_value_t *menu_data_get_values(void);
+
+#endif /* DATA_VALUES_H */

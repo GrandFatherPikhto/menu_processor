@@ -12,7 +12,6 @@ typedef struct menu_node_name {
     const char name[0x20];
 } menu_node_name_t;
 
-const menu_node_t *menu_data_get_tree(void);
-menu_id_t menu_data_get_first_id(void);
+const char *menu_name_get_by_id(menu_context_t *ctx, menu_id_t id);
 
 #endif /* MENU_NAME_H */

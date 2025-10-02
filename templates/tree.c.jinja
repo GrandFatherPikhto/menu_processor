@@ -1,14 +1,14 @@
 #include "menu_tree.h"
 #include "menu_context.h"
 
-const menu_node_t *menu_tree_get_node(menu_context_t *ctx, menu_id_t id) {
+const menu_node_t *menu_tree_get_by_id(menu_context_t *ctx, menu_id_t id) {
     if (id >= MENU_ID_COUNT)
         return 0;
     return &(ctx->nodes[id]);
 }
 
 menu_id_t menu_tree_get_next(menu_context_t *ctx, menu_id_t id) {
-    const menu_node_t *node = menu_tree_get_node(ctx, id);
+    const menu_node_t *node = menu_tree_get_by_id(ctx, id);
     if (node == 0)
         return MENU_ID_COUNT;
 
@@ -19,14 +19,14 @@ menu_id_t menu_tree_get_next(menu_context_t *ctx, menu_id_t id) {
 }
 
 menu_id_t menu_tree_get_prev(menu_context_t *ctx, menu_id_t id) {
-    const menu_node_t *node = menu_tree_get_node(ctx, id);
+    const menu_node_t *node = menu_tree_get_by_id(ctx, id);
     if (node == 0)
         return MENU_ID_COUNT;
     return node->prev;
 }
 
 menu_id_t menu_tree_get_parent (menu_context_t *ctx, menu_id_t id) {
-    const menu_node_t *node = menu_tree_get_node(ctx, id);
+    const menu_node_t *node = menu_tree_get_by_id(ctx, id);
     if (node == 0)
         return MENU_ID_COUNT;
     if (node->parent == MENU_ID_ROOT)
@@ -35,7 +35,7 @@ menu_id_t menu_tree_get_parent (menu_context_t *ctx, menu_id_t id) {
 }
 
 menu_id_t menu_tree_get_child (menu_context_t *ctx, menu_id_t id) {
-    const menu_node_t *node = menu_tree_get_node(ctx, id);
+    const menu_node_t *node = menu_tree_get_by_id(ctx, id);
     if (node == 0)
         return MENU_ID_COUNT;
     return node->child;

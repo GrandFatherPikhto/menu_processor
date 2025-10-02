@@ -7,6 +7,19 @@
 
 #include "menu_type.h"
 
+// Макросы для безопасного вызова колбэков
+#define MENU_SAFE_CALL_CLICK(ctx, id) \
+    ((ctx) && (id) < MENU_ID_COUNT && (ctx)->configs[(id)].click_cb ? \
+     (ctx)->configs[(id)].click_cb((ctx), (id)) : (void)0)
+
+#define MENU_SAFE_CALL_POSITION(ctx, id, delta) \
+    ((ctx) && (id) < MENU_ID_COUNT && (ctx)->configs[(id)].position_cb ? \
+     (ctx)->configs[(id)].position_cb((ctx), (id), (delta)) : (void)0)
+
+#define MENU_SAFE_CALL_EVENT(ctx, id, event) \
+    ((ctx) && (id) < MENU_ID_COUNT && (ctx)->configs[(id)].event_cb ? \
+     (ctx)->configs[(id)].event_cb((ctx), (id), (event)) : false)
+
 // Базовые структуры (только forward declarations)
 typedef struct menu_context menu_context_t;
 typedef struct menu_node menu_node_t;
@@ -57,7 +70,7 @@ typedef struct menu_node_config {
     menu_double_click_cb_t double_click_cb;
     menu_long_click_cb_t long_click_cb;
     menu_draw_value_cb_t draw_value_cb;
-    menu_handle_event_cb_t handle_event_cb;
+    menu_handle_event_cb_t event_cb;
     union {        
         stub_config_t stub_config;
 {% for category_name, category in categories.items() if category.type != "callback" %}
@@ -73,7 +86,7 @@ bool menu_config_handle_click_cb(menu_context_t *ctx, menu_id_t id);
 bool menu_config_handle_double_click_cb(menu_context_t *ctx, menu_id_t id);
 bool menu_config_handle_long_click_cb(menu_context_t *ctx, menu_id_t id);
 bool menu_config_handle_draw_value_cb(menu_context_t *ctx, menu_id_t id);
-bool menu_config_handle_handle_event_cb(menu_context_t *ctx, menu_id_t id, menu_event_t event);
+bool menu_config_handle_event_cb(menu_context_t *ctx, menu_id_t id, menu_event_t event);
 
 {%  for category_name, category in categories.items() %}{# categories #}
 // {{category_name}}

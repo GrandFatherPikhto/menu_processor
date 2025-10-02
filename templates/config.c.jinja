@@ -72,8 +72,8 @@ bool menu_config_handle_event_cb(menu_context_t *ctx, menu_id_t id, menu_event_t
     if (id >= MENU_ID_COUNT)
         return false;
 
-    if (ctx->configs[id].handle_event_cb) {
-        ctx->configs[id].handle_event_cb(ctx, id, event);
+    if (ctx->configs[id].event_cb) {
+        ctx->configs[id].event_cb(ctx, id, event);
         return true;
     }
 

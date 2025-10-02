@@ -19,7 +19,7 @@ typedef struct menu_node {
     menu_tree_type_t type;
 } menu_node_t;
 
-const menu_node_t *menu_tree_get_node(menu_context_t *ctx, menu_id_t id);
+const menu_node_t *menu_tree_get_by_id(menu_context_t *ctx, menu_id_t id);
 
 menu_id_t menu_tree_get_next(menu_context_t *ctx, menu_id_t id);
 menu_id_t menu_tree_get_prev(menu_context_t *ctx, menu_id_t id);

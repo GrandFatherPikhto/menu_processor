@@ -1,6 +1,8 @@
 from typing import Dict, List, Optional, Any
+from dataclasses import dataclass, asdict
 from menu_data import MenuData, ControlType
-from callback_manager import CallbackManager
+from managers.callback_manager import CallbackManager
+from managers.function_info import FunctionInfo
 
 class NodeControlManager:
     """Менеджер для управления контролами узла и генерации автоматических функций"""
@@ -142,29 +144,55 @@ class NodeControlManager:
         return any(control.get("required", False) for control in self._controls)
 
     # Свойства для доступа к функциям
+    # @property
+    # def all_function_infos(self) -> List[Dict[str, Any]]:
+    #     """Все возможные функции обработки для этого узла с полной информацией"""
+    #     infos = []
+        
+    #     # Добавляем информацию из автоматических функций
+    #     auto_funcs = self._callback_manager.auto_functions_info
+    #     # print(f"DEBUG all_function_infos for {self._node_id}: auto_funcs = {auto_funcs}")
+        
+    #     for auto_func in auto_funcs:
+    #         infos.append({
+    #             "name": auto_func["name"],
+    #             "node_id": self._node_id,
+    #             "event_type": auto_func["event_type"],
+    #             "navigate": auto_func["navigate"],
+    #             "purpose": auto_func["purpose"],
+    #             "source": "auto_generated",
+    #             "type": self._node_type,
+    #             "role": self._node_role,
+    #             "c_type": self._node_c_type,
+    #             "category": f"{self._node_type}_{self._node_role}"
+    #         })
+
     @property
     def all_function_infos(self) -> List[Dict[str, Any]]:
         """Все возможные функции обработки для этого узла с полной информацией"""
         infos = []
         
-        # Добавляем информацию из автоматических функций
-        auto_funcs = self._callback_manager.auto_functions_info
-        # print(f"DEBUG all_function_infos for {self._node_id}: auto_funcs = {auto_funcs}")
+        # Автоматические функции через dataclass
+        for auto_func in self._callback_manager.auto_functions_info:
+            function_info = FunctionInfo.create_auto(
+                self._node_id, self._node_type, self._node_role, self._node_c_type,
+                auto_func["name"], auto_func["event_type"], 
+                auto_func["navigate"], auto_func["purpose"]
+            )
+            infos.append(asdict(function_info))
         
-        for auto_func in auto_funcs:
-            infos.append({
-                "name": auto_func["name"],
-                "node_id": self._node_id,
-                "event_type": auto_func["event_type"],
-                "navigate": auto_func["navigate"],
-                "purpose": auto_func["purpose"],
-                "source": "auto_generated",
-                "type": self._node_type,
-                "role": self._node_role,
-                "c_type": self._node_c_type,
-                "category": f"{self._node_type}_{self._node_role}"
-            })
+        # Пользовательские функции через dataclass
+        for cb_type, cb_info in self._callback_manager.defined_callback_infos.items():
+            if cb_info and cb_info["custom"]:
+                # Проверяем, нет ли дублирования с автоматическими функциями
+                if not any(info["name"] == cb_info["name"] for info in infos):
+                    function_info = FunctionInfo.create_custom(
+                        self._node_id, self._node_type, self._node_role, self._node_c_type,
+                        cb_info
+                    )
+                    infos.append(asdict(function_info))
         
+        return infos        
         # Добавляем пользовательские callback'и (кроме тех, что уже есть в auto_functions_info)
         for cb_type, cb_info in self._callback_manager.defined_callback_infos.items():
             if cb_info and cb_info["custom"]:

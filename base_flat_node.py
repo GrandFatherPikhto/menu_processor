@@ -1,10 +1,10 @@
 from typing import Dict, List, Optional, Set, Any
 from menu_config import MenuConfig
 from menu_data import MenuData
-from node_data_manager import NodeDataManager
-from node_control_manager import NodeControlManager
-from node_navigation_manager import NodeNavigationManager
-from callback_manager import CallbackManager
+from managers.node_data_manager import NodeDataManager
+from managers.node_control_manager import NodeControlManager
+from managers.node_navigation_manager import NodeNavigationManager
+from managers.callback_manager import CallbackManager
 
 class BaseFlatNode:
     """Базовый класс узла - композиция менеджеров для различных аспектов"""

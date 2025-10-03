@@ -1,7 +1,7 @@
 {
+    "menu": "../menu/menu.json",
     "menu_schema": "menu_schema.json",
     "menu_config": "menu_data.json",
-    "menu": "../menu/menu.json",
     "output_flattern": "../output/flatterned.json",
     "generation_files": "files.json"
 }

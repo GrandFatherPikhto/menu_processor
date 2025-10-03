@@ -96,7 +96,6 @@ bool menu_config_call_event_cb(menu_context_t *ctx, menu_id_t id, menu_event_t e
 {{category.c_type}} menu_config_get_{{category_name}}_step(menu_context_t *ctx, menu_id_t id);
 {{category.c_type}} menu_config_get_{{category_name}}_default_value(menu_context_t *ctx, menu_id_t id);
 {% elif category.role == "factor" %}
-{{category.c_type}} menu_config_get_{{category_name}}_value(menu_context_t *ctx, menu_id_t id);
 {{category.c_type}} menu_config_get_{{category_name}}_min(menu_context_t *ctx, menu_id_t id);
 {{category.c_type}} menu_config_get_{{category_name}}_max(menu_context_t *ctx, menu_id_t id);
 {{category.c_type}} menu_config_get_{{category_name}}_default_value(menu_context_t *ctx, menu_id_t id);

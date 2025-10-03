@@ -26,24 +26,80 @@ typedef struct menu_context {
 
 void menu_context_init(menu_context_t *ctx);
 
-char *menu_context_get_title_str(menu_context_t *ctx);
-char *menu_context_get_value_str(menu_context_t *ctx);
+static inline bool menu_context_get_dirty(menu_context_t *ctx) {
+    return ctx == NULL ? false : ctx->dirty;
+}
 
-bool menu_context_get_dirty(menu_context_t *ctx);
-void menu_context_set_dirty(menu_context_t *ctx);
-void menu_context_reset_dirty(menu_context_t *ctx);
+static inline void menu_context_set_dirty(menu_context_t *ctx) {
+    if (ctx == NULL)
+        return;
+    ctx->dirty = true;
+}
 
-bool menu_context_get_update(menu_context_t *ctx);
-void menu_context_set_update(menu_context_t *ctx);
-void menu_context_reset_update(menu_context_t *ctx);
+static inline void menu_context_reset_dirty(menu_context_t *ctx) {
+    if (ctx == NULL)
+        return;
+    ctx->dirty = false;
+}
 
-menu_id_t menu_context_get_current_id(menu_context_t *ctx);
-menu_id_t menu_context_get_previous_id(menu_context_t *ctx);
+static inline void menu_context_set_update(menu_context_t *ctx) {
+    if (ctx == NULL)
+        return;
+    ctx->update = true;
+}
 
-const menu_node_t *menu_context_get_tree_nodes(menu_context_t *ctx);
-const menu_node_config_t *menu_context_get_config_nodes(menu_context_t *ctx);
-menu_node_value_t *menu_context_get_value_nodes(menu_context_t *ctx);
-const menu_node_name_t *menu_context_get_name_nodes(menu_context_t *ctx);
-menu_state_t menu_context_get_state(menu_context_t *ctx);
+static inline void menu_context_reset_update(menu_context_t *ctx) {
+    if (ctx == NULL)
+        return;
+    ctx->update = false;
+}
+
+static inline bool menu_context_get_update(menu_context_t *ctx) {
+    return ctx == NULL ? false : ctx->update;
+}
+
+static inline char *menu_context_get_title_str(menu_context_t *ctx) {
+    return ctx == NULL ? NULL : ctx->title_buf;
+}
+
+static inline char *menu_context_get_value_str(menu_context_t *ctx) {
+    return ctx == NULL ? NULL : ctx->value_buf;
+}
+
+static inline const menu_node_t *menu_context_get_tree_nodes(menu_context_t *ctx) {
+    return ctx == NULL ? NULL : ctx->nodes;
+}
+
+static inline const menu_node_config_t *menu_context_get_config_nodes(menu_context_t *ctx) {
+    return  ctx->configs;
+}
+
+static inline menu_node_value_t *menu_context_get_value_nodes(menu_context_t *ctx) {
+    if (ctx == NULL)
+        return NULL;
+    return ctx->values;
+}
+
+static inline const menu_node_name_t *menu_context_get_name_nodes(menu_context_t *ctx) {
+    if (ctx == NULL)
+        return NULL;
+    return ctx->names;
+}
+
+static inline menu_state_t menu_context_get_state(menu_context_t *ctx) {
+    return ctx == NULL ? MENU_STATE_NONE : ctx->state;
+}
+
+static inline menu_id_t menu_context_get_current_id(menu_context_t *ctx) {
+    if (ctx == NULL)
+        return MENU_ID_COUNT;
+    return ctx->current;
+}
+
+static inline menu_id_t menu_context_get_previous_id(menu_context_t *ctx) {
+    if (ctx == NULL)
+        return MENU_ID_COUNT;
+    return ctx->previous;
+}
 
 #endif /* MENU_CONTEXT_H */

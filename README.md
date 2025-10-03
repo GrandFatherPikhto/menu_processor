@@ -91,14 +91,19 @@ pip install jinja2 jsonschema
 
 ### 3. Запуск генерации
 
-```bash
-python generator.py ./config/config.json
+В ```config/config.json``` указать путь к файлу конфигурации меню. Например:
+```json
+{
+    "menu": "../menu/menu.json",
+    "menu_schema": "menu_schema.json",
+    "menu_config": "menu_data.json",
+    "output_flattern": "../output/flatterned.json",
+    "generation_files": "files.json"
+}
 ```
-
-Или напрямую:
-
+Запускаем генератор:
 ```bash
-python menu_processor.py ./config/config.json
+python generator.py 
 ```
 
 ## 📝 Создание меню

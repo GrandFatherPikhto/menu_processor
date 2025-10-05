@@ -9,8 +9,8 @@
   * {{function_info.event_type}}
   */
 void {{function_name}}(menu_context_t *ctx, menu_id_t id) {
-    uint8_t *idx  = menu_value_get_{{function_info.category}}_idx(ctx, id);
-    uint8_t count = menu_config_get_{{function_info.category}}_count(ctx, id);
+    uint8_t *idx  = &(ctx->values[id].data.{{function_info.category}}.idx);
+    uint8_t count = ctx->configs[id].data.{{function_info.category}}.count;
     uint8_t old_idx = *idx;
 
     if ((*idx + 1) >= count) {
@@ -20,7 +20,7 @@ void {{function_name}}(menu_context_t *ctx, menu_id_t id) {
     }
 
     if (*idx != old_idx) {
-        menu_context_set_dirty (ctx);
+        ctx->dirty = true;
     }
 }
 
@@ -35,12 +35,12 @@ void {{function_name}}(menu_context_t *ctx, menu_id_t id) {
   * {{function_info.event_type}}
   */
 void {{function_name}}(menu_context_t *ctx, menu_id_t id, int8_t delta) {
-    uint8_t *idx  = menu_value_get_{{function_info.category}}_idx(ctx, id);
-    {{function_info.c_type}} min = menu_config_get_{{function_info.category}}_min(ctx, id);
-    {{function_info.c_type}} max = menu_config_get_{{function_info.category}}_max(ctx, id);
-    {{function_info.c_type}} factor = menu_config_get_{{function_info.category}}_current(ctx, id, *idx);
-    {{function_info.c_type}} *value = menu_value_get_{{function_info.category}}_value(ctx, id);
-    {{function_info.c_type}} old_value = *value;
+    uint8_t *idx  = &(ctx->values[id].data.{{function_info.category}}.idx);
+    {{function_info.c_type}} *value  = &(ctx->values[id].data.{{function_info.category}}.value);
+    {{function_info.c_type}}  min    = ctx->configs[id].data.{{function_info.category}}.min;
+    {{function_info.c_type}}  max    = ctx->configs[id].data.{{function_info.category}}.max;
+    {{function_info.c_type}}  factor = ctx->configs[id].data.{{function_info.category}}.factors[*idx];
+    {{function_info.c_type}}  old_value = *value;
 {% if function_info.navigate == "limit" %}{# navigate limit #}
     if (delta > 0) {
         // Увеличение с проверкой переполнения
@@ -87,7 +87,7 @@ void {{function_name}}(menu_context_t *ctx, menu_id_t id, int8_t delta) {
     *value = (uint32_t)new_value;
 {% endif %}{# navigate #}
     if (*value != old_value) {
-        menu_context_set_dirty(ctx);
+        ctx->dirty = true;
     }
 }
 {% endif %}{# event_type #}

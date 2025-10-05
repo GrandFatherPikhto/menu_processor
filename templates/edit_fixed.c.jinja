@@ -6,9 +6,9 @@
   * @param delta Количество "щелчков" энкодера. Передаётся только если control==position
   */
 void {{function_name}}(menu_context_t *ctx, menu_id_t id) {
-    uint8_t *idx  = menu_value_get_{{function_info.category}}_idx(ctx, id);
+    uint8_t *idx  = &(ctx->values[id].data.{{function_info.category}}.idx);
     uint8_t old_idx = *idx;
-    uint8_t count = menu_config_get_{{function_info.category}}_count(ctx, id);
+    uint8_t count = ctx->configs[id].data.{{function_info.category}}.count;
     if (count == 0) {
        return; // Или установите idx в 0
     }
@@ -20,14 +20,14 @@ void {{function_name}}(menu_context_t *ctx, menu_id_t id) {
     }
 
     if (*idx != old_idx) {
-        menu_context_set_dirty(ctx);
+        ctx->dirty = true;
     }
 }
 {% elif function_info.event_type == "position" %}
 void {{function_name}}(menu_context_t *ctx, menu_id_t id, int8_t delta) {
-    uint8_t *idx  = menu_value_get_{{function_info.category}}_idx(ctx, id);
+    uint8_t *idx  = &(ctx->values[id].data.{{function_info.category}}.idx);
     uint8_t old_idx = *idx;
-    uint8_t count = menu_config_get_{{function_info.category}}_count(ctx, id);
+    uint8_t count = ctx->configs[id].data.{{function_info.category}}.count;
     if (count == 0) {
        return; // Или установите idx в 0
     }
@@ -65,7 +65,7 @@ void {{function_name}}(menu_context_t *ctx, menu_id_t id, int8_t delta) {
     }
 {% endif %}{# navigate #}
     if (*idx != old_idx) {
-        menu_context_set_dirty(ctx);
+        ctx->dirty = true;
     }
 }
 {% endif %}{# event_type #}

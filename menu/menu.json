@@ -5,7 +5,10 @@
         "default_navigate": "limit",
         "default_control": "position",
         "default_branch_navigate": "cyclic",
-        "root_navigate": "cyclic"
+        "root_navigate": "cyclic",
+        "output_directory": "/home/yevst/Projects/CCPP/STM32/SubstratePulseGenerator/menu/src",
+        "wrap_by_name_functions": true,
+        "enable_node_names": true
     },
     "menu": [
         {

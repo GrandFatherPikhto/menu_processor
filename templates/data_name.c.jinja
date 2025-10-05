@@ -1,6 +1,7 @@
 #include "menu_data_name.h"
 #include "menu_name.h"
 
+{% if enable_node_names %}
 static const menu_node_name_t s_menu_id_names[] = {
     [MENU_ID_ROOT] = {MENU_ID_ROOT, "MENU_ID_ROOT"},
 {% for item_id, item in menu.items() %}
@@ -14,3 +15,5 @@ static const menu_node_name_t s_menu_id_names[] = {
 const menu_node_name_t *menu_data_get_node_names(void) {
     return s_menu_id_names;
 }
+
+{% endif %}

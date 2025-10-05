@@ -3,7 +3,7 @@
 #include "menu_edit.h"
 #include "menu_draw.h"
 
-#include "lcd1602_data.h" ///< Сделать этот инклуд в шапке меню
+#include "pulse_data.h" ///< Сделать добавление include в настройках меню
 
 {% for leaf_id, leaf in leafs.items() if leaf.c_str_factors is not none %}
 static const {{leaf.c_type}} s_factors_{{leaf_id}}[] = { {{leaf.c_str_factors}} };

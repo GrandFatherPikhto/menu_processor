@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Set, List, Optional
 from pathlib import Path
 
 class ConfigError(Exception):
@@ -20,11 +20,13 @@ class MenuConfig:
         
         self._menu_schema = self._load_required_file("menu_schema", "схема меню")
         self._menu_data = self._load_required_file("menu", "данные меню")
+        self._menu_config = self._menu_data.get("config")
         self._menu_tree = self._menu_data.get("menu")
         self._data_config = self._load_required_file("menu_config", "данные и роли элементов меню")
+        self._output_directory = self._data_config.get("output_directory")
         self._generation_config = self._load_required_file("generation_files", "данные и роли элементов меню")
         self._generation_files = self._generation_config.get("files")
-        self._templates_path = self._generation_config.get("templates")
+        self._templates_path = self._generation_config.get("templates_path")
     
     def _load_required_file(self, config_key: str, description: str) -> Dict[str, Any]:
         """Загружает обязательный файл из пути, указанного в конфиге"""
@@ -106,17 +108,43 @@ class MenuConfig:
         return self._data_config
     
     @property
-    def generatrion_files(self) -> Dict[str, Any] | None:
-        return self._generation_files
+    def output_directory(self) -> str | None:
+        if self._menu_config is None:
+            return None
+        return self._menu_config.get("output_directory")
+    
+    @property
+    def templates_path(self) -> str | None:
+        return self._templates_path
+
+    @property
+    def generation_files(self) -> Dict[str, Path] | None:
+        generation_files = {}
+        if self.output_directory is not None:
+            output_directory = Path(self.output_directory)
+            print(output_directory)
+            if self._generation_files is not None:
+                for template, output in self._generation_files.items():
+                    generation_files[template] = output_directory / output
+        return generation_files
+
+    def boolean_menu_config_value(self, param_name: str) -> bool:
+        if self._menu_config is None or self._menu_config.get(param_name) is None:
+            return False
+        return self._menu_config.get(param_name)
+
+    @property
+    def wrap_by_name_functions(self) -> bool:
+        return self.boolean_menu_config_value("wrap_by_name_functions")
+    
+    @property
+    def enable_node_names(self) -> bool:
+        return self.boolean_menu_config_value("enable_node_names")
     
     @property
     def menu_tree(self) -> Dict[str, Any] | None:
         return self._menu_tree
-        
-    @property
-    def templates_path(self)->Path | None:
-        return self._templates_path
-    
+            
     @property
     def output_flattern(self)->str | None:
         return self._main_config.get("output_flattern")
@@ -125,7 +153,8 @@ def main(json_file: str):
     try:
         config = MenuConfig(json_file)
         print("✅ Конфигурация успешно загружена")
-        print(config._main_config)
+        print(config.templates_path)
+        print(f"Wrap By Name: {config.wrap_by_name_functions}")
         
     except ConfigError as e:
         print(f"❌ {e}")

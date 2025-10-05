@@ -79,35 +79,4 @@ typedef struct menu_node_config {
     } data;
 } menu_node_config_t;
 
-// Прототипы функций
-const menu_node_config_t *menu_config_get_by_id(menu_context_t *ctx, menu_id_t id);
-bool menu_config_call_position_cb(menu_context_t *ctx, menu_id_t id, int8_t delta);
-bool menu_config_call_click_cb(menu_context_t *ctx, menu_id_t id);
-bool menu_config_call_double_click_cb(menu_context_t *ctx, menu_id_t id);
-bool menu_config_call_long_click_cb(menu_context_t *ctx, menu_id_t id);
-bool menu_config_call_draw_value_cb(menu_context_t *ctx, menu_id_t id);
-bool menu_config_call_event_cb(menu_context_t *ctx, menu_id_t id, menu_event_t event);
-
-{%  for category_name, category in categories.items() %}{# categories #}
-// {{category_name}}
-{% if category.role == "simple" %}
-{{category.c_type}} menu_config_get_{{category_name}}_min(menu_context_t *ctx, menu_id_t id);
-{{category.c_type}} menu_config_get_{{category_name}}_max(menu_context_t *ctx, menu_id_t id);
-{{category.c_type}} menu_config_get_{{category_name}}_step(menu_context_t *ctx, menu_id_t id);
-{{category.c_type}} menu_config_get_{{category_name}}_default_value(menu_context_t *ctx, menu_id_t id);
-{% elif category.role == "factor" %}
-{{category.c_type}} menu_config_get_{{category_name}}_min(menu_context_t *ctx, menu_id_t id);
-{{category.c_type}} menu_config_get_{{category_name}}_max(menu_context_t *ctx, menu_id_t id);
-{{category.c_type}} menu_config_get_{{category_name}}_default_value(menu_context_t *ctx, menu_id_t id);
-uint8_t menu_config_get_{{category_name}}_count(menu_context_t *ctx, menu_id_t id);
-uint8_t menu_config_get_{{category_name}}_default_idx(menu_context_t *ctx, menu_id_t id);
-{{category.c_type}} menu_config_get_{{category_name}}_current(menu_context_t *ctx, menu_id_t id, uint8_t factor_idx);
-{% elif category.role == "fixed" %}
-{{category.c_type}} menu_config_get_{{category_name}}_current(menu_context_t *ctx, menu_id_t id, uint8_t idx);
-uint8_t menu_config_get_{{category_name}}_count(menu_context_t *ctx, menu_id_t id);
-uint8_t menu_config_get_{{category_name}}_default_idx(menu_context_t *ctx, menu_id_t id);
-{% endif %}{# role #}
-{% endfor %}{# category #}
-
-
 #endif /* MENU_CONFIG_H */

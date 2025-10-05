@@ -7,6 +7,8 @@
 
 #include "menu_type.h"
 
+{% if enable_node_names %}
 const menu_node_name_t *menu_data_get_node_names(void);
+{% endif %}
 
 #endif /* MENU_DATA_NAME_H */

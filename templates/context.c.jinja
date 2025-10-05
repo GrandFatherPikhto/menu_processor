@@ -16,7 +16,11 @@ void menu_context_init(menu_context_t *ctx) {
     ctx->nodes = menu_data_get_tree();
     ctx->configs = menu_data_get_config();
     ctx->values = menu_data_get_values();
+{% if enable_node_names %}    
     ctx->names = menu_data_get_node_names();
+{% else %}
+    ctx->names = NULL;
+{% endif %}{# enable_node_names #}
     ctx->previous = MENU_ID_COUNT;
     ctx->current = menu_data_get_first_id();
     ctx->dirty = false;

@@ -1,32 +1,30 @@
 void {{function_name}}(menu_context_t *ctx, menu_id_t id) {
-    const char *value_str = menu_context_get_value_str(ctx);
-    {{function_info.c_type}} min = menu_config_get_{{function_info.category}}_min(ctx, id);
-    {{function_info.c_type}} max = menu_config_get_{{function_info.category}}_max(ctx, id);
-    {{function_info.c_type}} *value = menu_value_get_{{function_info.category}}_value(ctx, id);
-
+    {{function_info.c_type}} min = ctx->configs[id].data.{{function_info.category}}.min;
+    {{function_info.c_type}} max = ctx->configs[id].data.{{function_info.category}}.max;
+    {{function_info.c_type}} value = ctx->values[id].data.{{function_info.category}}.value;
 {% if function_info.type in ["byte", "word", "dword"] %}
-    int len = snprintf(NULL, 0, "%d/%d", *value, max);
-    snprintf((char *)value_str, LCD_STRING_LEN, "%d/%d%*c",
-        *value,
+    int len = snprintf(NULL, 0, "%d/%d", value, max);
+    snprintf(ctx->value_buf, LCD_STRING_LEN, "%d/%d%*c",
+        value,
         max,
         15 - len > 0 ? 15 - len : 0,
-        menu_context_get_state(ctx) == MENU_STATE_EDIT ? '*' : '>'
+        ctx->state == MENU_STATE_EDIT ? '*' : '>'
     );
 {% elif function_info.type in ["ubyte", "uword", "udword"]%}
-    int len = snprintf(NULL, 0, "%u/%u", *value, max);
-    snprintf((char *)value_str, LCD_STRING_LEN, "%u/%u%*c",
-        *value,
+    int len = snprintf(NULL, 0, "%u/%u", value, max);
+    snprintf(ctx->value_buf, LCD_STRING_LEN, "%u/%u%*c",
+        value,
         max,
         15 - len > 0 ? 15 - len : 0,
-        menu_context_get_state(ctx) == MENU_STATE_EDIT ? '*' : '>'
+        ctx->state == MENU_STATE_EDIT ? '*' : '>'
     );
 {% elif function_info.type == "float" %}
-    int len = snprintf(NULL, 0, "%3.3f/%3.3f", *value, max);
-    snprintf((char *)value_str, LCD_STRING_LEN, "%3.3/%3.3%*c",
-        *value,
+    int len = snprintf(NULL, 0, "%3.3f/%3.3f", value, max);
+    snprintf(ctx->value_buf, LCD_STRING_LEN, "%3.3/%3.3%*c",
+        value,
         max,
         15 - len > 0 ? 15 - len : 0,
-        menu_context_get_state(ctx) == MENU_STATE_EDIT ? '*' : '>'
+        ctx->state == MENU_STATE_EDIT ? '*' : '>'
     );
 {% endif %}
 }

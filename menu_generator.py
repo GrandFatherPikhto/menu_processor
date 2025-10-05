@@ -2,6 +2,7 @@ import inspect
 import logging
 import json
 import os
+from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, Environment, Template, TemplateSyntaxError, UndefinedError, TemplateError
 from jinja2.ext import Extension, debug
 from typing import Dict, Set, List, Optional, Any
@@ -20,7 +21,7 @@ class MenuGenerator:
             lstrip_blocks=True,
             extensions=['jinja2.ext.debug']
         )
-        self._files = self._config.generatrion_files
+        self._files = self._config.generation_files
         self._context = {}
 
         self._generate()
@@ -38,7 +39,9 @@ class MenuGenerator:
             'first': self._processor.first,
             'leafs': self._processor.leafs,
             'categories': self._processor.categories,
-            'functions': self._processor.functions
+            'functions': self._processor.functions,
+            'wrap_by_name_functions': self._config.wrap_by_name_functions,
+            'enable_node_names': self._config.enable_node_names
         }
 
 
@@ -48,13 +51,13 @@ class MenuGenerator:
                 print(f"Generate: {template} => {output}")
                 self._generate_file(template, output, self._context)
 
-    def _generate_file(self, template_path: str, output_path: str, template_data):
+    def _generate_file(self, template_name: str, output_path: str | Path, template_data):
         """Генерация конкретного файла"""
-        print(f'Generate from {template_path} to {output_path}')
+        print(f'Generate from {template_name} to {output_path}')
         
         try:
             # Загрузка шаблона
-            template = self._env.get_template(template_path)
+            template = self._env.get_template(str(template_name))
             
             # Рендеринг
             content = template.render(**template_data)

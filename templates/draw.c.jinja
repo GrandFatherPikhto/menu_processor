@@ -11,28 +11,22 @@ bool menu_draw_update(menu_context_t *ctx, menu_id_t id) {
     
     if (id >= MENU_ID_COUNT || ctx->dirty == false)
         return false;
-
-    const menu_node_t *node = menu_tree_get_by_id(ctx, id);
-    const menu_node_config_t *config = menu_config_get_by_id(ctx, id);
-
-    char *title_str = menu_context_get_title_str(ctx);
-    char *value_str = menu_context_get_value_str(ctx);
     
-    memset((void *)title_str, 0, LCD_STRING_LEN);
-    memset((void *)value_str, 0, LCD_STRING_LEN);
+    memset((void *)ctx->title_buf, 0, LCD_STRING_LEN);
+    memset((void *)ctx->value_buf, 0, LCD_STRING_LEN);
 
-    strncpy((char *)title_str, node->title, LCD_STRING_LEN);
+    strncpy((char *)ctx->title_buf, ctx->nodes[id].title, LCD_STRING_LEN);
 
-    if (node->child == MENU_ID_COUNT) {
-        if (config->draw_value_cb) {
-            config->draw_value_cb(ctx, id);
+    if (ctx->nodes[id].child == MENU_ID_COUNT) {
+        if (ctx->configs[id].draw_value_cb) {
+            ctx->configs[id].draw_value_cb(ctx, id);
         }
     } else {
-        value_str[0] = '>';
+        ctx->value_buf[0] = '>';
     }
 
-    menu_context_reset_dirty(ctx);
-    menu_context_set_update(ctx);
+    ctx->dirty = false;
+    ctx->update = true;
 }
 
 {% for function_name, function_info in functions.items() if function_info.event_type == "draw_value" %}

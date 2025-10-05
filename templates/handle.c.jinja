@@ -1,8 +1,11 @@
 #include "menu.h"
 #include "menu_data_context.h"
-#include "menu_context.h"
 #include "menu_navigate.h"
 #include "menu_draw.h"
+#include "menu_config.h"
+#include "menu_tree.h"
+#include "menu_value.h"
+#include "menu_context.h"
 
 // Инициализация
 void menu_init(void) {
@@ -33,40 +36,53 @@ void menu_reset(void) {
 
 void menu_update(void) {
     menu_context_t *ctx = menu_data_get_context();
-    if (menu_context_get_dirty(ctx)) {
-        menu_draw_update(ctx, menu_context_get_current_id(ctx));
+    if (ctx->dirty) {
+        menu_draw_update(ctx, ctx->current);
     }
+}
+
+void menu_set_update(void) {
+    menu_context_t *ctx = menu_data_get_context();
+    if (ctx == NULL)
+        return;
+    ctx->update = true;;
 }
 
 // Для отрисовки (можно вынести в отдельный menu_display.h)
 char* menu_title_buf(void) {
     menu_context_t *ctx = menu_data_get_context();
-    return menu_context_get_title_str(ctx);
+    return ctx == NULL ? NULL : ctx->title_buf;
 }
 
 char* menu_value_buf(void) {
     menu_context_t *ctx = menu_data_get_context();
-    return menu_context_get_value_str(ctx);
+    return ctx == NULL ? NULL : ctx->value_buf;
 }
 
 bool menu_needs_redraw(void) {
     menu_context_t *ctx = menu_data_get_context();
-    return menu_context_get_update(ctx);
+    return ctx == NULL ? false : ctx->update;
 }
 
 bool menu_ack_redraw(void) {
     menu_context_t *ctx = menu_data_get_context();
-    bool ack_redraw = menu_context_get_update(ctx);
-    menu_context_reset_update(ctx);
+    if (ctx == NULL)
+        return false;
+    bool ack_redraw = ctx->update;
+    ctx->update = false;
     return ack_redraw;
 }
 
 void menu_set_dirty(void) {
     menu_context_t *ctx = menu_data_get_context();
-    menu_context_set_dirty(ctx);
+    if (ctx == NULL)
+        return;
+    ctx->dirty = true;
 }
 
 menu_state_t menu_state(void) {
     menu_context_t *ctx = menu_data_get_context();
-    return menu_context_get_state(ctx);
+    if (ctx == NULL)
+        return MENU_STATE_NONE;
+    return ctx->state;
 }

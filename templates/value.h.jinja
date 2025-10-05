@@ -38,17 +38,4 @@ typedef struct menu_node_value {
     } data;
 } menu_node_value_t;
 
-menu_node_value_t *menu_value_get_by_id(menu_context_t *ctx, menu_id_t id);
-
-{%  for category_name, category in categories.items() %}{# categories #}
-{% if category.role == "simple" %}
-{{category.c_type}} *menu_value_get_{{category_name}}_value(menu_context_t *ctx, menu_id_t id);
-{% elif category.role == "factor" %}
-{{category.c_type}} *menu_value_get_{{category_name}}_value(menu_context_t *ctx, menu_id_t id);
-uint8_t *menu_value_get_{{category_name}}_idx(menu_context_t *ctx, menu_id_t id);
-{% elif category.role == "fixed" %}
-uint8_t *menu_value_get_{{category_name}}_idx(menu_context_t *ctx, menu_id_t id);
-{% endif %}
-{% endfor %}{# categories #}
-
 #endif // MENU_VALUE_H

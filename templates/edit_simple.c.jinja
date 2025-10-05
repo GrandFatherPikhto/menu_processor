@@ -11,25 +11,25 @@
   */
 {% if function_info.event_type == "click" %}
 void {{function_name}}(menu_context_t *ctx, menu_id_t id) {
-    {{function_info.c_type}} *value  = menu_value_get_{{function_info.category}}_value(ctx, id);
-    {{function_info.c_type}}  step = menu_config_get_{{function_info.category}}_step(ctx, id);
-    {{function_info.c_type}}   min = menu_config_get_{{function_info.category}}_min(ctx, id);
-    {{function_info.c_type}}   max = menu_config_get_{{function_info.category}}_max(ctx, id);
+    {{function_info.c_type}} *value  = &(ctx->values[id].data.{{function_info.category}}.value);
+    {{function_info.c_type}}  step = ctx->configs[id].data.{{function_info.category}}.step;
+    {{function_info.c_type}}   min = ctx->configs[id].data.{{function_info.category}}.min;
+    {{function_info.c_type}}   max = ctx->configs[id].data.{{function_info.category}}.max;
     {{function_info.c_type}} old_value = *value;
     if ((*value + step) > max)
       *value = min;
     else
       *value = *value + step;
     if (*value != old_value) {
-      menu_context_set_dirty(ctx);
+        ctx->dirty = true;
     }
 }
 {% elif function_info.event_type == "position" %}
 void {{function_name}}(menu_context_t *ctx, menu_id_t id, int8_t delta) {
-    {{function_info.c_type}} *value  = menu_value_get_{{function_info.category}}_value(ctx, id);
-    {{function_info.c_type}}  step = menu_config_get_{{function_info.category}}_step(ctx, id);
-    {{function_info.c_type}}   min = menu_config_get_{{function_info.category}}_min(ctx, id);
-    {{function_info.c_type}}   max = menu_config_get_{{function_info.category}}_max(ctx, id);
+    {{function_info.c_type}} *value  = &(ctx->values[id].data.{{function_info.category}}.value);
+    {{function_info.c_type}}  step = ctx->configs[id].data.{{function_info.category}}.step;
+    {{function_info.c_type}}   min = ctx->configs[id].data.{{function_info.category}}.min;
+    {{function_info.c_type}}   max = ctx->configs[id].data.{{function_info.category}}.max;
     {{function_info.c_type}} old_value = *value;  
 {% if function_info.navigate == "limit" %}{# navigate limit #}
     if (delta > 0) {
@@ -65,7 +65,7 @@ void {{function_name}}(menu_context_t *ctx, menu_id_t id, int8_t delta) {
     }
 {% endif %}{# navigate #}
     if (*value != old_value) {
-      menu_context_set_dirty(ctx);
+        ctx->dirty = true;
     }
 }
 {% endif %}{# event_type #}

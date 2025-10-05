@@ -34,28 +34,49 @@
         "enum": ["simple", "factor", "fixed", "callback"],
         "description": "Управление данными: простое, добавляем/вычитаем factor * количество шагов, фиксированный набор, функция обратного вызова"
     },
+    "outputDirectory": {
+      "type": "string",
+      "description": "Директория в которую генерируются *.c и *.h файлы сгенерированные из шаблонов"
+    },
+    "wrapByNameFunctions": {
+      "type": "boolean",
+      "description": "Сделать функции-обёртки для получения данных по имени ноды"
+    },
+    "enableNodeNames": {
+      "type": "boolean",
+      "description": "Делать статический список имён узлов меню для отладки"
+    },
     "configItems": {
         "type": "object",
         "properties": {
             "version": {
-                "type": "string",
-                "pattern": "^\\d+\\.\\d+$"
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+$"
             },
             "author": {
-                "type": "string",
-                "minLength": 1
+              "type": "string",
+              "minLength": 1
             },
             "default_navigate": {
-                "$ref": "#/$defs/navigateType"
+              "$ref": "#/$defs/navigateType"
             },
             "default_control": {
-                "$ref": "#/$defs/controlType"
+              "$ref": "#/$defs/controlType"
             },
             "root_navigate": {
-                "$ref": "#/$defs/navigateType"
+              "$ref": "#/$defs/navigateType"
             },
             "default_branch_navigate": {
-                "$ref": "#/$defs/navigateType"
+              "$ref": "#/$defs/navigateType"
+            },
+            "output_directory": {
+              "$ref": "#/$defs/outputDirectory"
+            },
+            "wrap_by_name_functions": {
+              "$ref": "#/$defs/wrapByNameFunctions"
+            },
+            "enable_node_names": {
+              "$ref": "#/$defs/enableNodeNames"
             }
         },
         "additionalProperties": false

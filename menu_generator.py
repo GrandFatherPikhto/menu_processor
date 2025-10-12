@@ -41,7 +41,8 @@ class MenuGenerator:
             'categories': self._processor.categories,
             'functions': self._processor.functions,
             'wrap_by_name_functions': self._config.wrap_by_name_functions,
-            'enable_node_names': self._config.enable_node_names
+            'enable_node_names': self._config.enable_node_names,
+            'include_files': self._config.include_files
         }
 
 

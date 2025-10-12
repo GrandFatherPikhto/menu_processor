@@ -7,6 +7,7 @@
         "default_branch_navigate": "cyclic",
         "root_navigate": "cyclic",
         "output_directory": "/home/yevst/Projects/CCPP/STM32/SubstratePulseGenerator/menu/src",
+        "include_files": ["pulse_config.h"],
         "wrap_by_name_functions": true,
         "enable_node_names": true
     },
@@ -55,6 +56,16 @@
                     "title": "Hi Channel",
                     "items": [
                         {
+                            "id": "hi_on",
+                            "title": "Hi On/Off",
+                            "type": "string",
+                            "role": "fixed",
+                            "navigate": "cyclic",
+                            "values": ["Off", "On"],
+                            "default_idx": 1,
+                            "event_cb": "my_event_cb"
+                        },
+                        {
                             "id" : "hi_delay",
                             "title" : "Delay",
                             "type": "udword",
@@ -102,6 +113,16 @@
                     "id": "lo_channel",
                     "title": "Lo Channel",
                     "items": [
+                        {
+                            "id": "lo_on",
+                            "title": "Lo On/Off",
+                            "type": "string",
+                            "role": "fixed",
+                            "navigate": "cyclic",
+                            "values": ["Off", "On"],
+                            "default_idx": 1,
+                            "event_cb": "my_event_cb"
+                        },
                         {
                             "id" : "lo_delay",
                             "title" : "Delay",

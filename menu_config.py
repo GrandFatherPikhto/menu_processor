@@ -132,6 +132,12 @@ class MenuConfig:
         if self._menu_config is None or self._menu_config.get(param_name) is None:
             return False
         return self._menu_config.get(param_name)
+    
+    @property
+    def include_files(self)->List[str]:
+        if self._menu_config is None or self._menu_config.get("include_files") is None:
+            return []
+        return self._menu_config.get("include_files")
 
     @property
     def wrap_by_name_functions(self) -> bool:
@@ -155,6 +161,7 @@ def main(json_file: str):
         print("✅ Конфигурация успешно загружена")
         print(config.templates_path)
         print(f"Wrap By Name: {config.wrap_by_name_functions}")
+        print(f"Include Files: {config.include_files}")
         
     except ConfigError as e:
         print(f"❌ {e}")

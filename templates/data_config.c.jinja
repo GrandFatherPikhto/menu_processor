@@ -3,7 +3,9 @@
 #include "menu_edit.h"
 #include "menu_draw.h"
 
-#include "pulse_data.h" ///< Сделать добавление include в настройках меню
+{% for include_file in include_files %}
+#include "{{include_file}}"
+{% endfor %}
 
 {% for leaf_id, leaf in leafs.items() if leaf.c_str_factors is not none %}
 static const {{leaf.c_type}} s_factors_{{leaf_id}}[] = { {{leaf.c_str_factors}} };

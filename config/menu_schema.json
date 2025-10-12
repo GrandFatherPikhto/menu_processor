@@ -38,6 +38,13 @@
       "type": "string",
       "description": "Директория в которую генерируются *.c и *.h файлы сгенерированные из шаблонов"
     },
+    "includeFiles": {
+      "type": "array",
+      "items" : {
+        "type": "string"
+      },
+      "description": "Список файлов для включения в сгенерированный menu_data_config.c"
+    },
     "wrapByNameFunctions": {
       "type": "boolean",
       "description": "Сделать функции-обёртки для получения данных по имени ноды"
@@ -71,6 +78,9 @@
             },
             "output_directory": {
               "$ref": "#/$defs/outputDirectory"
+            },
+            "include_files": {
+              "$ref": "#/$defs/includeFiles"
             },
             "wrap_by_name_functions": {
               "$ref": "#/$defs/wrapByNameFunctions"

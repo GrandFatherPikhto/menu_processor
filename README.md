@@ -23,6 +23,7 @@ to be compiled into your firmware.
 - [Node reference](#node-reference)
 - [Generated files](#generated-files)
 - [Internationalization (i18n / gettext)](#internationalization-i18n--gettext)
+- [Tests](#tests)
 - [Documentation](#documentation)
 
 ---
@@ -64,25 +65,31 @@ The pipeline is fully data-driven: the same generator handles any menu — from 
 
 ```
 menu_processor/
-├── generate_menu.py          # ← run this: the only entry point at the root
-├── generate_menu/            # Python package with all sources
-│   ├── config/               # YAML/JSON configuration files
-│   ├── menu/                 # the menu tree (menu.yaml / menu.json)
-│   ├── templates/            # Jinja2 templates (*.jinja)
-│   ├── output/               # generated C files (include/ + sources)
-│   ├── locale/               # gettext catalogs (messages.pot, ru/...)
-│   ├── i18n.py               # gettext helper
-│   ├── common.py             # JSON/YAML loaders and helpers
-│   ├── menu_config.py        # loads & validates all config files
-│   ├── menu_data.py          # type/role/control/navigation rules
-│   ├── menu_validator.py     # schema + custom validation
-│   ├── menu_flattener.py     # tree → flat list, navigation links
-│   ├── base_flat_node.py     # base node (manager composition)
-│   ├── flat_node.py          # final node class
-│   ├── menu_processor.py     # coordinator & aggregator
-│   ├── menu_generator.py     # Jinja2 rendering → C files
-│   └── managers/             # per-node managers
-├── docs/                     # documentation (see below)
+├── generate_menu.py              # ← run this: the only entry point at the root
+├── generate_menu/                # Python package with all sources
+│   ├── cli.py                    # command-line interface (argparse)
+│   ├── i18n.py                   # gettext helper
+│   ├── common.py                 # JSON/YAML loaders and helpers
+│   ├── menu_config.py            # loads & validates all config files
+│   ├── menu_data.py              # type/role/control/navigation rules
+│   ├── menu_validator.py         # schema + custom validation
+│   ├── menu_flattener.py         # tree → flat list, navigation links
+│   ├── base_flat_node.py         # base node (manager composition)
+│   ├── flat_node.py              # final node class
+│   ├── menu_processor.py         # coordinator (delegates to the aggregator)
+│   ├── menu_data_aggregator.py   # cached aggregations
+│   ├── menu_generator.py         # Jinja2 rendering → C files
+│   ├── locale/                   # gettext catalogs (messages.pot, ru/...)
+│   └── managers/                 # per-node managers
+├── config/                       # YAML/JSON configuration files
+├── menu/                         # the menu tree (menu.yaml / menu.json)
+├── templates/                    # Jinja2 templates (*.jinja)
+├── output/                       # generated C files (include/ + sources, git-ignored)
+├── docs/                         # documentation (see below)
+├── tests/                        # unit & smoke tests (pytest)
+├── test/                         # integration tests (pytest)
+├── conftest.py                   # shared pytest fixtures
+├── pytest.ini
 └── requirements.txt
 ```
 
@@ -96,17 +103,16 @@ pip install -r requirements.txt
 python generate_menu.py
 ```
 
-The generated C files appear in [`generate_menu/output/`](generate_menu/output/)
-(sources) and [`generate_menu/output/include/`](generate_menu/output/include/)
-(headers).
+The generated C files appear in [`output/`](output/) (sources) and
+[`output/include/`](output/include/) (headers).
 
-> 💡 All source code, configuration, templates and output live inside the
-> [`generate_menu/`](generate_menu/) package; the root only keeps the entry point
-> [`generate_menu.py`](generate_menu.py).
+> 💡 The root keeps the entry point [`generate_menu.py`](generate_menu.py) plus the
+> asset directories (`config/`, `menu/`, `templates/`, `output/`) and the docs; all
+> Python sources live inside the [`generate_menu/`](generate_menu/) package.
 
 ## Configuration
 
-The main configuration file is [`generate_menu/config/config.yaml`](generate_menu/config/config.yaml).
+The main configuration file is [`config/config.yaml`](config/config.yaml).
 
 ### Main config: `config/config.yaml`
 
@@ -240,22 +246,28 @@ python -X utf8 generate_menu.py
 
 If a catalog is missing or the language is unknown, English is used as fallback.
 
+## Tests
+
+Run the whole suite (unit + integration) from the project root:
+
+```bash
+python -m pytest -q
+```
+
+- [`docs/tests.md`](docs/tests.md) — unit & smoke tests (`tests/`)
+- [`docs/test.md`](docs/test.md) — integration tests (`test/`)
+
 ## Documentation
 
 | Document | Language |
 |----------|----------|
 | [docs/architect.md](docs/architect.md) | 🇬🇧 Architecture overview & recommendations |
 | [docs/architect_ru.md](docs/architect_ru.md) | 🇷🇺 Обзор архитектуры и рекомендации |
-| [docs/changes.md](docs/changes.md) | 🇬🇧 Changelog |
-| [docs/changes_ru.md](docs/changes_ru.md) | 🇷🇺 Журнал изменений |
-
----
-
-## Документация
-
-| Документ | Язык |
-|----------|------|
-| [docs/architect.md](docs/architect.md) | 🇬🇧 Architecture overview & recommendations |
-| [docs/architect_ru.md](docs/architect_ru.md) | 🇷🇺 Обзор архитектуры и рекомендации |
+| [docs/jinja_templates.md](docs/jinja_templates.md) | 🇬🇧 Generated C code: architecture & integration |
+| [docs/jinja_templates_ru.md](docs/jinja_templates_ru.md) | 🇷🇺 Генерируемый C-код: архитектура и встраивание |
+| [docs/tests.md](docs/tests.md) | 🇬🇧 Unit & smoke tests (`tests/`) |
+| [docs/tests_ru.md](docs/tests_ru.md) | 🇷🇺 Модульные и smoke-тесты (`tests/`) |
+| [docs/test.md](docs/test.md) | 🇬🇧 Integration tests (`test/`) |
+| [docs/test_ru.md](docs/test_ru.md) | 🇷🇺 Интеграционные тесты (`test/`) |
 | [docs/changes.md](docs/changes.md) | 🇬🇧 Changelog |
 | [docs/changes_ru.md](docs/changes_ru.md) | 🇷🇺 Журнал изменений |

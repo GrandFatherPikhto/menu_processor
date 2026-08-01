@@ -42,25 +42,31 @@ config/config.yaml
 
 ```
 menu_processor/
-├── generate_menu.py          # ← запускается отсюда: единственная точка входа в корне
-├── generate_menu/            # Python-пакет со всеми исходниками
-│   ├── config/               # конфигурационные файлы YAML/JSON
-│   ├── menu/                 # дерево меню (menu.yaml / menu.json)
-│   ├── templates/            # Jinja2-шаблоны (*.jinja)
-│   ├── output/               # сгенерированные C-файлы (include/ + исходники)
-│   ├── locale/               # gettext-каталоги (messages.pot, ru/...)
-│   ├── i18n.py               # gettext-хелпер
-│   ├── common.py             # загрузчики JSON/YAML и хелперы
-│   ├── menu_config.py        # загрузка и проверка всех конфигов
-│   ├── menu_data.py          # правила типов/ролей/контролов/навигации
-│   ├── menu_validator.py     # schema + кастомная валидация
-│   ├── menu_flattener.py     # дерево → плоский список, связи навигации
-│   ├── base_flat_node.py     # базовый узел (композиция менеджеров)
-│   ├── flat_node.py          # финальный класс узла
-│   ├── menu_processor.py     # координатор и агрегатор
-│   ├── menu_generator.py     # рендер Jinja2 → C-файлы
-│   └── managers/             # менеджеры узла
-├── docs/                     # документация (см. ниже)
+├── generate_menu.py              # ← запускается отсюда: единственная точка входа в корне
+├── generate_menu/                # Python-пакет со всеми исходниками
+│   ├── cli.py                    # интерфейс командной строки (argparse)
+│   ├── i18n.py                   # gettext-хелпер
+│   ├── common.py                 # загрузчики JSON/YAML и хелперы
+│   ├── menu_config.py            # загрузка и проверка всех конфигов
+│   ├── menu_data.py              # правила типов/ролей/контролов/навигации
+│   ├── menu_validator.py         # schema + кастомная валидация
+│   ├── menu_flattener.py         # дерево → плоский список, связи навигации
+│   ├── base_flat_node.py         # базовый узел (композиция менеджеров)
+│   ├── flat_node.py              # финальный класс узла
+│   ├── menu_processor.py         # координатор (делегирует агрегатору)
+│   ├── menu_data_aggregator.py   # кэшируемая агрегация
+│   ├── menu_generator.py         # рендер Jinja2 → C-файлы
+│   ├── locale/                   # gettext-каталоги (messages.pot, ru/...)
+│   └── managers/                 # менеджеры узла
+├── config/                       # конфигурационные файлы YAML/JSON
+├── menu/                         # дерево меню (menu.yaml / menu.json)
+├── templates/                    # Jinja2-шаблоны (*.jinja)
+├── output/                       # сгенерированные C-файлы (include/ + исходники, в .gitignore)
+├── docs/                         # документация (см. ниже)
+├── tests/                        # модульные и smoke-тесты (pytest)
+├── test/                         # интеграционные тесты (pytest)
+├── conftest.py                   # общие pytest-фикстуры
+├── pytest.ini
 └── requirements.txt
 ```
 
@@ -74,17 +80,16 @@ pip install -r requirements.txt
 python generate_menu.py
 ```
 
-Сгенерированные C-файлы появляются в [`generate_menu/output/`](generate_menu/output/)
-(исходники) и [`generate_menu/output/include/`](generate_menu/output/include/)
-(заголовки).
+Сгенерированные C-файлы появляются в [`output/`](output/)
+(исходники) и [`output/include/`](output/include/) (заголовки).
 
-> 💡 Весь исходный код, конфигурация, шаблоны и вывод находятся внутри пакета
-> [`generate_menu/`](generate_menu/); в корне остаётся только точка входа
-> [`generate_menu.py`](generate_menu.py).
+> 💡 В корне лежат точка входа [`generate_menu.py`](generate_menu.py), директории
+> ресурсов (`config/`, `menu/`, `templates/`, `output/`) и документация; все
+> Python-исходники находятся внутри пакета [`generate_menu/`](generate_menu/).
 
 ## Конфигурация
 
-Главный конфигурационный файл — [`generate_menu/config/config.yaml`](generate_menu/config/config.yaml).
+Главный конфигурационный файл — [`config/config.yaml`](config/config.yaml).
 
 ### Главный конфиг: `config/config.yaml`
 
@@ -219,11 +224,28 @@ python -X utf8 generate_menu.py
 
 Если каталог переводов отсутствует или язык неизвестен, используется английский (fallback).
 
+## Тесты
+
+Запуск всего набора (модульные + интеграционные) из корня проекта:
+
+```bash
+python -m pytest -q
+```
+
+- [`docs/tests_ru.md`](docs/tests_ru.md) — модульные и smoke-тесты (`tests/`)
+- [`docs/test_ru.md`](docs/test_ru.md) — интеграционные тесты (`test/`)
+
 ## Документация
 
 | Документ | Язык |
 |----------|------|
 | [docs/architect.md](docs/architect.md) | 🇬🇧 Architecture overview & recommendations |
 | [docs/architect_ru.md](docs/architect_ru.md) | 🇷🇺 Обзор архитектуры и рекомендации |
+| [docs/jinja_templates.md](docs/jinja_templates.md) | 🇬🇧 Generated C code: architecture & integration |
+| [docs/jinja_templates_ru.md](docs/jinja_templates_ru.md) | 🇷🇺 Генерируемый C-код: архитектура и встраивание |
+| [docs/tests.md](docs/tests.md) | 🇬🇧 Unit & smoke tests (`tests/`) |
+| [docs/tests_ru.md](docs/tests_ru.md) | 🇷🇺 Модульные и smoke-тесты (`tests/`) |
+| [docs/test.md](docs/test.md) | 🇬🇧 Integration tests (`test/`) |
+| [docs/test_ru.md](docs/test_ru.md) | 🇷🇺 Интеграционные тесты (`test/`) |
 | [docs/changes.md](docs/changes.md) | 🇬🇧 Changelog |
 | [docs/changes_ru.md](docs/changes_ru.md) | 🇷🇺 Журнал изменений |

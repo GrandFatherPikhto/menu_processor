@@ -7,6 +7,7 @@ from menu_config import MenuConfig, ConfigError
 from menu_flattener import MenuFlattener, FlattenerError
 from menu_data import ControlType
 from common import save_json_data
+from i18n import _
 
 class ProcessorError(Exception):
     """Исключение для ошибок конфигурации"""
@@ -17,18 +18,18 @@ class MenuProcessor:
     def __init__(self, config_name: str):
         self._config_name = config_name
         self._config = MenuConfig(self._config_name)
-        print(f"✅ Конфигурация {self._config_name} успешно загружена")
+        print("✅ " + _("Configuration {path} loaded successfully").format(path=self._config_name))
         self._validator = MenuValidator(config=self._config)
         errors = self._validator.validate()
         if errors:
-            print(f"❌ Конфигурация содержит ошибки:")
+            print("❌ " + _("Configuration contains errors:"))
             for id, items in errors.items():
-                print(f"❌ {id}:")
+                print("❌ " + _("{id}:").format(id=id))
                 for item in items:
-                    print(f"\t➤ {item}")
-            raise ProcessorError(f"❌ Ошибка конфигурации")
+                    print("\t➤ " + str(item))
+            raise ProcessorError("❌ " + _("Configuration error"))
         else:
-            print("✅ и проверена")
+            print("✅ " + _("and validated"))
             self._flattener = MenuFlattener(self._config)
             self._flat_nodes = self._flattener.flatten()
             
@@ -37,11 +38,11 @@ class MenuProcessor:
     
     def _print_control_summary(self):
         """Печатает сводку по контролам для отладки"""
-        print("\n📊 Сводка по контролам:")
+        print("\n📊 " + _("Control summary:"))
         for node in self._flat_nodes:
             if node.id == 'root':
                 continue
-            print(f"- {node}")
+            print("- " + str(node))
             if hasattr(node, 'print_control_info'):
                 node.print_control_info()
         print()
@@ -82,9 +83,9 @@ class MenuProcessor:
             try:
                 with open(file_name, 'w', encoding='utf-8') as f:
                     json.dump(flat_data, f, indent=2, ensure_ascii=False)
-                print(f"✅ Плоское меню сохранено в {file_name}")
+                print("✅ " + _("Flat menu saved to {path}").format(path=file_name))
             except Exception as e:
-                print(f"❌ Ошибка сохранения плоского меню: {e}")
+                print("❌ " + _("Error saving flat menu: {error}").format(error=e))
 
     @property
     def config(self) -> MenuConfig:
@@ -296,27 +297,29 @@ class MenuProcessor:
     
     def print_callback_summary(self):
         """Печатает сводку по callback'ам"""
-        print("\n🎛️ Сводка по callback-функциям:")
+        print("\n🎛️ " + _("Callback functions summary:"))
         
         custom_callbacks = self.custom_callbacks
         if custom_callbacks:
-            print("Пользовательские callback'и:")
+            print(_("Custom callbacks:"))
             for cb_name, cb_info in custom_callbacks.items():
-                print(f"  - {cb_name} ({cb_info['callback_type']}) -> {cb_info['node_id']}")
+                print("  - " + _("{name} ({type}) -> {node_id}").format(
+                    name=cb_name, type=cb_info['callback_type'], node_id=cb_info['node_id']))
         else:
-            print("Пользовательские callback'и: нет")
+            print(_("Custom callbacks: none"))
         
         auto_funcs = self.auto_generated_functions
         if auto_funcs:
-            print("Автоматически сгенерированные функции:")
+            print(_("Automatically generated functions:"))
             for func_name, func_info in auto_funcs.items():
-                print(f"  - {func_name} ({func_info['source']}) -> {func_info['node_id']}")
+                print("  - " + _("{name} ({source}) -> {node_id}").format(
+                    name=func_name, source=func_info['source'], node_id=func_info['node_id']))
         
         nodes_with_callbacks = self.nodes_with_custom_callbacks
         if nodes_with_callbacks:
-            print(f"Узлы с пользовательскими callback'ами: {len(nodes_with_callbacks)}")
+            print(_("Nodes with custom callbacks: {count}").format(count=len(nodes_with_callbacks)))
         else:
-            print("Узлы с пользовательскими callback'ами: нет")
+            print(_("Nodes with custom callbacks: none"))
 
     def get_functions_by_category(self, category_name: str) -> List[Dict[str, Any]]:
         """Все функции для указанной категории"""
@@ -349,12 +352,13 @@ class MenuProcessor:
                         })
         
         if missing_functions:
-            print("❌ Отсутствуют обязательные функции:")
+            print("❌ " + _("Missing required functions:"))
             for missing in missing_functions:
-                print(f"   - {missing['node']}: {missing['control']} ({missing['purpose']})")
+                print("   - " + _("{node}: {control} ({purpose})").format(
+                    node=missing['node'], control=missing['control'], purpose=missing['purpose']))
             return False
         
-        print("✅ Все обязательные функции присутствуют")
+        print("✅ " + _("All required functions are present"))
         return True
 
     @property
@@ -417,7 +421,7 @@ class MenuProcessor:
 
     def print_detailed_callback_summary(self):
         """Печатает детальную сводку по всем callback-функциям"""
-        print("\n📋 Детальная сводка по callback-функциям:")
+        print("\n📋 " + _("Detailed callback functions summary:"))
         
         # Сводка по типам callback'ов
         detailed_infos = self.detailed_callback_infos
@@ -425,36 +429,40 @@ class MenuProcessor:
             if infos:
                 custom_count = sum(1 for info in infos if info["custom"])
                 auto_count = len(infos) - custom_count
-                print(f"\n{cb_type.upper()}:")
-                print(f"  Всего: {len(infos)} (🎛️ {custom_count} пользовательских, ⚙️ {auto_count} автоматических)")
+                print("\n" + _("{type}:").format(type=cb_type.upper()))
+                print("  " + _("Total: {total} (🎛️ {custom} custom, ⚙️ {auto} automatic)").format(
+                    total=len(infos), custom=custom_count, auto=auto_count))
                 
                 for info in infos[:3]:  # Показываем первые 3 для примера
                     custom_flag = "🎛️" if info["custom"] else "⚙️"
-                    print(f"    - {info['name']} {custom_flag} -> {info['node_id']} ({info['category']})")
+                    print("    - " + _("{name} {flag} -> {node_id} ({category})").format(
+                        name=info['name'], flag=custom_flag, node_id=info['node_id'], category=info['category']))
                 
                 if len(infos) > 3:
-                    print(f"    ... и ещё {len(infos) - 3}")
+                    print("    " + _("... and {count} more").format(count=len(infos) - 3))
 
         # Сводка по категориям
-        print("\n📊 Сводка по категориям:")
+        print("\n📊 " + _("Categories summary:"))
         category_summary = self.callback_summary_by_category
         for category, callbacks in category_summary.items():
             total = sum(len(cb_list) for cb_list in callbacks.values())
             if total > 0:
-                print(f"\n  {category}:")
+                print("\n  " + _("{category}:").format(category=category))
                 for cb_type, cb_list in callbacks.items():
                     custom_count = sum(1 for cb in cb_list if cb["custom"])
                     auto_count = len(cb_list) - custom_count
-                    print(f"    {cb_type}: {len(cb_list)} (🎛️ {custom_count}, ⚙️ {auto_count})")
+                    print("    " + _("{type}: {count} (🎛️ {custom}, ⚙️ {auto})").format(
+                        type=cb_type, count=len(cb_list), custom=custom_count, auto=auto_count))
 
     def print_detailed_function_summary(self):
         """Печатает детальную сводку по всем функциям с type и role"""
-        print("\n📋 Детальная сводка по функциям:")
+        print("\n📋 " + _("Detailed functions summary:"))
         
         # Сводка по типам событий
         by_event = self.functions_by_event_type
         for event_type, functions in by_event.items():
-            print(f"\n🎯 {event_type.upper()} функции ({len(functions)}):")
+            print("\n🎯 " + _("{event} functions ({count}):").format(
+                event=event_type.upper(), count=len(functions)))
             for func in functions[:3]:  # Показываем первые 3 для примера
                 source_flag = "🎛️" if func.get("custom") else "⚙️"
                 navigate_info = f" [navigate: {func.get('navigate', 'N/A')}]" if func.get("navigate") else ""
@@ -462,14 +470,15 @@ class MenuProcessor:
                 print(f"    - {func['name']} {source_flag}{navigate_info}{type_role_info} -> {func['node_id']}")
             
             if len(functions) > 3:
-                print(f"    ... и ещё {len(functions) - 3}")
+                print("    " + _("... and {count} more").format(count=len(functions) - 3))
 
         # Сводка по type и role
-        print(f"\n🏷️ Сводка по типам и ролям:")
+        print("\n🏷️ " + _("Types and roles summary:"))
         by_type_role = self.functions_by_type_role
         for type_role, functions in by_type_role.items():
             if type_role and type_role != "N/A_N/A":
-                print(f"  {type_role}: {len(functions)} функций")
+                print("  " + _("{type_role}: {count} functions").format(
+                    type_role=type_role, count=len(functions)))
 
     @property
     def functions_by_type_role(self) -> Dict[str, List[Dict[str, Any]]]:
@@ -515,24 +524,24 @@ class MenuProcessor:
     
     def print_debug_factor_nodes(self):
         """Отладочная информация о factor узлах и их функциях"""
-        print("\n🔍 ОТЛАДОЧНАЯ ИНФОРМАЦИЯ О FACTOR УЗЛАХ:")
+        print("\n🔍 " + _("DEBUG INFO ABOUT FACTOR NODES:"))
         
         factor_nodes = [n for n in self._flat_nodes if n.role == "factor" and n.id != 'root']
-        print(f"Factor узлы: {[n.id for n in factor_nodes]}")
+        print(_("Factor nodes: {ids}").format(ids=[n.id for n in factor_nodes]))
         
         for node in factor_nodes:
             print(f"\n--- {node.id} ---")
-            print(f"Controls: {node.controls}")
-            print(f"Navigate: {node.navigate}")
+            print(_("Controls: {value}").format(value=node.controls))
+            print(_("Navigate: {value}").format(value=node.navigate))
             
             # Проверяем CallbackManager
-            print(f"Auto click function: {node.callback_manager._auto_click_function}")
-            print(f"Auto position function: {node.callback_manager._auto_position_function}")
-            print(f"Auto click info: {node.callback_manager._auto_click_info}")
-            print(f"Auto position info: {node.callback_manager._auto_position_info}")
+            print(_("Auto click function: {name}").format(name=node.callback_manager._auto_click_function))
+            print(_("Auto position function: {name}").format(name=node.callback_manager._auto_position_function))
+            print(_("Auto click info: {value}").format(value=node.callback_manager._auto_click_info))
+            print(_("Auto position info: {value}").format(value=node.callback_manager._auto_position_info))
             
-            print(f"Auto functions info: {node.callback_manager.auto_functions_info}")
-            print(f"All function infos: {node.all_function_infos}")
+            print(_("Auto functions info: {value}").format(value=node.callback_manager.auto_functions_info))
+            print(_("All function infos: {value}").format(value=node.all_function_infos))
             
             # Проверяем обязательные функции
             for control in getattr(node, '_controls', []):
@@ -542,7 +551,8 @@ class MenuProcessor:
                         function_name = node.callback_manager._auto_click_function
                     elif control["type"] == ControlType.POSITION:
                         function_name = node.callback_manager._auto_position_function
-                    print(f"Required {control['type'].value}: {function_name} (purpose: {control['purpose']})")
+                    print(_("Required {type}: {name} (purpose: {purpose})").format(
+                        type=control['type'].value, name=function_name, purpose=control['purpose']))
 
 # Обновляем main для использования улучшенной сводки
 def main(config_name: str) -> int:
@@ -552,13 +562,13 @@ def main(config_name: str) -> int:
         # ДОБАВИТЬ для отладки factor узлов:
         processor.print_debug_factor_nodes()
         
-        print("\n📋 Сводка данных для генератора:")
-        print(f"• Узлов меню: {len(processor.menu)}")
-        print(f"• Категорий: {len(processor.categories)}")
-        print(f"• Функций: {len(processor.functions)}")
-        print(f"• Листьев: {len(processor.leafs)}")
-        print(f"• Ветвей: {len(processor.branches)}")
-        print(f"• Callback узлов: {len(processor.callback_nodes)}")
+        print("\n📋 " + _("Data summary for generator:"))
+        print("• " + _("Menu nodes: {count}").format(count=len(processor.menu)))
+        print("• " + _("Categories: {count}").format(count=len(processor.categories)))
+        print("• " + _("Functions: {count}").format(count=len(processor.functions)))
+        print("• " + _("Leafs: {count}").format(count=len(processor.leafs)))
+        print("• " + _("Branches: {count}").format(count=len(processor.branches)))
+        print("• " + _("Callback nodes: {count}").format(count=len(processor.callback_nodes)))
         
         # Проверка обязательных функций
         processor.validate_required_functions()
@@ -573,7 +583,7 @@ def main(config_name: str) -> int:
         
         return 0
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print("❌ " + _("Error: {error}").format(error=e))
         import traceback
         traceback.print_exc()
         return 1

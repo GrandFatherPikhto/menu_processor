@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Optional, List, Dict, Any
+from i18n import _
 
 class NodeNavigationManager:
     """Менеджер для управления навигационными связями и циклической логикой"""
@@ -144,15 +145,17 @@ class NodeNavigationManager:
     def print_navigation_debug(self):
         """Печатает отладочную информацию о навигации"""
         info = self.get_navigation_info()
-        print(f"Navigation debug for {self._node.id}:")
-        print(f"  Parent navigate: {info['parent_navigate']}")
-        print(f"  Siblings: {info['sibling_index'] + 1}/{info['sibling_count']}")
-        print(f"  Position: {'first' if info['is_first_child'] else 'last' if info['is_last_child'] else 'middle'}")
-        print(f"  Cyclic: {info['has_cyclic_siblings']}")
-        print(f"  Raw prev: {info['raw_prev_sibling']}")
-        print(f"  Raw next: {info['raw_next_sibling']}")
-        print(f"  Effective prev: {info['effective_prev_sibling']}")
-        print(f"  Effective next: {info['effective_next_sibling']}")
+        print(_("Navigation debug for {id}:").format(id=self._node.id))
+        print("  " + _("Parent navigate: {value}").format(value=info['parent_navigate']))
+        print("  " + _("Siblings: {index}/{count}").format(
+            index=info['sibling_index'] + 1, count=info['sibling_count']))
+        print("  " + _("Position: {position}").format(
+            position='first' if info['is_first_child'] else 'last' if info['is_last_child'] else 'middle'))
+        print("  " + _("Cyclic: {value}").format(value=info['has_cyclic_siblings']))
+        print("  " + _("Raw prev: {value}").format(value=info['raw_prev_sibling']))
+        print("  " + _("Raw next: {value}").format(value=info['raw_next_sibling']))
+        print("  " + _("Effective prev: {value}").format(value=info['effective_prev_sibling']))
+        print("  " + _("Effective next: {value}").format(value=info['effective_next_sibling']))
 
     def __repr__(self):
         """Строковое представление для отладки"""

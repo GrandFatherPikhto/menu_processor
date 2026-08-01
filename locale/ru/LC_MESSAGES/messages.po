@@ -1,0 +1,650 @@
+# Russian translations for Menu Processor.
+# Copyright (C) 2026 Menu Processor
+# This file is distributed under the same license as the Menu Processor project.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Menu Processor 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-01 16:34+0300\n"
+"PO-Revision-Date: 2026-08-01 16:35+0300\n"
+"Last-Translator: \n"
+"Language: ru\n"
+"Language-Team: ru\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: common.py:20 menu_config.py:13
+msgid "file"
+msgstr "файл"
+
+#: common.py:47 menu_config.py:52
+msgid "File not found"
+msgstr "Файл не найден"
+
+#: common.py:53
+msgid "PyYAML is not installed. Run: pip install PyYAML"
+msgstr "PyYAML не установлен. Выполните: pip install PyYAML"
+
+#: common.py:60
+#, python-brace-format
+msgid "Unsupported config format '{suffix}'. Use .json, .yaml or .yml"
+msgstr "Неподдерживаемый формат конфигурации '{suffix}'. Используйте .json, .yaml или .yml"
+
+#: common.py:69
+msgid "File is empty"
+msgstr "Файл пуст"
+
+#: common.py:72
+#, python-brace-format
+msgid "Config must be an object, not {type}"
+msgstr "Конфигурация должна быть объектом, а не {type}"
+
+#: common.py:77
+#, python-brace-format
+msgid "JSON format error: {error}"
+msgstr "Ошибка формата JSON: {error}"
+
+#: common.py:79
+#, python-brace-format
+msgid "YAML format error: {error}"
+msgstr "Ошибка формата YAML: {error}"
+
+#: common.py:81
+msgid "No permission to read the file"
+msgstr "Нет прав на чтение файла"
+
+#: common.py:85 common.py:101
+#, python-brace-format
+msgid "Load error: {error}"
+msgstr "Ошибка загрузки: {error}"
+
+#: common.py:98
+#, python-brace-format
+msgid "JSON error: {error}"
+msgstr "Ошибка JSON: {error}"
+
+#: common.py:109
+#, python-brace-format
+msgid "Data saved to file {path}"
+msgstr "Данные сохранены в файл {path}"
+
+#: common.py:112
+#, python-brace-format
+msgid "File save error: {error}"
+msgstr "Ошибка сохранения файла: {error}"
+
+#: menu_config.py:36
+#, python-brace-format
+msgid "Missing path for {description} '{key}'"
+msgstr "Отсутствует путь для {description} '{key}'"
+
+#: menu_config.py:148
+msgid "Configuration loaded successfully"
+msgstr "Конфигурация успешно загружена"
+
+#: menu_config.py:150
+msgid "Wrap By Name"
+msgstr "Обёртка по имени"
+
+#: menu_config.py:151
+msgid "Include Files"
+msgstr "Подключаемые файлы"
+
+#: menu_config.py:157 menu_validator.py:158
+#, python-brace-format
+msgid "Unexpected error: {error}"
+msgstr "Неожиданная ошибка: {error}"
+
+#: menu_data.py:150 menu_flattener.py:241 menu_processor.py:21
+#: menu_validator.py:141
+#, python-brace-format
+msgid "Configuration {path} loaded successfully"
+msgstr "Конфигурация {path} успешно загружена"
+
+#: menu_data.py:152
+msgid "Roles:"
+msgstr "Роли:"
+
+#: menu_data.py:154
+msgid "Types:"
+msgstr "Типы:"
+
+#: menu_data.py:157
+msgid "Byte config:"
+msgstr "Байтовая конфигурация:"
+
+#: menu_data.py:159
+msgid "Default Navigation 4 factor:"
+msgstr "Навигация по умолчанию 4 factor:"
+
+#: menu_data.py:161
+msgid "Controls 4 Type ubyte"
+msgstr "Контролы для типа ubyte"
+
+#: menu_data.py:165
+msgid ""
+"\n"
+"--- Role Rules Test ---"
+msgstr ""
+"\n"
+"--- Тест правил ролей ---"
+
+#: menu_data.py:168
+#, python-brace-format
+msgid "Role '{role}': {rules}"
+msgstr "Роль '{role}': {rules}"
+
+#: menu_data.py:170
+msgid ""
+"\n"
+"--- Control Config Test ---"
+msgstr ""
+"\n"
+"--- Тест конфигурации контролов ---"
+
+#: menu_data.py:174
+#, python-brace-format
+msgid "Role '{role}' + Control '{control}': {config}"
+msgstr "Роль '{role}' + Контрол '{control}': {config}"
+
+#: menu_flattener.py:35
+msgid "Menu tree is empty!"
+msgstr "Дерево меню пусто!"
+
+#: menu_flattener.py:69
+#, python-brace-format
+msgid "Set navigate='{navigate}' for parent branch {id} (default_branch_navigate)"
+msgstr "Установлен navigate='{navigate}' для родительской ветви {id} (default_branch_navigate)"
+
+#: menu_flattener.py:99
+#, python-brace-format
+msgid "Created cyclic links for children of parent {id} (first<->last)"
+msgstr "Созданы циклические связи для детей родителя {id} (первый<->последний)"
+
+#: menu_flattener.py:149
+#, python-brace-format
+msgid "Set navigate='{navigate}' for branch {id}"
+msgstr "Установлен navigate='{navigate}' для ветви {id}"
+
+#: menu_flattener.py:192
+#, python-brace-format
+msgid "Node {id} not found"
+msgstr "Узел {id} не найден"
+
+#: menu_flattener.py:196
+#, python-brace-format
+msgid "Sibling chain for {id} (parent navigate: {parent_navigate}):"
+msgstr "Цепочка sibling'ов для {id} (навигация родителя: {parent_navigate}):"
+
+#: menu_flattener.py:204
+msgid "  ... cycle detected ..."
+msgstr "  ... обнаружен цикл ..."
+
+#: menu_flattener.py:219
+msgid "Navigation summary:"
+msgstr "Сводка по навигации:"
+
+#: menu_flattener.py:220
+#, python-brace-format
+msgid "  Root node (root): {navigate}"
+msgstr "  Корневой узел (root): {navigate}"
+
+#: menu_flattener.py:224
+#, python-brace-format
+msgid "  Parent branches ({count}):"
+msgstr "  Родительские ветви ({count}):"
+
+#: menu_flattener.py:227
+#, python-brace-format
+msgid "    - {id}: {navigate} ({count} children)"
+msgstr "    - {id}: {navigate} ({count} детей)"
+
+#: menu_flattener.py:232
+#, python-brace-format
+msgid "  Cyclic parents ({count}):"
+msgstr "  Циклические родители ({count}):"
+
+#: menu_flattener.py:234
+#, python-brace-format
+msgid "    - {id}: {count} children"
+msgstr "    - {id}: {count} детей"
+
+#: menu_flattener.py:245 menu_processor.py:25 menu_validator.py:145
+msgid "Configuration contains errors:"
+msgstr "Конфигурация содержит ошибки:"
+
+#: menu_flattener.py:252 menu_processor.py:32 menu_validator.py:151
+msgid "and validated"
+msgstr "и проверена"
+
+#: menu_generator.py:53
+#, python-brace-format
+msgid "Generate: {template} => {output}"
+msgstr "Генерация: {template} => {output}"
+
+#: menu_generator.py:58
+#, python-brace-format
+msgid "Generate from {template} to {output}"
+msgstr "Генерация из {template} в {output}"
+
+#: menu_generator.py:72
+#, python-brace-format
+msgid "Generated {path}"
+msgstr "Сгенерирован {path}"
+
+#: menu_generator.py:76
+#, python-brace-format
+msgid "Template Syntax Error: {error}"
+msgstr "Ошибка синтаксиса шаблона: {error}"
+
+#: menu_generator.py:79
+#, python-brace-format
+msgid "Undefined Variable Error: {error}"
+msgstr "Ошибка неопределённой переменной: {error}"
+
+#: menu_generator.py:82
+#, python-brace-format
+msgid "General Template Error: {error}"
+msgstr "Общая ошибка шаблона: {error}"
+
+#: menu_generator.py:84
+#, python-brace-format
+msgid "Error generating {path} file: {error}"
+msgstr "Ошибка генерации файла {path}: {error}"
+
+#: menu_processor.py:27
+#, python-brace-format
+msgid "{id}:"
+msgstr "{id}:"
+
+#: menu_processor.py:30
+msgid "Configuration error"
+msgstr "Ошибка конфигурации"
+
+#: menu_processor.py:41
+msgid "Control summary:"
+msgstr "Сводка по контролам:"
+
+#: menu_processor.py:86
+#, python-brace-format
+msgid "Flat menu saved to {path}"
+msgstr "Плоское меню сохранено в {path}"
+
+#: menu_processor.py:88
+#, python-brace-format
+msgid "Error saving flat menu: {error}"
+msgstr "Ошибка сохранения плоского меню: {error}"
+
+#: menu_processor.py:300
+msgid "Callback functions summary:"
+msgstr "Сводка по callback-функциям:"
+
+#: managers/callback_manager.py:257 menu_processor.py:304
+msgid "Custom callbacks:"
+msgstr "Пользовательские callback'и:"
+
+#: menu_processor.py:306
+#, python-brace-format
+msgid "{name} ({type}) -> {node_id}"
+msgstr "{name} ({type}) -> {node_id}"
+
+#: menu_processor.py:309
+msgid "Custom callbacks: none"
+msgstr "Пользовательские callback'и: нет"
+
+#: menu_processor.py:313
+msgid "Automatically generated functions:"
+msgstr "Автоматически сгенерированные функции:"
+
+#: menu_processor.py:315
+#, python-brace-format
+msgid "{name} ({source}) -> {node_id}"
+msgstr "{name} ({source}) -> {node_id}"
+
+#: menu_processor.py:320
+#, python-brace-format
+msgid "Nodes with custom callbacks: {count}"
+msgstr "Узлы с пользовательскими callback'ами: {count}"
+
+#: menu_processor.py:322
+msgid "Nodes with custom callbacks: none"
+msgstr "Узлы с пользовательскими callback'ами: нет"
+
+#: menu_processor.py:355
+msgid "Missing required functions:"
+msgstr "Отсутствуют обязательные функции:"
+
+#: menu_processor.py:357
+#, python-brace-format
+msgid "{node}: {control} ({purpose})"
+msgstr "{node}: {control} ({purpose})"
+
+#: menu_processor.py:361
+msgid "All required functions are present"
+msgstr "Все обязательные функции присутствуют"
+
+#: menu_processor.py:424
+msgid "Detailed callback functions summary:"
+msgstr "Детальная сводка по callback-функциям:"
+
+#: menu_processor.py:432
+#, python-brace-format
+msgid "{type}:"
+msgstr "{type}:"
+
+#: menu_processor.py:433
+#, python-brace-format
+msgid "Total: {total} (🎛️ {custom} custom, ⚙️ {auto} automatic)"
+msgstr "Всего: {total} (🎛️ {custom} пользовательских, ⚙️ {auto} автоматических)"
+
+#: menu_processor.py:438
+#, python-brace-format
+msgid "{name} {flag} -> {node_id} ({category})"
+msgstr "{name} {flag} -> {node_id} ({category})"
+
+#: menu_processor.py:442 menu_processor.py:473
+#, python-brace-format
+msgid "... and {count} more"
+msgstr "... и ещё {count}"
+
+#: menu_processor.py:445
+msgid "Categories summary:"
+msgstr "Сводка по категориям:"
+
+#: menu_processor.py:450
+#, python-brace-format
+msgid "{category}:"
+msgstr "{category}:"
+
+#: menu_processor.py:454
+#, python-brace-format
+msgid "{type}: {count} (🎛️ {custom}, ⚙️ {auto})"
+msgstr "{type}: {count} (🎛️ {custom}, ⚙️ {auto})"
+
+#: menu_processor.py:459
+msgid "Detailed functions summary:"
+msgstr "Детальная сводка по функциям:"
+
+#: menu_processor.py:464
+#, python-brace-format
+msgid "{event} functions ({count}):"
+msgstr "{event} функции ({count}):"
+
+#: menu_processor.py:476
+msgid "Types and roles summary:"
+msgstr "Сводка по типам и ролям:"
+
+#: menu_processor.py:480
+#, python-brace-format
+msgid "{type_role}: {count} functions"
+msgstr "{type_role}: {count} функций"
+
+#: menu_processor.py:527
+msgid "DEBUG INFO ABOUT FACTOR NODES:"
+msgstr "ОТЛАДОЧНАЯ ИНФОРМАЦИЯ О FACTOR УЗЛАХ:"
+
+#: menu_processor.py:530
+#, python-brace-format
+msgid "Factor nodes: {ids}"
+msgstr "Factor узлы: {ids}"
+
+#: menu_processor.py:534
+#, python-brace-format
+msgid "Controls: {value}"
+msgstr "Контролы: {value}"
+
+#: menu_processor.py:535
+#, python-brace-format
+msgid "Navigate: {value}"
+msgstr "Навигация: {value}"
+
+#: managers/callback_manager.py:264 menu_processor.py:538
+#, python-brace-format
+msgid "Auto click function: {name}"
+msgstr "Автоматическая функция клика: {name}"
+
+#: managers/callback_manager.py:266 menu_processor.py:539
+#, python-brace-format
+msgid "Auto position function: {name}"
+msgstr "Автоматическая функция позиции: {name}"
+
+#: menu_processor.py:540
+#, python-brace-format
+msgid "Auto click info: {value}"
+msgstr "Информация авто-клика: {value}"
+
+#: menu_processor.py:541
+#, python-brace-format
+msgid "Auto position info: {value}"
+msgstr "Информация авто-позиции: {value}"
+
+#: menu_processor.py:543
+#, python-brace-format
+msgid "Auto functions info: {value}"
+msgstr "Информация об авто-функциях: {value}"
+
+#: menu_processor.py:544
+#, python-brace-format
+msgid "All function infos: {value}"
+msgstr "Все информации о функциях: {value}"
+
+#: menu_processor.py:554
+#, python-brace-format
+msgid "Required {type}: {name} (purpose: {purpose})"
+msgstr "Обязательный {type}: {name} (назначение: {purpose})"
+
+#: menu_processor.py:565
+msgid "Data summary for generator:"
+msgstr "Сводка данных для генератора:"
+
+#: menu_processor.py:566
+#, python-brace-format
+msgid "Menu nodes: {count}"
+msgstr "Узлов меню: {count}"
+
+#: menu_processor.py:567
+#, python-brace-format
+msgid "Categories: {count}"
+msgstr "Категорий: {count}"
+
+#: menu_processor.py:568
+#, python-brace-format
+msgid "Functions: {count}"
+msgstr "Функций: {count}"
+
+#: menu_processor.py:569
+#, python-brace-format
+msgid "Leafs: {count}"
+msgstr "Листьев: {count}"
+
+#: menu_processor.py:570
+#, python-brace-format
+msgid "Branches: {count}"
+msgstr "Ветвей: {count}"
+
+#: menu_processor.py:571
+#, python-brace-format
+msgid "Callback nodes: {count}"
+msgstr "Callback узлов: {count}"
+
+#: menu_processor.py:586
+#, python-brace-format
+msgid "Error: {error}"
+msgstr "Ошибка: {error}"
+
+#: menu_validator.py:39
+#, python-brace-format
+msgid "Schema validation failed: {message}"
+msgstr "Ошибка валидации схемы: {message}"
+
+#: menu_validator.py:70
+#, python-brace-format
+msgid "Id {id} not unique"
+msgstr "Id {id} не уникален"
+
+#: menu_validator.py:74
+msgid "Branch element cannot have 'type'"
+msgstr "Элемент ветви не может иметь 'type'"
+
+#: menu_validator.py:78
+msgid "Leaf element must have 'type'"
+msgstr "Листовой элемент должен иметь 'type'"
+
+#: menu_validator.py:103
+#, python-brace-format
+msgid "default value {default} out of range [{min}, {max}]"
+msgstr "Значение по умолчанию {default} вне диапазона [{min}, {max}]"
+
+#: menu_validator.py:109
+#, python-brace-format
+msgid "default value {default} not in allowed values"
+msgstr "Значение по умолчанию {default} не входит в допустимые значения"
+
+#: menu_validator.py:122
+#, python-brace-format
+msgid "default_idx {idx} out of bounds for factors array"
+msgstr "default_idx {idx} вне границ массива факторов"
+
+#: menu_validator.py:132
+#, python-brace-format
+msgid "default_idx {idx} out of bounds for values array"
+msgstr "default_idx {idx} вне границ массива значений"
+
+#: managers/callback_manager.py:234
+#, python-brace-format
+msgid "Detailed callback info for {node_id} ({type}_{role}):"
+msgstr "Детальная информация о callback для {node_id} ({type}_{role}):"
+
+#: managers/callback_manager.py:240
+#, python-brace-format
+msgid "{cb_type}:"
+msgstr "{cb_type}:"
+
+#: managers/callback_manager.py:241
+#, python-brace-format
+msgid "Name: {name} ({flag})"
+msgstr "Имя: {name} ({flag})"
+
+#: managers/callback_manager.py:242
+#, python-brace-format
+msgid "Type: {type}"
+msgstr "Тип: {type}"
+
+#: managers/callback_manager.py:243
+#, python-brace-format
+msgid "Role: {role}"
+msgstr "Роль: {role}"
+
+#: managers/callback_manager.py:244
+#, python-brace-format
+msgid "C Type: {c_type}"
+msgstr "C-тип: {c_type}"
+
+#: managers/callback_manager.py:245
+#, python-brace-format
+msgid "Category: {category}"
+msgstr "Категория: {category}"
+
+#: managers/callback_manager.py:247
+#, python-brace-format
+msgid "{cb_type}: None"
+msgstr "{cb_type}: Нет"
+
+#: managers/callback_manager.py:251 managers/node_control_manager.py:282
+#, python-brace-format
+msgid "Control info for {id} (role: {role}):"
+msgstr "Информация о контролах для {id} (роль: {role}):"
+
+#: managers/callback_manager.py:253
+#, python-brace-format
+msgid "Config from JSON: {config}"
+msgstr "Конфигурация из JSON: {config}"
+
+#: managers/callback_manager.py:260
+#, python-brace-format
+msgid "- {cb_name}: {cb_value}"
+msgstr "- {cb_name}: {cb_value}"
+
+#: managers/callback_manager.py:271
+#, python-brace-format
+msgid "Draw value function: {name} ({source})"
+msgstr "Функция отрисовки значения: {name} ({source})"
+
+#: managers/node_control_manager.py:285
+#, python-brace-format
+msgid "  Config from JSON: {config}"
+msgstr "  Конфигурация из JSON: {config}"
+
+#: managers/node_control_manager.py:288
+#, python-brace-format
+msgid "  Active controls: {controls}"
+msgstr "  Активные контролы: {controls}"
+
+#: managers/node_control_manager.py:292
+msgid "  Custom callbacks:"
+msgstr "  Пользовательские callback'и:"
+
+#: managers/node_control_manager.py:299
+#, python-brace-format
+msgid "  Auto click function: {name}"
+msgstr "  Автоматическая функция клика: {name}"
+
+#: managers/node_control_manager.py:301
+#, python-brace-format
+msgid "  Auto position function: {name}"
+msgstr "  Автоматическая функция позиции: {name}"
+
+#: managers/node_control_manager.py:306
+#, python-brace-format
+msgid "  Draw value function: {name} ({source})"
+msgstr "  Функция отрисовки значения: {name} ({source})"
+
+#: managers/node_navigation_manager.py:148
+#, python-brace-format
+msgid "Navigation debug for {id}:"
+msgstr "Отладочная информация о навигации для {id}:"
+
+#: managers/node_navigation_manager.py:149
+#, python-brace-format
+msgid "Parent navigate: {value}"
+msgstr "Навигация родителя: {value}"
+
+#: managers/node_navigation_manager.py:150
+#, python-brace-format
+msgid "Siblings: {index}/{count}"
+msgstr "Sibling'и: {index}/{count}"
+
+#: managers/node_navigation_manager.py:152
+#, python-brace-format
+msgid "Position: {position}"
+msgstr "Позиция: {position}"
+
+#: managers/node_navigation_manager.py:154
+#, python-brace-format
+msgid "Cyclic: {value}"
+msgstr "Циклический: {value}"
+
+#: managers/node_navigation_manager.py:155
+#, python-brace-format
+msgid "Raw prev: {value}"
+msgstr "Сырой prev: {value}"
+
+#: managers/node_navigation_manager.py:156
+#, python-brace-format
+msgid "Raw next: {value}"
+msgstr "Сырой next: {value}"
+
+#: managers/node_navigation_manager.py:157
+#, python-brace-format
+msgid "Effective prev: {value}"
+msgstr "Эффективный prev: {value}"
+
+#: managers/node_navigation_manager.py:158
+#, python-brace-format
+msgid "Effective next: {value}"
+msgstr "Эффективный next: {value}"

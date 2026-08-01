@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Any
 from pathlib import Path
 
 from common import load_json_data, save_json_data
+from i18n import _
 from menu_config import MenuConfig, ConfigError
 
 class ParserError(Exception):
@@ -35,7 +36,7 @@ class MenuValidator:
         try:
             self._validator.validate(menu)
         except ValidationError as e:
-            errors["schema"] = [f"Schema validation failed: {e.message}"]
+            errors["schema"] = [_("Schema validation failed: {message}").format(message=e.message)]
             return errors
         
         # Рекурсивная валидация элементов
@@ -66,15 +67,15 @@ class MenuValidator:
         if item.get("id") not in self._ids:
             self._ids.append(item.get("id"))
         else:
-            errors.append(f"Id {item.get('id')} not unique")
+            errors.append(_("Id {id} not unique").format(id=item.get('id')))
         
-        # Проверка: branch не должен иметь type
+        # Check: a branch must not have 'type'
         if 'items' in item and 'type' in item:
-            errors.append("Branch element cannot have 'type'")
+            errors.append(_("Branch element cannot have 'type'"))
         
-        # Проверка: leaf должен иметь type
+        # Check: a leaf must have 'type'
         if 'items' not in item and 'type' not in item:
-            errors.append("Leaf element must have 'type'")
+            errors.append(_("Leaf element must have 'type'"))
         
         # Валидация типа данных
         if 'type' in item:
@@ -93,18 +94,20 @@ class MenuValidator:
         return errors
 
     def _validate_default_value(self, item: Dict) -> List[str]:
-        """Валидация значения по умолчанию"""
+        """Validates the default value."""
         errors = []
         
-        # Проверка для числовых типов
+        # Check for numeric types
         if 'min' in item and 'max' in item:
             if not (item['min'] <= item['default'] <= item['max']):
-                errors.append(f"default value {item['default']} out of range [{item['min']}, {item['max']}]")
+                errors.append(_("default value {default} out of range [{min}, {max}]").format(
+                    default=item['default'], min=item['min'], max=item['max']))
         
-        # Проверка для fixed типов
+        # Check for fixed types
         if 'values' in item and 'default' in item:
             if item['default'] not in item['values']:
-                errors.append(f"default value {item['default']} not in allowed values")
+                errors.append(_("default value {default} not in allowed values").format(
+                    default=item['default']))
         
         return errors
 
@@ -112,20 +115,22 @@ class MenuValidator:
         return []
 
     def _validate_factors(self, item: Dict) -> List[str]:
-        """Валидация факторов"""
+        """Validates factors."""
         errors = []
         
         if 'default_idx' in item and item['default_idx'] >= len(item['factors']):
-            errors.append(f"default_idx {item['default_idx']} out of bounds for factors array")
+            errors.append(_("default_idx {idx} out of bounds for factors array").format(
+                idx=item['default_idx']))
         
         return errors
     
     def _validate_values(self, item: Dict) -> List[str]:
-        """Валидация значений"""
+        """Validates values."""
         errors = []
         
         if 'default_idx' in item and item['default_idx'] >= len(item['values']):
-            errors.append(f"default_idx {item['default_idx']} out of bounds for values array")
+            errors.append(_("default_idx {idx} out of bounds for values array").format(
+                idx=item['default_idx']))
         
         return errors
 
@@ -133,24 +138,24 @@ class MenuValidator:
 def main(config_file):
     try:
         config = MenuConfig(config_file)
-        print(f"✅ Конфигурация {config_file} успешно загружена")
+        print(f"✅ {_('Configuration {path} loaded successfully').format(path=config_file)}")
         validator = MenuValidator(config=config)
         errors = validator.validate()
         if errors:
-            print(f"❌ Конфигурация содержит ошибки:")
+            print(f"❌ {_('Configuration contains errors:')}")
             for id, items in errors.items():
                 print(f"❌ {id}:")
                 for item in items:
                     print(f"\t➤ {item}")
         else:
-            print("✅ и проверена")
+            print(f"✅ {_('and validated')}")
 
 
     except ConfigError as e:
         print(f"❌ {e}")
         return 1
     except Exception as e:
-        print(f"💥 Неожиданная ошибка: {e}")
+        print(f"💥 {_('Unexpected error: {error}').format(error=e)}")
         return 1
 
 if __name__ == "__main__":

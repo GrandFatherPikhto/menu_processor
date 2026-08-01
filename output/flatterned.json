@@ -78,6 +78,7 @@
       "prev_sibling": "pwm_frequency",
       "next_sibling": "lo_channel",
       "children": [
+        "hi_on",
         "hi_delay",
         "hi_duration",
         "hi_pwm_on",
@@ -88,12 +89,25 @@
       "controls": []
     },
     {
+      "id": "hi_on",
+      "name": "Hi On/Off",
+      "type": "string",
+      "role": "fixed",
+      "parent": "hi_channel",
+      "prev_sibling": null,
+      "next_sibling": "hi_delay",
+      "children": [],
+      "is_leaf": true,
+      "is_branch": false,
+      "controls": []
+    },
+    {
       "id": "hi_delay",
       "name": "Delay",
       "type": "udword",
       "role": "factor",
       "parent": "hi_channel",
-      "prev_sibling": null,
+      "prev_sibling": "hi_on",
       "next_sibling": "hi_duration",
       "children": [],
       "is_leaf": true,
@@ -148,6 +162,7 @@
       "prev_sibling": "hi_channel",
       "next_sibling": null,
       "children": [
+        "lo_on",
         "lo_delay",
         "lo_duration",
         "lo_pwm_on",
@@ -158,12 +173,25 @@
       "controls": []
     },
     {
+      "id": "lo_on",
+      "name": "Lo On/Off",
+      "type": "string",
+      "role": "fixed",
+      "parent": "lo_channel",
+      "prev_sibling": null,
+      "next_sibling": "lo_delay",
+      "children": [],
+      "is_leaf": true,
+      "is_branch": false,
+      "controls": []
+    },
+    {
       "id": "lo_delay",
       "name": "Delay",
       "type": "udword",
       "role": "factor",
       "parent": "lo_channel",
-      "prev_sibling": null,
+      "prev_sibling": "lo_on",
       "next_sibling": "lo_duration",
       "children": [],
       "is_leaf": true,

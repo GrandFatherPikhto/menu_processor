@@ -382,3 +382,60 @@ save_json_data(processor.functions, "./debug/functions.json")
 }
 ```
 
+## 🌍 Интернационализация (i18n / gettext)
+
+Все пользовательские сообщения пакета переведены на систему **gettext (Babel)**.
+Основной (исходный) язык сообщений — **английский**.
+
+### Выбор языка
+
+Язык выбирается через переменную окружения `MENU_PROCESSOR_LANG`:
+
+```bash
+# Английский (по умолчанию, исходные сообщения)
+python -X utf8 generator.py
+
+# Русский (используется каталог locale/ru)
+set MENU_PROCESSOR_LANG=ru
+python -X utf8 generator.py
+```
+
+Если каталог переводов отсутствует, язык не найден или переменная не задана —
+используются исходные английские сообщения (fallback).
+
+### Структура каталогов
+
+```
+locale/
+├── messages.pot                      # Шаблон извлечённых сообщений
+└── ru/
+    └── LC_MESSAGES/
+        ├── messages.po               # Переводы (редактируется вручную)
+        └── messages.mo               # Скомпилированный каталог (используется в рантайме)
+```
+
+### Рабочий процесс перевода
+
+После изменения сообщений в коде (`_("...")` или `ngettext`) обновите каталоги:
+
+```bash
+# 1. Извлечение сообщений в messages.pot
+python -m babel.messages.frontend extract -F babel.cfg -k _ -k ngettext:1,2 -o locale/messages.pot .
+
+# 2. Обновление существующего каталога (например, ru)
+python -m babel.messages.frontend update -i locale/messages.pot -d locale -l ru
+
+# 3. Компиляция каталогов в .mo
+python -m babel.messages.frontend compile -d locale
+```
+
+Для нового языка создайте каталог с нуля:
+
+```bash
+python -m babel.messages.frontend init -i locale/messages.pot -d locale -l <код_языка>
+```
+
+> **Примечание:** в исходном коде внутри `_()` используйте обычные строки с
+> `{placeholders}` и `.format(...)`, а не f-строки — Babel корректно извлекает
+> только обычные строковые литералы.
+

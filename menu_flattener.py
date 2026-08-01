@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional, Any
 import json
 
+from i18n import _
 from flat_node import FlatNode
 from menu_validator import MenuValidator
 from menu_config import MenuConfig, ConfigError
@@ -8,7 +9,7 @@ from menu_data import MenuData
 from base_flat_node import BaseFlatNode
 
 class FlattenerError(Exception):
-    """Исключение для ошибок конфигурации"""
+    """Exception for configuration errors."""
     def __init__(self, message: str):
         super().__init__(message)
 
@@ -31,7 +32,7 @@ class MenuFlattener:
             menu = self._config.menu_tree
 
         if menu is None:
-            raise FlattenerError("Дерево меню пустое!")
+            raise FlattenerError(_("Menu tree is empty!"))
 
         # Создаем корневую ноду как BaseFlatNode
         self.root_node = BaseFlatNode({
@@ -59,13 +60,13 @@ class MenuFlattener:
         return self.flat_nodes
     
     def _apply_parent_navigation_rules(self):
-        """Применяет правила навигации для родительских ветвей"""
+        """Applies navigation rules for parent branches."""
         for node in self.flat_nodes:
-            # Если узел является ветвью (имеет детей) и у него не указано navigate
+            # If the node is a branch (has children) and navigate is not set
             if node.is_branch and node.navigate is None:
-                # Используем default_branch_navigate из конфига
+                # Use default_branch_navigate from the config
                 node.navigate = self._config.default_branch_navigate
-                print(f"🔧 Установлено navigate='{node.navigate}' для родительской ветви {node.id} (default_branch_navigate)")
+                print("🔧 " + _("Set navigate='{navigate}' for parent branch {id} (default_branch_navigate)").format(navigate=node.navigate, id=node.id))
 
     def _make_cyclic_links(self):
         """Замыкает циклические связи для sibling'ов на основе настроек родителей"""
@@ -84,9 +85,9 @@ class MenuFlattener:
                 self._create_cyclic_siblings(parent)
                 
     def _create_cyclic_siblings(self, parent: FlatNode):
-        """Создает циклические связи для детей родительского узла с navigate=cyclic"""
+        """Creates cyclic links for children of a parent with navigate=cyclic."""
         if len(parent.children) < 2:
-            return  # Нужно как минимум 2 ребенка для циклической связи
+            return  # At least 2 children are required for a cyclic link
             
         first_child = parent.children[0]
         last_child = parent.children[-1]
@@ -95,7 +96,7 @@ class MenuFlattener:
         first_child._prev_sibling = last_child
         last_child._next_sibling = first_child
         
-        print(f"🔁 Созданы циклические связи для детей родителя {parent.id} (first<->last)")
+        print(f"🔁 {_('Created cyclic links for children of parent {id} (first<->last)').format(id=parent.id)}")
 
     def _process_node(self, parent: Optional[FlatNode], prev_sibling: Optional[FlatNode], 
                      nodes: List[Dict[str, Any]]) -> Optional[FlatNode]:
@@ -139,13 +140,13 @@ class MenuFlattener:
         return last_node
 
     def _apply_branch_navigation_rules(self):
-        """Применяет правила навигации для ветвей (узлов с детьми)"""
+        """Applies navigation rules for branches (nodes with children)."""
         for node in self.flat_nodes:
-            # Если узел является ветвью (имеет детей) и у него не указана навигация
+            # If the node is a branch (has children) and navigation is not set
             if node.is_branch and node.navigate is None:
-                # Используем default_branch_navigate из конфига, или 'limit' по умолчанию
+                # Use default_branch_navigate from the config, or 'limit' by default
                 node.navigate = self._config.default_branch_navigate or 'limit'
-                print(f"🔧 Установлено navigate='{node.navigate}' для ветви {node.id}")    
+                print("🔧 " + _("Set navigate='{navigate}' for branch {id}").format(navigate=node.navigate, id=node.id))
 
     def _process_children(self, parent: FlatNode, children_data: List[Dict[str, Any]]):
         """Обрабатывает дочерние узлы"""
@@ -185,21 +186,22 @@ class MenuFlattener:
         return self.node_dict.get(node_id)
     
     def print_sibling_chain(self, node_id: str, count: int = 5):
-        """Печатает цепочку sibling'ов для демонстрации закольцовывания"""
+        """Prints the sibling chain to demonstrate circular linking."""
         node = self.get_node_by_id(node_id)
         if not node:
-            print(f"Узел {node_id} не найден")
+            print(_("Node {id} not found").format(id=node_id))
             return
         
         parent_navigate = node.parent.navigate if node.parent else 'N/A'
-        print(f"Цепочка sibling'ов для {node_id} (parent navigate: {parent_navigate}):")
+        print(_("Sibling chain for {id} (parent navigate: {parent_navigate}):").format(
+            id=node_id, parent_navigate=parent_navigate))
         
         current = node
         visited = set()
         
         for i in range(count):
             if current.id in visited:
-                print(f"  ... цикл обнаружен ...")
+                print(_("  ... cycle detected ..."))
                 break
                 
             visited.add(current.id)
@@ -213,44 +215,45 @@ class MenuFlattener:
             current = current.next_sibling
 
     def print_navigation_summary(self):
-        """Печатает сводку по навигации"""
-        print("\n🧭 Сводка по навигации:")
-        print(f"  Корневая нода (root): {self.root_node.navigate}")
+        """Prints the navigation summary."""
+        print(f"\n🧭 {_('Navigation summary:')}")
+        print(_("  Root node (root): {navigate}").format(navigate=self.root_node.navigate))
         
         branches = [node for node in self.flat_nodes if node.is_branch and node.id != 'root']
         if branches:
-            print(f"  Родительские ветви ({len(branches)}):")
+            print(_("  Parent branches ({count}):").format(count=len(branches)))
             for branch in branches:
                 children_count = len(branch.children) if branch.children else 0
-                print(f"    - {branch.id}: {branch.navigate} ({children_count} детей)")
+                print(_("    - {id}: {navigate} ({count} children)").format(
+                    id=branch.id, navigate=branch.navigate, count=children_count))
         
         cyclic_parents = [node for node in self.flat_nodes if node.navigate == "cyclic" and node.children]
         if cyclic_parents:
-            print(f"  Циклические родители ({len(cyclic_parents)}):")
+            print(_("  Cyclic parents ({count}):").format(count=len(cyclic_parents)))
             for parent in cyclic_parents:
-                print(f"    - {parent.id}: {len(parent.children)} детей")
+                print(_("    - {id}: {count} children").format(id=parent.id, count=len(parent.children)))
 
 
-# Пример использования
+# Example usage
 def main(config_file: str):
     try:
         config = MenuConfig(config_file)
-        print(f"✅ Конфигурация {config_file} успешно загружена")
+        print(f"✅ {_('Configuration {path} loaded successfully').format(path=config_file)}")
         validator = MenuValidator(config=config)
         errors = validator.validate()
         if errors:
-            print(f"❌ Конфигурация содержит ошибки:")
+            print(f"❌ {_('Configuration contains errors:')}")
             for id, items in errors.items():
                 print(f"❌ {id}:")
                 for item in items:
                     print(f"\t➤ {item}")
             return 2
         else:
-            print("✅ и проверена")
+            print(f"✅ {_('and validated')}")
             flattener = MenuFlattener(config)
             flat_menu = flattener.flatten()
             for node in flat_menu:
-                print(f"- {node}")    
+                print(f"- {node}")
 
     except ConfigError as e:
         print(f"❌ {e}")

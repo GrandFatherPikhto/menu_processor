@@ -3,6 +3,7 @@ from typing import Dict, Any, Set, List, Tuple, Optional
 from pathlib import Path
 from enum import Enum
 
+from i18n import _
 from menu_config import MenuConfig, ConfigError
 
 class ControlType(Enum):
@@ -146,31 +147,32 @@ class MenuData:
 def main(config_file: str):
     try:
         config = MenuConfig(config_file)
-        print(f"✅ Конфигурация {config_file} успешно загружена")
+        print(f"✅ {_('Configuration {path} loaded successfully').format(path=config_file)}")
         data = MenuData(config)
-        print("Roles:")
+        print(_("Roles:"))
         print(data.roles)
-        print("Types:")
+        print(_("Types:"))
         print(data.types)
 
-        print("Byte config:")
+        print(_("Byte config:"))
         print(data.type('byte'))
-        print("Default Navigation 4 factor:")
+        print(_("Default Navigation 4 factor:"))
         print(data.get_default_navigation(ControlType.POSITION))
-        print("Controls 4 Type ubyte")
+        print(_("Controls 4 Type ubyte"))
         print(data.get_controls_for_type("ubyte"))
 
-        # Тестируем новые методы
-        print("\n--- Role Rules Test ---")
+        # Test the new methods
+        print(_("\n--- Role Rules Test ---"))
         for role in data.roles:
             rules = data.get_role_rules(role)
-            print(f"Role '{role}': {rules}")
+            print(_("Role '{role}': {rules}").format(role=role, rules=rules))
 
-        print("\n--- Control Config Test ---")
+        print(_("\n--- Control Config Test ---"))
         test_role = "factor"
         for control in [ControlType.CLICK, ControlType.POSITION]:
             config = data.get_control_config(test_role, control, "limit")
-            print(f"Role '{test_role}' + Control '{control.value}': {config}")
+            print(_("Role '{role}' + Control '{control}': {config}").format(
+                role=test_role, control=control.value, config=config))
 
     except ConfigError as e:
         print(f"❌ {e}")

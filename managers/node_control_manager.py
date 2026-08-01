@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
+from i18n import _
 from menu_data import MenuData, ControlType
 from managers.callback_manager import CallbackManager
 from managers.function_info import FunctionInfo
@@ -276,33 +277,34 @@ class NodeControlManager:
         }
 
     def print_control_info(self):
-        """Печатает информацию о контролах для отладки"""
+        """Prints control information for debugging."""
         summary = self.get_control_summary()
-        print(f"Control info for {self._node_id} (role: {self._node_role}):")
+        print(_("Control info for {id} (role: {role}):").format(id=self._node_id, role=self._node_role))
         
         if summary["controls_config"]:
-            print(f"  Config from JSON: {summary['controls_config']}")
+            print(_("  Config from JSON: {config}").format(config=summary['controls_config']))
         
         if summary["controls"]:
-            print(f"  Active controls: {[ctrl['type'] for ctrl in summary['controls']]}")
+            print(_("  Active controls: {controls}").format(controls=[ctrl['type'] for ctrl in summary['controls']]))
         
-        # Показываем пользовательские callback'ы
+        # Show custom callbacks
         if self._callback_manager.has_custom_callbacks:
-            print("  Custom callbacks:")
+            print(_("  Custom callbacks:"))
             for cb_name, cb_value in self._callback_manager.custom_callbacks_summary.items():
                 if cb_value and cb_name != "auto_draw_value_cb":
                     print(f"    - {cb_name}: {cb_value}")
         
-        # Показываем автоматические функции
+        # Show automatic functions
         if self._callback_manager._auto_click_function:
-            print(f"  Auto click function: {self._callback_manager._auto_click_function}")
+            print(_("  Auto click function: {name}").format(name=self._callback_manager._auto_click_function))
         if self._callback_manager._auto_position_function:
-            print(f"  Auto position function: {self._callback_manager._auto_position_function}")
+            print(_("  Auto position function: {name}").format(name=self._callback_manager._auto_position_function))
         
-        # Показываем функцию отрисовки
+        # Show the draw function
         if self._callback_manager.effective_draw_value_cb:
             source = "custom" if self._callback_manager.draw_value_cb else "auto"
-            print(f"  Draw value function: {self._callback_manager.effective_draw_value_cb} ({source})")
+            print(_("  Draw value function: {name} ({source})").format(
+                name=self._callback_manager.effective_draw_value_cb, source=source))
 
     def __repr__(self):
         """Строковое представление для отладки"""

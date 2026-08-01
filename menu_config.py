@@ -2,14 +2,15 @@ from typing import Dict, Any, Set, List, Optional
 from pathlib import Path
 
 from common import load_config_file, ConfigLoadError
+from i18n import _
 
 class ConfigError(Exception):
-    """Исключение для ошибок конфигурации"""
+    """Exception for configuration errors."""
     def __init__(self, message: str, file_path: Optional[Path] = None):
         self.file_path = file_path
         self.message = message
         if file_path:
-            super().__init__(f"{message} (файл: {file_path})")
+            super().__init__(f"{message} ({_('file')}: {file_path})")
         else:
             super().__init__(message)
 
@@ -17,29 +18,30 @@ class MenuConfig:
     def __init__(self, file_path: str):
         self._generation_files = {}
         self._config_path = Path(file_path)
-        self._main_config = self._load_data_file(self._config_path, "основной конфиг")
+        self._main_config = self._load_data_file(self._config_path, "main config")
 
-        self._menu_schema = self._load_required_file("menu_schema", "схема меню")
-        self._menu_data = self._load_required_file("menu", "данные меню")
+        self._menu_schema = self._load_required_file("menu_schema", "menu schema")
+        self._menu_data = self._load_required_file("menu", "menu data")
         self._menu_config = self._menu_data.get("config")
         self._menu_tree = self._menu_data.get("menu")
-        self._data_config = self._load_required_file("menu_config", "данные и роли элементов меню")
-        self._generation_config = self._load_required_file("generation_files", "данные и роли элементов меню")
+        self._data_config = self._load_required_file("menu_config", "menu item data and roles")
+        self._generation_config = self._load_required_file("generation_files", "generation files and templates")
         self._generation_files = self._generation_config.get("files")
         self._templates_path = self._generation_config.get("templates_path")
     
     def _load_required_file(self, config_key: str, description: str) -> Dict[str, Any]:
-        """Загружает обязательный файл из пути, указанного в конфиге"""
+        """Loads a required file from the path specified in the config."""
         file_path_str = self._main_config.get(config_key)
         if not file_path_str:
-            raise ConfigError(f"Отсутствует путь к {description} '{config_key}'")
+            raise ConfigError(_("Missing path for {description} '{key}'").format(
+                description=description, key=config_key))
         
-        # Создаем путь относительно основного конфиг-файла
+        # Create the path relative to the main config file
         file_path = self._config_path.parent / file_path_str
         return self._load_data_file(file_path, description)
 
     def _load_data_file(self, file_path: Path, description: str) -> Dict[str, Any]:
-        """Загружает конфигурационный файл (JSON или YAML)"""
+        """Loads a configuration file (JSON or YAML)."""
         try:
             return load_config_file(file_path)
         except ConfigLoadError as e:
@@ -47,7 +49,7 @@ class MenuConfig:
         
     def _check_file_path(self, file_path: Path):
         if not file_path.exists():
-            raise ConfigError(f"Файл не найден", file_path)
+            raise ConfigError(_("File not found"), file_path)
     
     def menu_config_param(self, param_name: str, default_value: str) -> str:
         if self._menu_data.get("config") is None:
@@ -143,16 +145,16 @@ class MenuConfig:
 def main(json_file: str):
     try:
         config = MenuConfig(json_file)
-        print("✅ Конфигурация успешно загружена")
+        print(f"✅ {_('Configuration loaded successfully')}")
         print(config.templates_path)
-        print(f"Wrap By Name: {config.wrap_by_name_functions}")
-        print(f"Include Files: {config.include_files}")
+        print(f"{_('Wrap By Name')}: {config.wrap_by_name_functions}")
+        print(f"{_('Include Files')}: {config.include_files}")
         
     except ConfigError as e:
         print(f"❌ {e}")
         return 1
     except Exception as e:
-        print(f"💥 Неожиданная ошибка: {e}")
+        print(f"💥 {_('Unexpected error: {error}').format(error=e)}")
         return 1
     
     return 0

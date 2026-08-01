@@ -103,6 +103,18 @@
         "navigate": null,
         "source": "external"
     },
+    "my_event_cb": {
+        "name": "my_event_cb",
+        "node_id": "lo_pwm_on",
+        "event_type": "event",
+        "navigate": null,
+        "purpose": "user_defined",
+        "source": "custom",
+        "type": "string",
+        "role": "fixed",
+        "c_type": "const char*",
+        "category": "string_fixed"
+    },
     "udword_factor_click_cyclic_factor_cb": {
         "name": "udword_factor_click_cyclic_factor_cb",
         "node_id": "lo_duration",
@@ -138,18 +150,6 @@
         "role": "factor",
         "c_type": "uint32_t",
         "category": "udword_factor"
-    },
-    "my_event_cb": {
-        "name": "my_event_cb",
-        "node_id": "lo_pwm_on",
-        "event_type": "event",
-        "navigate": null,
-        "purpose": "user_defined",
-        "source": "custom",
-        "type": "string",
-        "role": "fixed",
-        "c_type": "const char*",
-        "category": "string_fixed"
     },
     "ubyte_simple_position_limit_cb": {
         "name": "ubyte_simple_position_limit_cb",

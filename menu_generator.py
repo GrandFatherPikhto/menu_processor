@@ -7,6 +7,7 @@ from jinja2 import Environment, FileSystemLoader, Environment, Template, Templat
 from jinja2.ext import Extension, debug
 from typing import Dict, Set, List, Optional, Any
 from common import load_json_data
+from i18n import _
 
 from menu_processor import MenuProcessor
 from menu_config import MenuConfig
@@ -49,38 +50,38 @@ class MenuGenerator:
     def _generate_code(self):
         if self._files is not None:
             for template, output in self._files.items():
-                print(f"Generate: {template} => {output}")
+                print(_("Generate: {template} => {output}").format(template=template, output=output))
                 self._generate_file(template, output, self._context)
 
     def _generate_file(self, template_name: str, output_path: str | Path, template_data):
-        """Генерация конкретного файла"""
-        print(f'Generate from {template_name} to {output_path}')
+        """Generates a specific file."""
+        print(_("Generate from {template} to {output}").format(template=template_name, output=output_path))
         
         try:
-            # Загрузка шаблона
+            # Load template
             template = self._env.get_template(str(template_name))
             
-            # Рендеринг
+            # Render
             content = template.render(**template_data)
             
-            # Сохранение
+            # Save
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(content)
             
-            print(f"✅ Сгенерирован {output_path}")
+            print(f"✅ {_('Generated {path}').format(path=output_path)}")
             
         except TemplateSyntaxError as e:
             error_string = str(e)  # Get the error message as a string
-            print(f"❌ Template Syntax Error: {error_string}")
+            print(f"❌ {_('Template Syntax Error: {error}').format(error=error_string)}")
         except UndefinedError as e:
             error_string = str(e)
-            print(f"❌ Undefined Variable Error: {error_string}")
+            print(f"❌ {_('Undefined Variable Error: {error}').format(error=error_string)}")
         except TemplateError as e:
             error_string = str(e)
-            print(f"❌ General Template Error: {error_string}")
+            print(f"❌ {_('General Template Error: {error}').format(error=error_string)}")
         except Exception as e:
-            print(f"❌ Ошибка генерации {output_path} файла: {e}")
+            print(f"❌ {_('Error generating {path} file: {error}').format(path=output_path, error=e)}")
 
 def main(config_file:str):
     generator = MenuGenerator(config_file)

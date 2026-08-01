@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional, Any
 from menu_data import MenuData, ControlType
+from i18n import _
 
 class CallbackManager:
     """Менеджер для обработки callback-функций узла меню"""
@@ -230,40 +231,42 @@ class CallbackManager:
 
     def print_detailed_callback_info(self, node_id: str):
         """Печатает детальную информацию о ВСЕХ callback-функциях узла"""
-        print(f"📋 Detailed callback info for {node_id} ({self._node_type}_{self._node_role}):")
+        print("📋 " + _("Detailed callback info for {node_id} ({type}_{role}):").format(
+            node_id=node_id, type=self._node_type, role=self._node_role))
         
         for cb_type, info in self.all_callback_infos.items():
             if info:
                 custom_flag = "🎛️ CUSTOM" if info["custom"] else "⚙️ AUTO"
-                print(f"  {cb_type}:")
-                print(f"    Name: {info['name']} ({custom_flag})")
-                print(f"    Type: {info['type']}")
-                print(f"    Role: {info['role']}")
-                print(f"    C Type: {info['c_type']}")
-                print(f"    Category: {info['category']}")
+                print("  " + _("{cb_type}:").format(cb_type=cb_type))
+                print("    " + _("Name: {name} ({flag})").format(name=info['name'], flag=custom_flag))
+                print("    " + _("Type: {type}").format(type=info['type']))
+                print("    " + _("Role: {role}").format(role=info['role']))
+                print("    " + _("C Type: {c_type}").format(c_type=info['c_type']))
+                print("    " + _("Category: {category}").format(category=info['category']))
             else:
-                print(f"  {cb_type}: None")
+                print("  " + _("{cb_type}: None").format(cb_type=cb_type))
 
     def print_control_info(self, node_id: str, node_role: str, controls_config: List[str] = None):
         """Печатает информацию о контролах для отладки"""
-        print(f"Control info for {node_id} (role: {node_role}):")
+        print(_("Control info for {id} (role: {role}):").format(id=node_id, role=node_role))
         if controls_config:
-            print(f"  Config from JSON: {controls_config}")
+            print("  " + _("Config from JSON: {config}").format(config=controls_config))
         
         # Показываем пользовательские callback'ы
         if self.has_custom_callbacks:
-            print("  Custom callbacks:")
+            print("  " + _("Custom callbacks:"))
             for cb_name, cb_value in self.custom_callbacks_summary.items():
                 if cb_value and cb_name != "auto_draw_value_cb":
-                    print(f"    - {cb_name}: {cb_value}")
+                    print("    " + _("- {cb_name}: {cb_value}").format(cb_name=cb_name, cb_value=cb_value))
         
         # Показываем автоматические функции
         if self._auto_click_function:
-            print(f"  Auto click function: {self._auto_click_function}")
+            print("  " + _("Auto click function: {name}").format(name=self._auto_click_function))
         if self._auto_position_function:
-            print(f"  Auto position function: {self._auto_position_function}")
+            print("  " + _("Auto position function: {name}").format(name=self._auto_position_function))
         
         # Показываем функцию отрисовки
         if self.effective_draw_value_cb:
             source = "custom" if self.draw_value_cb else "auto"
-            print(f"  Draw value function: {self.effective_draw_value_cb} ({source})")
+            print("  " + _("Draw value function: {name} ({source})").format(
+                name=self.effective_draw_value_cb, source=source))

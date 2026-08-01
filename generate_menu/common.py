@@ -1,9 +1,12 @@
 import json
+import logging
 import os
 from pathlib import Path
 from typing import Dict, Set, List, Optional, Any, Union
 
 from .i18n import _
+
+logger = logging.getLogger(__name__)
 
 try:
     import yaml
@@ -95,10 +98,10 @@ def load_json_data(config_file: str) -> Optional[Dict]:
         with open(config_file, "r", encoding="utf-8") as f:
             return json.load(f)
     except json.JSONDecodeError as e:
-        print(f"❌ {_('JSON error: {error}').format(error=e)}")
+        logger.error(f"❌ {_('JSON error: {error}').format(error=e)}")
         return None
     except Exception as error:
-        print(f"❌ {_('Load error: {error}').format(error=error)}")
+        logger.error(f"❌ {_('Load error: {error}').format(error=error)}")
         return None
 
 
@@ -106,8 +109,8 @@ def save_json_data(data: Union[Dict, Set], output_path: str = None) -> bool:
     try:
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
-        print(f"✅ {_('Data saved to file {path}').format(path=output_path)}")
+        logger.info(f"✅ {_('Data saved to file {path}').format(path=output_path)}")
         return True
     except Exception as e:
-        print(f"❌ {_('File save error: {error}').format(error=e)}")
+        logger.error(f"❌ {_('File save error: {error}').format(error=e)}")
         return False

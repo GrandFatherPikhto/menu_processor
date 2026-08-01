@@ -1,4 +1,4 @@
-from typing import Dict, Any, Set, List, Optional
+from typing import Dict, Any, List, Optional
 from pathlib import Path
 
 from .common import load_config_file, ConfigLoadError
@@ -24,7 +24,7 @@ class MenuConfig:
         self._menu_data = self._load_required_file("menu", "menu data")
         self._menu_config = self._menu_data.get("config")
         self._menu_tree = self._menu_data.get("menu")
-        self._data_config = self._load_required_file("menu_config", "menu item data and roles")
+        self._data_config = self._load_required_file("data_rules", "menu item data and roles")
         self._generation_config = self._load_required_file("generation_files", "generation files and templates")
         self._generation_files = self._generation_config.get("files")
         self._templates_path = self._generation_config.get("templates_path")
@@ -139,24 +139,5 @@ class MenuConfig:
         return self._menu_tree
             
     @property
-    def output_flattern(self)->str | None:
-        return self._main_config.get("output_flattern")
-
-def main(json_file: str):
-    try:
-        config = MenuConfig(json_file)
-        print(f"✅ {_('Configuration loaded successfully')}")
-        print(f"{_('Wrap By Name')}: {config.wrap_by_name_functions}")
-        print(f"{_('Include Files')}: {config.include_files}")
-        
-    except ConfigError as e:
-        print(f"❌ {e}")
-        return 1
-    except Exception as e:
-        print(f"💥 {_('Unexpected error: {error}').format(error=e)}")
-        return 1
-    
-    return 0
-
-if __name__ == "__main__":
-    exit(main("./config/config.yaml"))
+    def flatten(self) -> str | None:
+        return self._main_config.get("flatten")

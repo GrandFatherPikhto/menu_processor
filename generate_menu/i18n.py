@@ -41,10 +41,14 @@ DEFAULT_LANGUAGE = "en"
 def get_language() -> str:
     """Returns the language from the environment variable or the default.
 
+    The value is stripped of surrounding whitespace so that shell quirks
+    (for example ``set MENU_PROCESSOR_LANG=ru && ...`` on Windows cmd)
+    do not produce ``"ru "`` and silently fall back to English.
+
     Returns:
         The language code (for example, ``"en"``, ``"ru"``).
     """
-    return os.environ.get("MENU_PROCESSOR_LANG") or DEFAULT_LANGUAGE
+    return (os.environ.get("MENU_PROCESSOR_LANG") or "").strip() or DEFAULT_LANGUAGE
 
 
 _translation = gettext.translation(

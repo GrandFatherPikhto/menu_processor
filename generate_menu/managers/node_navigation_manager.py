@@ -1,6 +1,10 @@
 from __future__ import annotations
+import logging
 from typing import Optional, List, Dict, Any
+
 from ..i18n import _
+
+logger = logging.getLogger(__name__)
 
 class NodeNavigationManager:
     """Manager for navigation links and cyclic logic."""
@@ -145,17 +149,17 @@ class NodeNavigationManager:
     def print_navigation_debug(self):
         """Prints navigation debug information."""
         info = self.get_navigation_info()
-        print(_("Navigation debug for {id}:").format(id=self._node.id))
-        print("  " + _("Parent navigate: {value}").format(value=info['parent_navigate']))
-        print("  " + _("Siblings: {index}/{count}").format(
+        logger.debug(_("Navigation debug for {id}:").format(id=self._node.id))
+        logger.debug("  " + _("Parent navigate: {value}").format(value=info['parent_navigate']))
+        logger.debug("  " + _("Siblings: {index}/{count}").format(
             index=info['sibling_index'] + 1, count=info['sibling_count']))
-        print("  " + _("Position: {position}").format(
+        logger.debug("  " + _("Position: {position}").format(
             position='first' if info['is_first_child'] else 'last' if info['is_last_child'] else 'middle'))
-        print("  " + _("Cyclic: {value}").format(value=info['has_cyclic_siblings']))
-        print("  " + _("Raw prev: {value}").format(value=info['raw_prev_sibling']))
-        print("  " + _("Raw next: {value}").format(value=info['raw_next_sibling']))
-        print("  " + _("Effective prev: {value}").format(value=info['effective_prev_sibling']))
-        print("  " + _("Effective next: {value}").format(value=info['effective_next_sibling']))
+        logger.debug("  " + _("Cyclic: {value}").format(value=info['has_cyclic_siblings']))
+        logger.debug("  " + _("Raw prev: {value}").format(value=info['raw_prev_sibling']))
+        logger.debug("  " + _("Raw next: {value}").format(value=info['raw_next_sibling']))
+        logger.debug("  " + _("Effective prev: {value}").format(value=info['effective_prev_sibling']))
+        logger.debug("  " + _("Effective next: {value}").format(value=info['effective_next_sibling']))
 
     def __repr__(self):
         """String representation for debugging."""

@@ -1,6 +1,10 @@
+import logging
 from typing import Dict, List, Optional, Any
+
 from ..menu_data import MenuData, ControlType
 from ..i18n import _
+
+logger = logging.getLogger(__name__)
 
 class CallbackManager:
     """Manager for handling callback functions of a menu node."""
@@ -231,42 +235,42 @@ class CallbackManager:
 
     def print_detailed_callback_info(self, node_id: str):
         """Prints detailed information about ALL callback functions of the node."""
-        print("📋 " + _("Detailed callback info for {node_id} ({type}_{role}):").format(
+        logger.debug("📋 " + _("Detailed callback info for {node_id} ({type}_{role}):").format(
             node_id=node_id, type=self._node_type, role=self._node_role))
         
         for cb_type, info in self.all_callback_infos.items():
             if info:
                 custom_flag = "🎛️ CUSTOM" if info["custom"] else "⚙️ AUTO"
-                print("  " + _("{cb_type}:").format(cb_type=cb_type))
-                print("    " + _("Name: {name} ({flag})").format(name=info['name'], flag=custom_flag))
-                print("    " + _("Type: {type}").format(type=info['type']))
-                print("    " + _("Role: {role}").format(role=info['role']))
-                print("    " + _("C Type: {c_type}").format(c_type=info['c_type']))
-                print("    " + _("Category: {category}").format(category=info['category']))
+                logger.debug("  " + _("{cb_type}:").format(cb_type=cb_type))
+                logger.debug("    " + _("Name: {name} ({flag})").format(name=info['name'], flag=custom_flag))
+                logger.debug("    " + _("Type: {type}").format(type=info['type']))
+                logger.debug("    " + _("Role: {role}").format(role=info['role']))
+                logger.debug("    " + _("C Type: {c_type}").format(c_type=info['c_type']))
+                logger.debug("    " + _("Category: {category}").format(category=info['category']))
             else:
-                print("  " + _("{cb_type}: None").format(cb_type=cb_type))
+                logger.debug("  " + _("{cb_type}: None").format(cb_type=cb_type))
 
     def print_control_info(self, node_id: str, node_role: str, controls_config: List[str] = None):
         """Prints control information for debugging."""
-        print(_("Control info for {id} (role: {role}):").format(id=node_id, role=node_role))
+        logger.debug(_("Control info for {id} (role: {role}):").format(id=node_id, role=node_role))
         if controls_config:
-            print("  " + _("Config from JSON: {config}").format(config=controls_config))
+            logger.debug("  " + _("Config from JSON: {config}").format(config=controls_config))
         
         # Show custom callbacks
         if self.has_custom_callbacks:
-            print("  " + _("Custom callbacks:"))
+            logger.debug("  " + _("Custom callbacks:"))
             for cb_name, cb_value in self.custom_callbacks_summary.items():
                 if cb_value and cb_name != "auto_draw_value_cb":
-                    print("    " + _("- {cb_name}: {cb_value}").format(cb_name=cb_name, cb_value=cb_value))
+                    logger.debug("    " + _("- {cb_name}: {cb_value}").format(cb_name=cb_name, cb_value=cb_value))
         
         # Show automatic functions
         if self._auto_click_function:
-            print("  " + _("Auto click function: {name}").format(name=self._auto_click_function))
+            logger.debug("  " + _("Auto click function: {name}").format(name=self._auto_click_function))
         if self._auto_position_function:
-            print("  " + _("Auto position function: {name}").format(name=self._auto_position_function))
+            logger.debug("  " + _("Auto position function: {name}").format(name=self._auto_position_function))
         
         # Show the draw function
         if self.effective_draw_value_cb:
             source = "custom" if self.draw_value_cb else "auto"
-            print("  " + _("Draw value function: {name} ({source})").format(
+            logger.debug("  " + _("Draw value function: {name} ({source})").format(
                 name=self.effective_draw_value_cb, source=source))

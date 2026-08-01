@@ -1,10 +1,8 @@
-import json
 from typing import Dict, Any, Set, List, Tuple, Optional
-from pathlib import Path
 from enum import Enum
 
 from .i18n import _
-from .menu_config import MenuConfig, ConfigError
+from .menu_config import MenuConfig
 
 class ControlType(Enum):
     CLICK = "click"
@@ -144,39 +142,3 @@ class MenuData:
     def navigation_rules(self) -> Dict[str, Dict[str, List[str]]] | None:
         return self._navigation_rules
 
-def main(config_file: str):
-    try:
-        config = MenuConfig(config_file)
-        print(f"✅ {_('Configuration {path} loaded successfully').format(path=config_file)}")
-        data = MenuData(config)
-        print(_("Roles:"))
-        print(data.roles)
-        print(_("Types:"))
-        print(data.types)
-
-        print(_("Byte config:"))
-        print(data.type('byte'))
-        print(_("Default Navigation 4 factor:"))
-        print(data.get_default_navigation(ControlType.POSITION))
-        print(_("Controls 4 Type ubyte"))
-        print(data.get_controls_for_type("ubyte"))
-
-        # Test the new methods
-        print(_("\n--- Role Rules Test ---"))
-        for role in data.roles:
-            rules = data.get_role_rules(role)
-            print(_("Role '{role}': {rules}").format(role=role, rules=rules))
-
-        print(_("\n--- Control Config Test ---"))
-        test_role = "factor"
-        for control in [ControlType.CLICK, ControlType.POSITION]:
-            config = data.get_control_config(test_role, control, "limit")
-            print(_("Role '{role}' + Control '{control}': {config}").format(
-                role=test_role, control=control.value, config=config))
-
-    except ConfigError as e:
-        print(f"❌ {e}")
-        return 1
-
-if __name__ == "__main__":
-    main('./config/config.yaml')

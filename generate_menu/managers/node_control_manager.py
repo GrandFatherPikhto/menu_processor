@@ -1,9 +1,13 @@
+import logging
 from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
+from dataclasses import asdict
+
 from ..i18n import _
 from ..menu_data import MenuData, ControlType
 from .callback_manager import CallbackManager
 from .function_info import FunctionInfo
+
+logger = logging.getLogger(__name__)
 
 class NodeControlManager:
     """Manager for node controls and automatic function generation."""
@@ -38,8 +42,6 @@ class NodeControlManager:
         use_auto_click = self._callback_manager.click_cb is None
         use_auto_position = self._callback_manager.position_cb is None
         
-        # print(f"DEBUG {self._node_id}: use_auto_click={use_auto_click}, use_auto_position={use_auto_position}")
-        
         # For the factor role always use both controls, unless custom callbacks are set
         if self._node_role == "factor":
             controls_to_check = []
@@ -47,7 +49,6 @@ class NodeControlManager:
                 controls_to_check.append(ControlType.CLICK)
             if use_auto_position:
                 controls_to_check.append(ControlType.POSITION)
-            # print(f"DEBUG {self._node_id}: factor role, controls_to_check={[c.value for c in controls_to_check]}")
         else:
             # For other roles: if controls are specified in the node, use them, otherwise both
             if self._controls_config:
@@ -55,15 +56,11 @@ class NodeControlManager:
             else:
                 controls_to_check = [ControlType.CLICK, ControlType.POSITION]
             
-            # print(f"DEBUG {self._node_id}: non-factor role, controls_config={self._controls_config}, controls_to_check={[c.value for c in controls_to_check]}")
-            
             # Filter controls according to custom callbacks
             if not use_auto_click and ControlType.CLICK in controls_to_check:
                 controls_to_check.remove(ControlType.CLICK)
             if not use_auto_position and ControlType.POSITION in controls_to_check:
                 controls_to_check.remove(ControlType.POSITION)
-        
-        # print(f"DEBUG {self._node_id}: final controls_to_check={[c.value for c in controls_to_check]}")
         
         # Process each control
         auto_click_info = None
@@ -73,8 +70,6 @@ class NodeControlManager:
             control_config = self._menu_data.get_control_config(
                 self._node_role, control_type, self._controls_config, self._node_navigate
             )
-            
-            # print(f"DEBUG {self._node_id}: control_type={control_type}, control_config={control_config}")
             
             if control_config:
                 self._controls.append({
@@ -93,14 +88,10 @@ class NodeControlManager:
                     "control_type": control_type.value
                 }
                 
-                # print(f"DEBUG {self._node_id}: generated function {function_name} with navigate={auto_info['navigate']}")
-                
                 if control_type == ControlType.CLICK:
                     auto_click_info = auto_info
                 elif control_type == ControlType.POSITION:
                     auto_position_info = auto_info
-        
-        # print(f"DEBUG {self._node_id}: calling set_auto_functions with click={auto_click_info}, position={auto_position_info}")
         
         # Set automatic functions in the CallbackManager with additional information
         self._callback_manager.set_auto_functions(auto_click_info, auto_position_info)
@@ -145,29 +136,6 @@ class NodeControlManager:
         return any(control.get("required", False) for control in self._controls)
 
     # Properties for accessing functions
-    # @property
-    # def all_function_infos(self) -> List[Dict[str, Any]]:
-    #     """All possible handler functions for this node with full information"""
-    #     infos = []
-        
-    #     # Add information from automatic functions
-    #     auto_funcs = self._callback_manager.auto_functions_info
-    #     # print(f"DEBUG all_function_infos for {self._node_id}: auto_funcs = {auto_funcs}")
-        
-    #     for auto_func in auto_funcs:
-    #         infos.append({
-    #             "name": auto_func["name"],
-    #             "node_id": self._node_id,
-    #             "event_type": auto_func["event_type"],
-    #             "navigate": auto_func["navigate"],
-    #             "purpose": auto_func["purpose"],
-    #             "source": "auto_generated",
-    #             "type": self._node_type,
-    #             "role": self._node_role,
-    #             "c_type": self._node_c_type,
-    #             "category": f"{self._node_type}_{self._node_role}"
-    #         })
-
     @property
     def all_function_infos(self) -> List[Dict[str, Any]]:
         """All possible handler functions for this node with full information."""
@@ -193,36 +161,6 @@ class NodeControlManager:
                     )
                     infos.append(asdict(function_info))
         
-        return infos        
-        # Add custom callbacks (except those already in auto_functions_info)
-        for cb_type, cb_info in self._callback_manager.defined_callback_infos.items():
-            if cb_info and cb_info["custom"]:
-                # Check whether this function already exists in auto_functions_info
-                existing_func = next((f for f in infos if f["name"] == cb_info["name"]), None)
-                if not existing_func:
-                    # FIX: safe extraction of the category
-                    category_value = None
-                    if cb_info.get("category"):
-                        # If category is a dict, take its name; if it is a string, use it as-is
-                        if isinstance(cb_info["category"], dict):
-                            category_value = cb_info["category"].get("name")
-                        else:
-                            category_value = cb_info["category"]
-                    
-                    infos.append({
-                        "name": cb_info["name"],
-                        "node_id": self._node_id,
-                        "event_type": cb_info["event_type"],
-                        "navigate": cb_info.get("navigate"),
-                        "purpose": cb_info.get("purpose", "user_defined"),
-                        "source": "custom",
-                        # ADD type and role from cb_info
-                        "type": cb_info.get("type"),
-                        "role": cb_info.get("role"),
-                        "category": category_value  # Use the safely extracted value
-                    })
-        
-        # print(f"DEBUG all_function_infos for {self._node_id}: result = {[info['name'] for info in infos]}")
         return infos
 
     @property
@@ -279,31 +217,31 @@ class NodeControlManager:
     def print_control_info(self):
         """Prints control information for debugging."""
         summary = self.get_control_summary()
-        print(_("Control info for {id} (role: {role}):").format(id=self._node_id, role=self._node_role))
+        logger.debug(_("Control info for {id} (role: {role}):").format(id=self._node_id, role=self._node_role))
         
         if summary["controls_config"]:
-            print(_("  Config from JSON: {config}").format(config=summary['controls_config']))
+            logger.debug(_("  Config from JSON: {config}").format(config=summary['controls_config']))
         
         if summary["controls"]:
-            print(_("  Active controls: {controls}").format(controls=[ctrl['type'] for ctrl in summary['controls']]))
+            logger.debug(_("  Active controls: {controls}").format(controls=[ctrl['type'] for ctrl in summary['controls']]))
         
         # Show custom callbacks
         if self._callback_manager.has_custom_callbacks:
-            print(_("  Custom callbacks:"))
+            logger.debug(_("  Custom callbacks:"))
             for cb_name, cb_value in self._callback_manager.custom_callbacks_summary.items():
                 if cb_value and cb_name != "auto_draw_value_cb":
-                    print(f"    - {cb_name}: {cb_value}")
+                    logger.debug(f"    - {cb_name}: {cb_value}")
         
         # Show automatic functions
         if self._callback_manager._auto_click_function:
-            print(_("  Auto click function: {name}").format(name=self._callback_manager._auto_click_function))
+            logger.debug(_("  Auto click function: {name}").format(name=self._callback_manager._auto_click_function))
         if self._callback_manager._auto_position_function:
-            print(_("  Auto position function: {name}").format(name=self._callback_manager._auto_position_function))
+            logger.debug(_("  Auto position function: {name}").format(name=self._callback_manager._auto_position_function))
         
         # Show the draw function
         if self._callback_manager.effective_draw_value_cb:
             source = "custom" if self._callback_manager.draw_value_cb else "auto"
-            print(_("  Draw value function: {name} ({source})").format(
+            logger.debug(_("  Draw value function: {name} ({source})").format(
                 name=self._callback_manager.effective_draw_value_cb, source=source))
 
     def __repr__(self):

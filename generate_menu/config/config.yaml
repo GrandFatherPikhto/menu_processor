@@ -2,6 +2,6 @@
 # Paths are relative to this file (the config/ directory).
 menu: ../menu/menu.yaml
 menu_schema: menu_schema.yaml
-menu_config: menu_data.yaml
-output_flattern: output/flatterned.json
+data_rules: menu_data.yaml
+flatten: output/flatterned.json
 generation_files: files.yaml

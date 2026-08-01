@@ -1,12 +1,14 @@
-from typing import Dict, List, Optional, Any
 import json
+import logging
+from typing import Dict, List, Optional, Any
 
 from .i18n import _
 from .flat_node import FlatNode
-from .menu_validator import MenuValidator
-from .menu_config import MenuConfig, ConfigError
+from .menu_config import MenuConfig
 from .menu_data import MenuData
 from .base_flat_node import BaseFlatNode
+
+logger = logging.getLogger(__name__)
 
 class FlattenerError(Exception):
     """Exception for configuration errors."""
@@ -87,7 +89,7 @@ class MenuFlattener:
         first_child._prev_sibling = last_child
         last_child._next_sibling = first_child
         
-        print(f"🔁 {_('Created cyclic links for children of parent {id} (first<->last)').format(id=parent.id)}")
+        logger.debug(f"🔁 {_('Created cyclic links for children of parent {id} (first<->last)').format(id=parent.id)}")
 
     def _process_node(self, parent: Optional[FlatNode], prev_sibling: Optional[FlatNode],
                      nodes: List[Dict[str, Any]]) -> Optional[FlatNode]:
@@ -139,7 +141,7 @@ class MenuFlattener:
             if node.is_branch and node.navigate is None:
                 # Use default_branch_navigate from the config, or 'limit' by default
                 node.navigate = self._config.default_branch_navigate or 'limit'
-                print("🔧 " + _("Set navigate='{navigate}' for branch {id}").format(navigate=node.navigate, id=node.id))
+                logger.debug("🔧 " + _("Set navigate='{navigate}' for branch {id}").format(navigate=node.navigate, id=node.id))
 
     def _process_children(self, parent: FlatNode, children_data: List[Dict[str, Any]]):
         """Processes the child nodes."""
@@ -184,11 +186,11 @@ class MenuFlattener:
         """Prints the sibling chain to demonstrate circular linking."""
         node = self.get_node_by_id(node_id)
         if not node:
-            print(_("Node {id} not found").format(id=node_id))
+            logger.debug(_("Node {id} not found").format(id=node_id))
             return
         
         parent_navigate = node.parent.navigate if node.parent else 'N/A'
-        print(_("Sibling chain for {id} (parent navigate: {parent_navigate}):").format(
+        logger.debug(_("Sibling chain for {id} (parent navigate: {parent_navigate}):").format(
             id=node_id, parent_navigate=parent_navigate))
         
         current = node
@@ -196,13 +198,13 @@ class MenuFlattener:
         
         for i in range(count):
             if current.id in visited:
-                print(_("  ... cycle detected ..."))
+                logger.debug(_("  ... cycle detected ..."))
                 break
                 
             visited.add(current.id)
             prev_id = current.prev_sibling.id if current.prev_sibling else 'None'
             next_id = current.next_sibling.id if current.next_sibling else 'None'
-            print(f"  {i}: {current.id} (prev: {prev_id}, next: {next_id})")
+            logger.debug(f"  {i}: {current.id} (prev: {prev_id}, next: {next_id})")
             
             if not current.next_sibling or current.next_sibling == node:
                 break
@@ -211,51 +213,20 @@ class MenuFlattener:
 
     def print_navigation_summary(self):
         """Prints the navigation summary."""
-        print(f"\n🧭 {_('Navigation summary:')}")
-        print(_("  Root node (root): {navigate}").format(navigate=self.root_node.navigate))
+        logger.debug(f"\n🧭 {_('Navigation summary:')}")
+        logger.debug(_("  Root node (root): {navigate}").format(navigate=self.root_node.navigate))
         
         branches = [node for node in self.flat_nodes if node.is_branch and node.id != 'root']
         if branches:
-            print(_("  Parent branches ({count}):").format(count=len(branches)))
+            logger.debug(_("  Parent branches ({count}):").format(count=len(branches)))
             for branch in branches:
                 children_count = len(branch.children) if branch.children else 0
-                print(_("    - {id}: {navigate} ({count} children)").format(
+                logger.debug(_("    - {id}: {navigate} ({count} children)").format(
                     id=branch.id, navigate=branch.navigate, count=children_count))
         
         cyclic_parents = [node for node in self.flat_nodes if node.navigate == "cyclic" and node.children]
         if cyclic_parents:
-            print(_("  Cyclic parents ({count}):").format(count=len(cyclic_parents)))
+            logger.debug(_("  Cyclic parents ({count}):").format(count=len(cyclic_parents)))
             for parent in cyclic_parents:
-                print(_("    - {id}: {count} children").format(id=parent.id, count=len(parent.children)))
+                logger.debug(_("    - {id}: {count} children").format(id=parent.id, count=len(parent.children)))
 
-
-# Example usage
-def main(config_file: str):
-    try:
-        config = MenuConfig(config_file)
-        print(f"✅ {_('Configuration {path} loaded successfully').format(path=config_file)}")
-        validator = MenuValidator(config=config)
-        errors = validator.validate()
-        if errors:
-            print(f"❌ {_('Configuration contains errors:')}")
-            for id, items in errors.items():
-                print(f"❌ {id}:")
-                for item in items:
-                    print(f"\t➤ {item}")
-            return 2
-        else:
-            print(f"✅ {_('and validated')}")
-            flattener = MenuFlattener(config)
-            flat_menu = flattener.flatten()
-            for node in flat_menu:
-                print(f"- {node}")
-
-    except ConfigError as e:
-        print(f"❌ {e}")
-        return 1
-    # except Exception as e:
-    #     print(f"💥 Unexpected error: {e}")
-    #     return 1
-    
-if __name__ == "__main__":
-    main('./config/config.yaml')

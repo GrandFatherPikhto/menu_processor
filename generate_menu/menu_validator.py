@@ -1,11 +1,8 @@
 from jsonschema import Draft7Validator, ValidationError
-import json
 from typing import Dict, List, Optional, Any
-from pathlib import Path
 
-from .common import load_json_data, save_json_data
 from .i18n import _
-from .menu_config import MenuConfig, ConfigError
+from .menu_config import MenuConfig
 
 class ParserError(Exception):
     """Raised when menu validation fails."""
@@ -130,29 +127,3 @@ class MenuValidator:
         
         return errors
 
-
-def main(config_file):
-    try:
-        config = MenuConfig(config_file)
-        print(f"✅ {_('Configuration {path} loaded successfully').format(path=config_file)}")
-        validator = MenuValidator(config=config)
-        errors = validator.validate()
-        if errors:
-            print(f"❌ {_('Configuration contains errors:')}")
-            for id, items in errors.items():
-                print(f"❌ {id}:")
-                for item in items:
-                    print(f"\t➤ {item}")
-        else:
-            print(f"✅ {_('and validated')}")
-
-
-    except ConfigError as e:
-        print(f"❌ {e}")
-        return 1
-    except Exception as e:
-        print(f"💥 {_('Unexpected error: {error}').format(error=e)}")
-        return 1
-
-if __name__ == "__main__":
-    main('./config/config.yaml')

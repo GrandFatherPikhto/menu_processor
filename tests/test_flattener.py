@@ -64,25 +64,26 @@ def test_explicit_and_default_navigate(menu_flattener):
     assert menu_flattener.get_node_by_id("version").navigate == "limit"
 
 
-def test_branch_without_explicit_navigate_gets_default(menu_flattener):
+def test_branch_without_explicit_navigate_gets_default_branch_navigate(menu_flattener):
     """
-    Branches without an explicit navigate receive default_navigate ("limit").
+    Branches without an explicit navigate receive default_branch_navigate
+    ("cyclic"), so their children are cyclic-linked.
 
-    ``_process_node`` assigns ``default_navigate`` to every node before the
-    branch rule runs, so ``default_branch_navigate`` ("cyclic") is not applied
-    and the children of such a branch are not cyclic-linked.
+    ``_process_node`` applies ``default_navigate`` only to leaf nodes; branches
+    keep ``navigate=None`` until ``_apply_branch_navigation_rules`` runs, which
+    then applies ``default_branch_navigate`` ("cyclic" in menu.yaml).
     """
     menu_flattener.flatten()
     hi_channel = menu_flattener.get_node_by_id("hi_channel")
     hi_on = menu_flattener.get_node_by_id("hi_on")
     hi_duty = menu_flattener.get_node_by_id("hi_duty")
 
-    assert hi_channel.navigate == "limit"
+    assert hi_channel.navigate == "cyclic"
     assert hi_on.sibling_count == 5
     assert hi_on.sibling_index == 0
-    assert not hi_on.has_cyclic_siblings
-    assert hi_on.prev_sibling is None
-    assert hi_duty.next_sibling is None
+    assert hi_on.has_cyclic_siblings
+    assert hi_on.prev_sibling.id == "hi_duty"
+    assert hi_duty.next_sibling.id == "hi_on"
 
 
 def test_flatten_empty_list_returns_root_only(menu_flattener):

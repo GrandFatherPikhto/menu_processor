@@ -59,15 +59,6 @@ class MenuFlattener:
         
         return self.flat_nodes
     
-    def _apply_parent_navigation_rules(self):
-        """Applies navigation rules for parent branches."""
-        for node in self.flat_nodes:
-            # If the node is a branch (has children) and navigate is not set
-            if node.is_branch and node.navigate is None:
-                # Use default_branch_navigate from the config
-                node.navigate = self._config.default_branch_navigate
-                print("🔧 " + _("Set navigate='{navigate}' for parent branch {id} (default_branch_navigate)").format(navigate=node.navigate, id=node.id))
-
     def _make_cyclic_links(self):
         """Closes cyclic links for siblings based on parent settings."""
         processed_parents = set()
@@ -107,8 +98,10 @@ class MenuFlattener:
             # Create a flat node (using the updated FlatNode)
             flat_node = FlatNode(node_data, self._config, self._menu_data)
 
-            # Set default navigation values
-            if flat_node.navigate is None:
+            # Set default navigation for leaf nodes only. Branches keep
+            # navigate=None here so that the branch navigation rule can apply
+            # default_branch_navigate in _apply_branch_navigation_rules.
+            if flat_node.navigate is None and 'items' not in node_data:
                 flat_node.navigate = self._config.default_navigate
 
             self.flat_nodes.append(flat_node)
@@ -155,8 +148,10 @@ class MenuFlattener:
         for child_data in children_data:
             flat_child = FlatNode(child_data, self._config, self._menu_data)
 
-            # Set default values
-            if flat_child.navigate is None:
+            # Set default navigation for leaf nodes only. Branches keep
+            # navigate=None here so that the branch navigation rule can apply
+            # default_branch_navigate in _apply_branch_navigation_rules.
+            if flat_child.navigate is None and 'items' not in child_data:
                 flat_child.navigate = self._config.default_navigate
 
             self.flat_nodes.append(flat_child)

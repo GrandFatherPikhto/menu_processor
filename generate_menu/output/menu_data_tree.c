@@ -70,7 +70,7 @@ static const menu_node_t s_menu_tree[] = {
         .title = "Hi On/Off",
         .parent = MENU_ID_HI_CHANNEL,
         .child = MENU_ID_COUNT,
-        .prev = MENU_ID_COUNT,
+        .prev = MENU_ID_HI_DUTY,
         .next = MENU_ID_HI_DELAY,
         .type = MENU_TREE_TYPE_LEAF
     },
@@ -107,7 +107,7 @@ static const menu_node_t s_menu_tree[] = {
         .parent = MENU_ID_HI_CHANNEL,
         .child = MENU_ID_COUNT,
         .prev = MENU_ID_HI_PWM_ON,
-        .next = MENU_ID_COUNT,
+        .next = MENU_ID_HI_ON,
         .type = MENU_TREE_TYPE_LEAF
     },
     [MENU_ID_LO_CHANNEL] = {
@@ -124,7 +124,7 @@ static const menu_node_t s_menu_tree[] = {
         .title = "Lo On/Off",
         .parent = MENU_ID_LO_CHANNEL,
         .child = MENU_ID_COUNT,
-        .prev = MENU_ID_COUNT,
+        .prev = MENU_ID_LO_DUTY,
         .next = MENU_ID_LO_DELAY,
         .type = MENU_TREE_TYPE_LEAF
     },
@@ -161,7 +161,7 @@ static const menu_node_t s_menu_tree[] = {
         .parent = MENU_ID_LO_CHANNEL,
         .child = MENU_ID_COUNT,
         .prev = MENU_ID_LO_PWM_ON,
-        .next = MENU_ID_COUNT,
+        .next = MENU_ID_LO_ON,
         .type = MENU_TREE_TYPE_LEAF
     },
     

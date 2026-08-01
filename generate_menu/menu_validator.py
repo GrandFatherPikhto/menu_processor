@@ -28,6 +28,9 @@ class MenuValidator:
         Returns:
             Dict[str, List[str]]: errors grouped by element ID.
         """
+        # Reset per-call state so that repeated validate() calls are idempotent.
+        self._ids = []
+
         menu = self._config.menu_data if menu_data is None else menu_data
 
         errors = {}
@@ -77,10 +80,6 @@ class MenuValidator:
         if 'items' not in item and 'type' not in item:
             errors.append(_("Leaf element must have 'type'"))
         
-        # Validate the data type
-        if 'type' in item:
-            errors.extend(self._validate_data_type(item))
-        
         # Validate the default value
         if 'default' in item:
             errors.extend(self._validate_default_value(item))
@@ -110,9 +109,6 @@ class MenuValidator:
                     default=item['default']))
         
         return errors
-
-    def _validate_data_type(self, item: Dict):
-        return []
 
     def _validate_factors(self, item: Dict) -> List[str]:
         """Validates factors."""

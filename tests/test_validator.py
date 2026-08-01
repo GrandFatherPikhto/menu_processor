@@ -133,3 +133,15 @@ def test_nested_tree_path_in_errors(menu_config):
         "not in allowed values" in message
         for message in errors["parent->child"]
     )
+
+
+def test_validate_is_idempotent(menu_config):
+    """Repeated validate() calls must not accumulate duplicate-id state."""
+    validator = _make_validator(menu_config)
+    items = [
+        _item("a", title="A", type="string", role="fixed"),
+        _item("b", title="B", type="string", role="fixed"),
+    ]
+    menu = _make_menu(items)
+    assert validator.validate(menu) == {}
+    assert validator.validate(menu) == {}

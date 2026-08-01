@@ -9,9 +9,10 @@ The CLI is designed to be run in either of these ways::
     python generate_menu.py     # root convenience script
     python -m generate_menu     # module execution
 
-Both forms change the current working directory into the ``generate_menu``
-package because configuration paths (templates, output directory and the
-flattened menu file) are resolved relative to the current working directory.
+Both forms change the current working directory into the project root
+because configuration paths (templates, menu definitions, output directory
+and the flattened menu file) are resolved relative to the current working
+directory.
 """
 
 import argparse
@@ -24,7 +25,7 @@ from .i18n import _
 
 logger = logging.getLogger(__name__)
 
-#: Default main configuration file, resolved relative to the package directory.
+#: Default main configuration file, resolved relative to the project root.
 DEFAULT_CONFIG = "config/config.yaml"
 
 
@@ -43,7 +44,7 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="PATH",
         help=_(
             "Path to the main configuration file "
-            "(default: config/config.yaml relative to the package)."
+            "(default: config/config.yaml relative to the project root)."
         ),
     )
     parser.add_argument(
@@ -67,9 +68,13 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _resolve_package_dir() -> Path:
-    """Returns the absolute path of the ``generate_menu`` package directory."""
-    return Path(__file__).resolve().parent
+def _resolve_project_root() -> Path:
+    """Returns the absolute path of the project root directory.
+
+    The non-code asset directories (``config/``, ``menu/``, ``templates/``,
+    ``output/``) live at the project root, one level above this package.
+    """
+    return Path(__file__).resolve().parent.parent
 
 
 def _setup_logging(level: int) -> None:
@@ -139,8 +144,8 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
     # Configuration paths (templates, output directory, flattened menu) are
-    # resolved relative to the CWD, so change into the package directory.
-    os.chdir(_resolve_package_dir())
+    # resolved relative to the CWD, so change into the project root.
+    os.chdir(_resolve_project_root())
 
     if args.quiet:
         level = logging.WARNING

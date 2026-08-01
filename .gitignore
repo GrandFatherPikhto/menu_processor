@@ -51,4 +51,7 @@ old/**
 Thumbs.db               # Windows
 ehthumbs.db             # Windows
 
+# Generated C sources and JSON artifacts (produced by generate_menu.py)
+output/
+
 init.sh

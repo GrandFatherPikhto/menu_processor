@@ -37,9 +37,9 @@ def test_aggregator_caches_results(menu_flattener):
     assert aggregator.functions_by_type_role is aggregator.functions_by_type_role
 
 
-def test_processor_delegates_to_single_aggregator(monkeypatch, package_dir):
+def test_processor_delegates_to_single_aggregator(monkeypatch, project_root):
     """MenuProcessor exposes the aggregator and forwards every aggregation."""
-    monkeypatch.chdir(package_dir)
+    monkeypatch.chdir(project_root)
 
     from generate_menu.menu_processor import MenuProcessor
 
@@ -57,9 +57,9 @@ def test_processor_delegates_to_single_aggregator(monkeypatch, package_dir):
     assert processor.functions_by_event_type is processor.data.functions_by_event_type
 
 
-def test_aggregator_matches_processor_results(monkeypatch, package_dir):
+def test_aggregator_matches_processor_results(monkeypatch, project_root):
     """The aggregator over the same nodes yields identical structures."""
-    monkeypatch.chdir(package_dir)
+    monkeypatch.chdir(project_root)
 
     from generate_menu.menu_processor import MenuProcessor
     from generate_menu.menu_data_aggregator import MenuDataAggregator

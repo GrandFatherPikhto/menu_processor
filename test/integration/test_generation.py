@@ -32,24 +32,24 @@ EXPECTED_FILES = [
 ]
 
 
-def test_generator_creates_c_files(monkeypatch, package_dir):
-    """Running the generator from the package directory produces the C sources."""
-    monkeypatch.chdir(package_dir)
+def test_generator_creates_c_files(monkeypatch, project_root):
+    """Running the generator from the project root produces the C sources."""
+    monkeypatch.chdir(project_root)
 
     from generate_menu.menu_generator import MenuGenerator
 
     MenuGenerator("./config/config.yaml")
 
-    output = package_dir / "output"
+    output = project_root / "output"
     for relative in EXPECTED_FILES:
         path = output / relative
         assert path.is_file(), f"Missing generated file: {path}"
         assert path.stat().st_size > 0, f"Generated file is empty: {path}"
 
 
-def test_processor_exposes_flat_menu(monkeypatch, package_dir):
+def test_processor_exposes_flat_menu(monkeypatch, project_root):
     """The processor behind the generator exposes all menu nodes but root."""
-    monkeypatch.chdir(package_dir)
+    monkeypatch.chdir(project_root)
 
     from generate_menu.menu_generator import MenuGenerator
 
@@ -59,16 +59,16 @@ def test_processor_exposes_flat_menu(monkeypatch, package_dir):
     assert len(processor.menu) == 17
 
 
-def test_processor_saves_flat_and_functions_json(monkeypatch, package_dir):
+def test_processor_saves_flat_and_functions_json(monkeypatch, project_root):
     """save_flattern_json() and save_json_data() write the JSON artifacts."""
-    monkeypatch.chdir(package_dir)
+    monkeypatch.chdir(project_root)
 
     from generate_menu.menu_processor import MenuProcessor
     from generate_menu.common import save_json_data
 
     processor = MenuProcessor("./config/config.yaml")
 
-    output = package_dir / "output"
+    output = project_root / "output"
     flat_path = output / "flatterned.json"
     functions_path = output / "functions.json"
 
@@ -88,15 +88,15 @@ def test_processor_saves_flat_and_functions_json(monkeypatch, package_dir):
     assert len(functions_data) > 0
 
 
-def test_generated_data_file_contains_node_titles(monkeypatch, package_dir):
+def test_generated_data_file_contains_node_titles(monkeypatch, project_root):
     """The generated data file embeds real menu node titles."""
-    monkeypatch.chdir(package_dir)
+    monkeypatch.chdir(project_root)
 
     from generate_menu.menu_generator import MenuGenerator
 
     MenuGenerator("./config/config.yaml")
 
-    data_c = package_dir / "output" / "menu_data_config.c"
+    data_c = project_root / "output" / "menu_data_config.c"
     content = data_c.read_text(encoding="utf-8")
     assert "s_values_str_start" in content
     assert '"Start"' in content

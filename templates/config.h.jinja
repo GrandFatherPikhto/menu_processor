@@ -28,34 +28,31 @@ typedef struct menu_callback menu_callback_t;
 
 typedef struct s_stub_config_t {} stub_config_t;
 
-// string_fixed
-typedef struct s_string_fixed_t {
+{% for category_name, category in categories.items() if category.type != "callback" %}
+// {{category_name}}
+typedef struct s_{{category_name}}_t {
+{% if category.role == "simple" %}
+    {{category.c_type}} default_value;
+    {{category.c_type}} step;
+    {{category.c_type}} min;
+    {{category.c_type}} max;
+{% elif category.role == "factor" %}
+    {{category.c_type}} max;
+    {{category.c_type}} min;
+    {{category.c_type}} step;
+    {{category.c_type}} default_value;
     uint8_t count;
     uint8_t default_idx;
-    const const char* *values; 
-} string_fixed_config_t;
-
-// udword_factor
-typedef struct s_udword_factor_t {
-    uint32_t max;
-    uint32_t min;
-    uint32_t step;
-    uint32_t default_value;
+    const {{category.c_type}} *factors;
+{% elif category.role == "fixed" %}
     uint8_t count;
     uint8_t default_idx;
-    const uint32_t *factors;
+    {{category.c_type}} *values; {# c_type уже содержит const для строк (const char*) #}
+{% endif %}
 
-} udword_factor_config_t;
+} {{category_name}}_config_t;
 
-// ubyte_simple
-typedef struct s_ubyte_simple_t {
-    uint8_t default_value;
-    uint8_t step;
-    uint8_t min;
-    uint8_t max;
-
-} ubyte_simple_config_t;
-
+{% endfor %}
 
 // Объявления callback-функций
 typedef void (*menu_click_cb_t)(menu_context_t *ctx, menu_id_t id);
@@ -76,9 +73,9 @@ typedef struct menu_node_config {
     menu_handle_event_cb_t event_cb;
     union {        
         stub_config_t stub_config;
-        string_fixed_config_t string_fixed;
-        udword_factor_config_t udword_factor;
-        ubyte_simple_config_t ubyte_simple;
+{% for category_name, category in categories.items() if category.type != "callback" %}
+        {{category_name}}_config_t {{category_name}};
+{% endfor %}
     } data;
 } menu_node_config_t;
 

@@ -44,21 +44,22 @@ def test_entrypoint_generates_output_files():
     result = _run_entrypoint()
     assert result.returncode == 0, result.stderr
 
-    output = PROJECT_ROOT / "generate_menu" / "output"
+    output = PROJECT_ROOT / "output"
     assert (output / "menu.c").is_file()
     assert (output / "include" / "menu.h").is_file()
     assert (output / "flatterned.json").is_file()
     assert (output / "functions.json").is_file()
 
 
-def test_entrypoint_creates_no_stray_root_output():
+def test_entrypoint_writes_output_at_project_root():
     """
-    No stray output directory is created at the project root; generation
-    writes exclusively into generate_menu/output/.
+    Generation writes into the root output/ directory and leaves no stray
+    output directory inside the generate_menu package.
     """
     result = _run_entrypoint()
     assert result.returncode == 0, result.stderr
-    assert not (PROJECT_ROOT / "output").exists()
+    assert (PROJECT_ROOT / "output").is_dir()
+    assert not (PROJECT_ROOT / "generate_menu" / "output").exists()
 
 
 def test_russian_entrypoint_output():

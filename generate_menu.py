@@ -6,9 +6,9 @@ Runs the menu generator that produces C source files for an embedded
 LCD1602 menu system from a YAML/JSON menu definition.
 
 This script is a thin wrapper around :mod:`generate_menu.cli`, which changes
-the current working directory into the ``generate_menu`` package because
-configuration paths (templates, output directory and the flattened menu file)
-are resolved relative to the current working directory.
+the current working directory into the project root because configuration
+paths (config/, menu/, templates/, output/) are resolved relative to the
+current working directory.
 """
 import sys
 from pathlib import Path

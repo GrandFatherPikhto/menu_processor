@@ -30,8 +30,18 @@ os.environ.pop("MENU_PROCESSOR_LANG", None)
 #: Absolute path to the generate_menu package directory.
 PACKAGE_DIR = PROJECT_ROOT / "generate_menu"
 
-#: Absolute path to the main YAML configuration file.
-CONFIG_PATH = PACKAGE_DIR / "config" / "config.yaml"
+#: Absolute path to the main YAML configuration file (project root config/).
+CONFIG_PATH = PROJECT_ROOT / "config" / "config.yaml"
+
+
+@pytest.fixture(scope="session")
+def project_root() -> Path:
+    """Absolute path of the project root directory.
+
+    The non-code asset directories (config/, menu/, templates/, output/)
+    live here, one level above the ``generate_menu`` package.
+    """
+    return PROJECT_ROOT
 
 
 @pytest.fixture(scope="session")

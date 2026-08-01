@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import Dict, Set, List, Optional, Any, Union
 
-from i18n import _
+from .i18n import _
 
 try:
     import yaml
@@ -23,21 +23,21 @@ class ConfigLoadError(Exception):
 
 
 def load_config_file(file_path: Union[str, Path]) -> Any:
-    """Загружает конфигурационный файл в формате JSON или YAML.
+    """Loads a configuration file in JSON or YAML format.
 
-    Формат определяется по расширению файла:
+    The format is detected from the file extension:
     - ``.json`` → json.load
     - ``.yaml`` / ``.yml`` → yaml.safe_load
 
     Args:
-        file_path: путь к файлу конфигурации.
+        file_path: path to the configuration file.
 
     Returns:
-        Распарсенные данные (обычно ``dict``).
+        The parsed data (usually a ``dict``).
 
     Raises:
-        ConfigLoadError: если файл не найден, нет прав на чтение
-            или содержимое не является корректным JSON/YAML.
+        ConfigLoadError: if the file is not found, is not readable,
+            or its content is not valid JSON/YAML.
     """
     path = Path(file_path)
     suffix = path.suffix.lower()
@@ -86,10 +86,10 @@ def load_config_file(file_path: Union[str, Path]) -> Any:
 
 
 def load_json_data(config_file: str) -> Optional[Dict]:
-    """Загружает JSON-файл (совместимость со старым API).
+    """Loads a JSON file (compatibility with the old API).
 
-    В случае ошибки печатает сообщение и возвращает ``None``.
-    Для нового кода используйте :func:`load_config_file`.
+    On error, prints a message and returns ``None``.
+    For new code, use :func:`load_config_file`.
     """
     try:
         with open(config_file, "r", encoding="utf-8") as f:

@@ -3,8 +3,8 @@ from typing import Dict, Any, Set, List, Tuple, Optional
 from pathlib import Path
 from enum import Enum
 
-from i18n import _
-from menu_config import MenuConfig, ConfigError
+from .i18n import _
+from .menu_config import MenuConfig, ConfigError
 
 class ControlType(Enum):
     CLICK = "click"
@@ -24,11 +24,11 @@ class MenuData:
         self._navigation_rules: Dict[str, Dict[str, Any]] = self._data_config.get("navigation_rules", {}) or {}
         self._role_rules: Dict[str, Any] = self._data_config.get("role_rules", {}) or {}
         
-        # Создаем обратное отображение: тип -> роль
+        # Build a reverse mapping: type -> roles
         self._type_to_roles: Dict[str, List[str]] = self._build_type_to_role_mapping()
 
     def _build_type_to_role_mapping(self) -> Dict[str, List[str]]:
-        """Создает отображение типа на список ролей"""
+        """Builds a mapping from a type to its list of roles."""
         mapping = {}
         for role, types in self._roles.items():
             for type_name in types:
@@ -38,12 +38,12 @@ class MenuData:
         return mapping
 
     def get_controls_for_type(self, type_name: str) -> Set[ControlType]:
-        """Возвращает доступные контролы для типа"""
+        """Returns the available controls for a type."""
         roles = self.get_roles_for_type(type_name)
         if not roles:
             return set()
             
-        # Просто собираем контролы из всех ролей типа
+        # Collect controls from all roles of the type
         all_controls = set()
         for role in roles:
             control_names = self._controls.get(role, [])
@@ -55,19 +55,19 @@ class MenuData:
         return self._type_to_roles.get(type_name, [])
 
     def get_navigation_rules(self, control: ControlType) -> Tuple[List[NavigationType], NavigationType]:
-        """Возвращает правила навигации для контроля"""
+        """Returns the navigation rules for a control."""
         rules = self._navigation_rules.get(control.value, {})
         allowed_navigate = [NavigationType(nav) for nav in rules.get("allowed_navigate", [])]
         default_navigate = NavigationType(rules.get("default", "cyclic"))
         return allowed_navigate, default_navigate
 
     def is_valid_navigation(self, control: ControlType, navigate: NavigationType) -> bool:
-        """Проверяет, допустима ли комбинация control + navigate"""
+        """Checks whether a control + navigate combination is allowed."""
         allowed_navigate, _ = self.get_navigation_rules(control)
         return navigate in allowed_navigate
 
     def get_default_navigation(self, control: ControlType) -> NavigationType:
-        """Возвращает navigate по умолчанию для контроля"""
+        """Returns the default navigation for a control."""
         _, default_navigate = self.get_navigation_rules(control)
         return default_navigate
     
@@ -89,34 +89,34 @@ class MenuData:
         return self._roles[name]
 
     def get_role_rules(self, role: str) -> Optional[Dict[str, Any]]:
-        """Возвращает правила для указанной роли"""
+        """Returns the rules for the given role."""
         return self._role_rules.get(role)
 
     def get_control_config(self, role: str, control: ControlType, 
                         node_controls: Optional[List[str]] = None,
                         node_navigate: Optional[str] = None) -> Optional[Dict[str, Any]]:
-        """Возвращает конфигурацию контроля для роли с учетом переопределений"""
+        """Returns the control configuration for a role, honoring overrides."""
         rules = self.get_role_rules(role)
         if not rules:
             return None
         
-        # Проверяем, разрешен ли данный контроль для роли
+        # Check whether the control is allowed for the role
         allowed_controls = rules.get("allowed_controls", [])
         
-        # Если в узле указаны конкретные контролы, проверяем по ним
+        # If the node lists explicit controls, validate against them
         if node_controls is not None:
             if control.value not in node_controls:
                 return None
-        # Иначе проверяем по правилам роли по умолчанию
+        # Otherwise validate against the role rules by default
         elif control.value not in allowed_controls:
             return None
         
-        # Получаем правила для конкретного контроля
+        # Get the rules for the specific control
         control_rules = rules.get(control.value, {})
         if not control_rules:
             return None
         
-        # Для click всегда используем cyclic, для position можно переопределить
+        # For click always use cyclic; for position it can be overridden
         if control == ControlType.CLICK:
             navigate = NavigationType.CYCLIC
         else:

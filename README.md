@@ -1,441 +1,482 @@
-# 🎛️ Генератор C-меню для Embedded LCD1602
+# 🎛️ C Menu Generator for Embedded LCD1602
 
-## 📖 Общее описание
+> 🇬🇧 English · [🇷🇺 Русский](#русская-версия)
 
-**Генератор C-меню** - это Python-пакет для автоматической генерации C-кода системы меню на основе JSON-конфигурации. Система предназначена для использования в embedded-проектах с LCD дисплеями 1602 и энкодерами.
+**Generate C source code for an embedded LCD1602 menu system from a declarative
+configuration.** You describe the menu tree in YAML/JSON — the generator produces a
+complete set of C files (data tables, navigation, drawing, editing, callbacks) ready
+to be compiled into your firmware.
 
-### 🚀 Основные возможности:
-- **Автоматическая генерация** C-кода из JSON-конфигурации
-- **Поддержка различных типов данных**: числа, строки, перечисления
-- **Гибкая система callback-функций**: пользовательские и автоматические
-- **Циклическая навигация**: закольцованные и линейные меню
-- **Валидация конфигурации**: проверка корректности перед генерацией
-- **Модульная архитектура**: легко расширяемая система
+---
 
-## 🏗️ Архитектура системы
+## 📖 Table of contents
 
-### 📁 Структура проекта
+- [Why this project](#why-this-project)
+- [How it works](#how-it-works)
+- [Repository layout](#repository-layout)
+- [Quick start](#quick-start)
+- [Configuration](#configuration)
+  - [Main config](#main-config-configconfigyaml)
+  - [Menu tree](#menu-tree-menumenuyaml)
+  - [Type / role / control rules](#type--role--control-rules-configmenudatayaml)
+  - [Generation files](#generation-files-configfilesyaml)
+- [Node reference](#node-reference)
+- [Generated files](#generated-files)
+- [Internationalization (i18n / gettext)](#internationalization-i18n--gettext)
+- [Documentation](#documentation)
+
+---
+
+## Why this project
+
+Writing an LCD menu system in C by hand is repetitive and error-prone: data tables,
+navigation links, value drawing and editing callbacks, cyclic/limited navigation rules
+— every device needs a slightly different version of the same boilerplate.
+
+This project **treats the menu as data**. Instead of writing C, you write a small
+declarative configuration:
+
+- **types** → C types (byte, uword, string, …)
+- **roles** → how a value behaves (`simple`, `factor`, `fixed`, `callback`)
+- **controls** → which encoder actions are supported (`click`, `position`)
+- **navigation** → cyclic or limited (`cyclic` / `limit`)
+- **callbacks** → your own handlers or auto-generated ones
+
+The generator validates the configuration, flattens the tree into a navigable
+structure, and renders Jinja2 templates into C files that compile into your firmware.
+
+## How it works
 
 ```
-Menu_Processor/
-├── 📁 config/                 # Конфигурационные файлы
-│   ├── config.json           # Основной конфиг с путями
-│   ├── menu_schema.json      # JSON Schema для валидации
-│   ├── menu.json            # Дерево меню
-│   └── menu_data.json       # Правила типов, ролей, callback'ов
-├── 📁 src/                   # Исходный код
-│   ├── 🏗️  base_flat_node.py      # Базовый класс узла
-│   ├── 🎛️  callback_manager.py    # Менеджер callback-функций  
-│   ├── 📊  flat_node.py           # Основной класс узла
-│   ├── 🧭  menu_config.py         # Загрузка конфигурации
-│   ├── 📋  menu_data.py           # Правила типов и ролей
-│   ├── 🔄  menu_flattener.py      # Преобразование дерева в плоский список
-│   ├── 🛠️  menu_generator.py      # Генерация C-кода
-│   ├── ⚙️  menu_processor.py      # Основной координатор
-│   ├── ✅  menu_validator.py      # Валидация JSON
-│   ├── 📁  managers/              # Менеджеры
-│   │   ├── 📊  node_data_manager.py      # Управление данными
-│   │   ├── 🎮  node_control_manager.py   # Управление контролами
-│   │   └── 🧭  node_navigation_manager.py # Управление навигацией
-│   └── 🔧  common.py              # Вспомогательные функции
-├── 📁 templates/             # Jinja2 шаблоны для генерации C-кода
-├── 📁 output/                # Сгенерированные файлы
-└── 📁 menu/                  # Примеры меню (внешняя папка)
+config/config.yaml
+  → MenuConfig            loads all configuration files
+  → MenuValidator         JSON Schema + custom validation of the tree
+  → MenuFlattener         expands the tree into a flat list + navigation links
+  → FlatNode/BaseFlatNode node built from a composition of managers
+  → MenuProcessor         coordinator, aggregates data for the templates
+  → MenuGenerator         renders Jinja2 templates → C files
 ```
 
-### 🔄 Процесс работы
+The pipeline is fully data-driven: the same generator handles any menu — from a single
+"Start" screen to a multi-level settings tree with dozens of nodes.
+
+## Repository layout
 
 ```
-JSON конфигурация 
-    → MenuConfig (загрузка)
-    → MenuValidator (проверка)
-    → MenuFlattener (преобразование в плоский список)
-    → FlatNode с менеджерами (обработка данных)
-    → MenuProcessor (подготовка данных)
-    → MenuGenerator (генерация C-кода через шаблоны)
-    → C файлы
+menu_processor/
+├── generate_menu.py          # ← run this: the only entry point at the root
+├── generate_menu/            # Python package with all sources
+│   ├── config/               # YAML/JSON configuration files
+│   ├── menu/                 # the menu tree (menu.yaml / menu.json)
+│   ├── templates/            # Jinja2 templates (*.jinja)
+│   ├── output/               # generated C files (include/ + sources)
+│   ├── locale/               # gettext catalogs (messages.pot, ru/...)
+│   ├── i18n.py               # gettext helper
+│   ├── common.py             # JSON/YAML loaders and helpers
+│   ├── menu_config.py        # loads & validates all config files
+│   ├── menu_data.py          # type/role/control/navigation rules
+│   ├── menu_validator.py     # schema + custom validation
+│   ├── menu_flattener.py     # tree → flat list, navigation links
+│   ├── base_flat_node.py     # base node (manager composition)
+│   ├── flat_node.py          # final node class
+│   ├── menu_processor.py     # coordinator & aggregator
+│   ├── menu_generator.py     # Jinja2 rendering → C files
+│   └── managers/             # per-node managers
+├── docs/                     # documentation (see below)
+└── requirements.txt
 ```
 
-## 🚀 Быстрый старт
-
-### 1. Установка зависимостей
+## Quick start
 
 ```bash
-pip install jinja2 jsonschema
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Run the generator from the project root
+python generate_menu.py
 ```
 
-### 2. Создание конфигурации
+The generated C files appear in [`generate_menu/output/`](generate_menu/output/)
+(sources) and [`generate_menu/output/include/`](generate_menu/output/include/)
+(headers).
 
-**config/config.json:**
-```json
-{
-  "menu_schema": "menu_schema.json",
-  "menu_config": "menu_data.json", 
-  "menu": "../menu/menu.json",
-  "output_flattern": "../output/flatterned.json",
-  "generation_files": "files.json"
-}
+> 💡 All source code, configuration, templates and output live inside the
+> [`generate_menu/`](generate_menu/) package; the root only keeps the entry point
+> [`generate_menu.py`](generate_menu.py).
+
+## Configuration
+
+The main configuration file is [`generate_menu/config/config.yaml`](generate_menu/config/config.yaml).
+
+### Main config: `config/config.yaml`
+
+```yaml
+# Paths are relative to this file (the config/ directory)
+menu: ../menu/menu.yaml          # the menu tree
+menu_schema: menu_schema.yaml    # JSON Schema for validation
+menu_config: menu_data.yaml      # type/role/control/navigation rules
+output_flattern: output/flatterned.json   # flattened JSON dump (debug)
+generation_files: files.yaml     # which templates produce which files
 ```
 
-**config/files.json:**
-```json
-{
-  "templates": "../templates",
-  "files": {
-    "menu_context.h.j2": "../output/menu_context.h",
-    "menu_context.c.j2": "../output/menu_context.c",
-    "menu_type.h.j2": "../output/menu_type.h"
-  }
-}
+### Menu tree: `menu/menu.yaml`
+
+```yaml
+config:
+  version: "1.0"
+  default_navigate: limit
+  default_control: position
+  default_branch_navigate: cyclic
+  root_navigate: cyclic
+  output_directory: ./output/    # where generated C files go
+  include_files: [pulse_config.h]
+
+menu:
+  - id: start                    # a node is defined by id + title
+    title: Start
+    type: string                 # data type (see rules below)
+    role: fixed                  # role: simple / factor / fixed / callback
+    values: [Start, Started]     # fixed set of values
+    default_idx: 0
+    navigate: cyclic             # cyclic or limit
+
+  - id: settings
+    title: Settings
+    navigate: limit
+    items:                       # nested items → sub-menu
+      - id: hi_delay
+        title: Delay
+        type: udword
+        role: factor
+        default: 10
+        min: 10
+        max: 10000
+        factors: [1, 10, 100, 1000]   # multipliers for the factor role
 ```
 
-### 3. Запуск генерации
+### Type / role / control rules: `config/menu_data.yaml`
 
-В ```config/config.json``` указать путь к файлу конфигурации меню. Например:
-```json
-{
-    "menu": "../menu/menu.json",
-    "menu_schema": "menu_schema.json",
-    "menu_config": "menu_data.json",
-    "output_flattern": "../output/flatterned.json",
-    "generation_files": "files.json"
-}
-```
-Запускаем генератор:
-```bash
-python generator.py 
-```
+```yaml
+types:
+  ubyte: {c_type: uint8_t}
+  string: {c_type: "const char*"}
 
-## 📝 Создание меню
+roles:
+  simple: [byte, ubyte, word, uword, dword, udword]
+  fixed: [string, byte, ubyte, word, uword, dword, udword]
+  factor: [byte, ubyte, word, uword, dword, udword]
+  callback: [callback]
 
-### 🎯 Базовые свойства узла
-
-```json
-{
-  "id": "unique_id",           // Уникальный идентификатор
-  "title": "Display Name",     // Отображаемое имя
-  "type": "ubyte",            // Тип данных
-  "role": "simple"            // Роль элемента
-}
+navigation_rules:
+  position:
+    allowed_navigate: [limit, cyclic]
+    default: limit
 ```
 
-### 📊 Типы данных (type)
+### Generation files: `config/files.yaml`
 
-| Тип | C-тип | Описание |
-|-----|-------|----------|
-| `byte` | `int8_t` | Знаковый байт |
-| `ubyte` | `uint8_t` | Беззнаковый байт |
-| `word` | `int16_t` | Знаковое слово |
-| `uword` | `uint16_t` | Беззнаковое слово |
-| `dword` | `int32_t` | Знаковое двойное слово |
-| `udword` | `uint32_t` | Беззнаковое двойное слово |
-| `string` | `char*` | Строка |
-| `callback` | `void*` | Функция обратного вызова |
-
-### 🎭 Роли элементов (role)
-
-#### 1. **simple** - Простые числовые значения
-```json
-{
-  "id": "brightness",
-  "title": "Brightness", 
-  "type": "ubyte",
-  "role": "simple",
-  "min": 0,
-  "max": 100,
-  "default": 50,
-  "step": 5
-}
+```yaml
+templates_path: ./templates/     # where Jinja2 templates live
+files:
+  handle.h.jinja: include/menu.h
+  handle.c.jinja: menu.c
+  context.h.jinja: include/menu_context.h
+  context.c.jinja: menu_context.c
+  # ... every template maps to a generated C file
 ```
 
-#### 2. **factor** - Значения с множителями
-```json
-{
-  "id": "delay",
-  "title": "Delay",
-  "type": "udword", 
-  "role": "factor",
-  "default": 10,
-  "min": 10,
-  "max": 10000,
-  "factors": [1, 10, 100, 1000]
-}
-```
+## Node reference
 
-#### 3. **fixed** - Фиксированные наборы значений
-```json
-{
-  "id": "mode",
-  "title": "Mode",
-  "type": "string",
-  "role": "fixed",
-  "values": ["Auto", "Manual", "Test"],
-  "default_idx": 0
-}
-```
+A node in the menu tree can use the following fields:
 
-#### 4. **callback** - Пользовательские обработчики
-```json
-{
-  "id": "version",
-  "title": "Firmware version", 
-  "type": "callback",
-  "role": "callback"
-}
-```
+| Field | Meaning |
+|-------|---------|
+| `id` | Unique identifier of the node |
+| `title` | Text shown on the display |
+| `type` | Data type: `byte`, `ubyte`, `word`, `uword`, `dword`, `udword`, `string`, `callback` |
+| `role` | Behavior: `simple`, `factor`, `fixed`, `callback` |
+| `min` / `max` / `step` | Numeric range for `simple` / `factor` |
+| `default` | Default numeric value |
+| `factors` | Multipliers for the `factor` role |
+| `values` / `default_idx` | Fixed value set for the `fixed` role |
+| `controls` | Encoder controls: `click`, `position` |
+| `navigate` | Navigation: `cyclic`, `limit` |
+| `items` | Child nodes (sub-menu) |
+| `click_cb`, `position_cb`, `double_click_cb`, `long_click_cb`, `event_cb`, `draw_value_cb` | Custom callbacks |
 
-### 🎮 Управление контролами (controls)
+If a callback is **not** specified, it is generated automatically
+(e.g. `menu_draw_{type}_{role}_value_cb` for drawing, `{type}_{role}_{control}_{navigate}_cb`
+for handling).
 
-#### Доступные контролы:
-- **`click`** - обработка клика энкодера
-- **`position`** - обработка поворота энкодера
+## Generated files
 
-#### Примеры конфигурации:
-```json
-// Использовать только position контроль
-{
-  "controls": ["position"],
-  "navigate": "cyclic"
-}
+The generator produces a full C module:
 
-// Использовать оба контроля (по умолчанию)
-{
-  "controls": ["click", "position"]
-}
+- `menu_context.h/c` — menu context and core structures
+- `menu_type.h/c` — data types and enums
+- `menu_data_*.h/c` — data configuration, context, value and name tables
+- `menu_tree.h/c` — menu tree with navigation links
+- `menu_value.h/c` — value access functions
+- `menu_navigate.h/c` — navigation functions
+- `menu_edit.h/c` — editing functions
+- `menu_draw.h/c` — drawing functions
+- `menu_name.h/c` — node-name lookup
+- `menu.h/c` — top-level entry
 
-// Для factor роли всегда оба контроля
-{
-  "role": "factor"
-  // автоматически используются click и position
-}
-```
+## Internationalization (i18n / gettext)
 
-### 🧭 Навигация (navigate)
+All user-facing messages use **gettext (Babel)**; the primary language is **English**.
 
-#### Типы навигации:
-- **`cyclic`** - циклическое переключение (закольцованное)
-- **`limit`** - ограниченное (до первого/последнего элемента)
-
-#### Примеры:
-```json
-// Циклическое меню
-{
-  "navigate": "cyclic",
-  "items": [
-    {"id": "item1", "title": "Item 1", "type": "string", "role": "fixed", "values": ["A", "B"]},
-    {"id": "item2", "title": "Item 2", "type": "string", "role": "fixed", "values": ["X", "Y"]}
-  ]
-}
-
-// Ограниченное меню  
-{
-  "navigate": "limit",
-  "items": [
-    // переход только между существующими элементами
-  ]
-}
-```
-
-### 📞 Callback-функции
-
-#### Типы callback-ов:
-- **`click_cb`** - обработка клика
-- **`position_cb`** - обработка поворота энкодера  
-- **`double_click_cb`** - двойной клик
-- **`long_click_cb`** - долгий клик
-- **`event_cb`** - обработка событий меню
-- **`draw_value_cb`** - отрисовка значения
-
-#### Пример пользовательского callback:
-```json
-{
-  "id": "custom_item",
-  "title": "Custom",
-  "type": "ubyte", 
-  "role": "simple",
-  "click_cb": "my_custom_click_handler",
-  "draw_value_cb": "my_custom_draw_function"
-}
-```
-
-#### Автоматические функции:
-Если callback не указан, генерируется автоматически по шаблону:
-- `{type}_{role}_{control}_{navigate}_cb` - для обработки
-- `menu_draw_{type}_{role}_value_cb` - для отрисовки
-
-## 📊 Генерируемые файлы
-
-Система генерирует следующие C-файлы:
-
-- **`menu_context.h/c`** - контекст меню и основные структуры
-- **`menu_type.h/c`** - типы данных и enum'ы  
-- **`menu_data.h/c`** - конфигурация данных меню
-- **`menu_tree.h/c`** - дерево меню со связями
-- **`menu_value.h/c`** - функции работы со значениями
-- **`menu_navigate.h/c`** - функции навигации
-- **`menu_engine.h/c`** - движок меню
-- **`menu_edit.h/c`** - функции редактирования значений
-
-## 🔧 Расширение системы
-
-### Добавление нового типа данных:
-
-1. Добавить тип в `config/menu_data.json`
-2. Обновить схему в `config/menu_schema.json`
-3. Создать шаблоны отрисовки и редактирования
-
-### Добавление новой роли:
-
-1. Добавить роль в `config/menu_data.json`
-2. Определить правила контролов в `role_rules`
-3. Создать функции обработки в шаблонах
-
-## 🐛 Отладка и диагностика
-
-### Просмотр сгенерированных функций:
+Choose the language with the `MENU_PROCESSOR_LANG` environment variable:
 
 ```bash
-python menu_processor.py ./config/config.json
+# English (default)
+python -X utf8 generate_menu.py
+
+# Russian (uses locale/ru catalog)
+set MENU_PROCESSOR_LANG=ru
+python -X utf8 generate_menu.py
 ```
 
-Команда покажет:
-- Сводку по узлам меню
-- Все сгенерированные callback-функции
-- Информацию о типах и ролях
-- Проверку обязательных функций
+If a catalog is missing or the language is unknown, English is used as fallback.
 
-### Сохранение промежуточных данных:
+## Documentation
 
-```python
-# В menu_processor.py
-processor.save_flattern_json("./debug/flattened.json")
-save_json_data(processor.functions, "./debug/functions.json")
+| Document | Language |
+|----------|----------|
+| [docs/architect.md](docs/architect.md) | 🇬🇧 Architecture overview & recommendations |
+| [docs/architect_ru.md](docs/architect_ru.md) | 🇷🇺 Обзор архитектуры и рекомендации |
+| [docs/changes.md](docs/changes.md) | 🇬🇧 Changelog |
+| [docs/changes_ru.md](docs/changes_ru.md) | 🇷🇺 Журнал изменений |
+
+---
+
+# 🇷🇺 Русская версия
+
+**Генерация C-кода для встраиваемой (embedded) системы меню LCD1602 из декларативного
+конфигурационного файла.** Вы описываете дерево меню в YAML/JSON — генератор создаёт
+полный набор C-файлов (таблицы данных, навигация, отрисовка, редактирование,
+callback-функции), готовых к компиляции в вашу прошивку.
+
+## Зачем нужен этот проект
+
+Писать систему меню на C вручную — утомительно и чревато ошибками: таблицы данных,
+связи навигации, функции отрисовки/редактирования значений, правила циклической или
+ограниченной навигации — каждому устройству нужна своя версия одного и того же шаблона.
+
+Этот проект **рассматривает меню как данные**. Вместо C-кода вы пишете небольшой
+декларативный конфиг:
+
+- **types** → C-типы (byte, uword, string, …);
+- **roles** → как ведёт себя значение (`simple`, `factor`, `fixed`, `callback`);
+- **controls** → какие действия энкодера поддерживаются (`click`, `position`);
+- **navigate** → циклическая или ограниченная навигация (`cyclic` / `limit`);
+- **callbacks** → собственные обработчики или автогенерируемые.
+
+Генератор проверяет конфигурацию, разворачивает дерево в плоскую навигируемую структуру
+и рендерит Jinja2-шаблоны в C-файлы для вашей прошивки.
+
+## Как это работает
+
+```
+config/config.yaml
+  → MenuConfig            загрузка всех конфигурационных файлов
+  → MenuValidator         JSON Schema + кастомная валидация дерева
+  → MenuFlattener         дерево → плоский список + связи навигации
+  → FlatNode/BaseFlatNode узел из композиции менеджеров
+  → MenuProcessor         координатор, агрегация данных для шаблонов
+  → MenuGenerator         рендер Jinja2-шаблонов → C-файлы
 ```
 
-## 📈 Статус проекта
+Конвейер полностью управляется данными: один и тот же генератор обрабатывает любое меню —
+от одного экрана «Start» до многоуровневого дерева настроек с десятками узлов.
 
-- ✅ **Завершено**: Архитектура, валидация, преобразование дерева
-- ✅ **Завершено**: Система callback-ов и автоматических функций  
-- ✅ **Завершено**: Модульный рефакторинг (менеджеры)
-- 🔄 **В процессе**: Генерация полного набора C-функций
-- 🔄 **В процессе**: Интеграция с реальными embedded-проектами
+## Структура репозитория
 
-## 🎯 Пример полного меню
-
-```json
-{
-  "config": {
-    "default_navigate": "cyclic",
-    "default_control": "position",
-    "default_branch_navigate": "limit",
-    "root_navigate": "limit"
-  },
-  "menu": [
-    {
-      "id": "settings",
-      "title": "Settings",
-      "navigate": "cyclic",
-      "items": [
-        {
-          "id": "brightness",
-          "title": "Brightness",
-          "type": "ubyte",
-          "role": "simple",
-          "min": 0,
-          "max": 100,
-          "default": 50,
-          "step": 5
-        },
-        {
-          "id": "contrast",
-          "title": "Contrast", 
-          "type": "ubyte",
-          "role": "factor",
-          "default": 10,
-          "min": 10,
-          "max": 10000,
-          "factors": [1, 10, 100, 1000]
-        },
-        {
-          "id": "display_mode",
-          "title": "Display Mode",
-          "type": "string", 
-          "role": "fixed",
-          "values": ["Normal", "Inverted", "Test"],
-          "default_idx": 0
-        }
-      ]
-    },
-    {
-      "id": "info",
-      "title": "Information",
-      "items": [
-        {
-          "id": "version",
-          "title": "Firmware Version",
-          "type": "callback",
-          "role": "callback"
-        }
-      ]
-    }
-  ]
-}
+```
+menu_processor/
+├── generate_menu.py          # ← запускается отсюда: единственная точка входа в корне
+├── generate_menu/            # Python-пакет со всеми исходниками
+│   ├── config/               # конфигурационные файлы YAML/JSON
+│   ├── menu/                 # дерево меню (menu.yaml / menu.json)
+│   ├── templates/            # Jinja2-шаблоны (*.jinja)
+│   ├── output/               # сгенерированные C-файлы (include/ + исходники)
+│   ├── locale/               # gettext-каталоги (messages.pot, ru/...)
+│   ├── i18n.py               # gettext-хелпер
+│   ├── common.py             # загрузчики JSON/YAML и хелперы
+│   ├── menu_config.py        # загрузка и проверка всех конфигов
+│   ├── menu_data.py          # правила типов/ролей/контролов/навигации
+│   ├── menu_validator.py     # schema + кастомная валидация
+│   ├── menu_flattener.py     # дерево → плоский список, связи навигации
+│   ├── base_flat_node.py     # базовый узел (композиция менеджеров)
+│   ├── flat_node.py          # финальный класс узла
+│   ├── menu_processor.py     # координатор и агрегатор
+│   ├── menu_generator.py     # рендер Jinja2 → C-файлы
+│   └── managers/             # менеджеры узла
+├── docs/                     # документация (см. ниже)
+└── requirements.txt
 ```
 
-## 🌍 Интернационализация (i18n / gettext)
+## Быстрый старт
 
-Все пользовательские сообщения пакета переведены на систему **gettext (Babel)**.
-Основной (исходный) язык сообщений — **английский**.
+```bash
+# 1. Установка зависимостей
+pip install -r requirements.txt
 
-### Выбор языка
+# 2. Запуск генератора из корня проекта
+python generate_menu.py
+```
+
+Сгенерированные C-файлы появляются в [`generate_menu/output/`](generate_menu/output/)
+(исходники) и [`generate_menu/output/include/`](generate_menu/output/include/)
+(заголовки).
+
+> 💡 Весь исходный код, конфигурация, шаблоны и вывод находятся внутри пакета
+> [`generate_menu/`](generate_menu/); в корне остаётся только точка входа
+> [`generate_menu.py`](generate_menu.py).
+
+## Конфигурация
+
+Главный конфигурационный файл — [`generate_menu/config/config.yaml`](generate_menu/config/config.yaml).
+
+### Главный конфиг: `config/config.yaml`
+
+```yaml
+# Пути задаются относительно этого файла (директория config/)
+menu: ../menu/menu.yaml          # дерево меню
+menu_schema: menu_schema.yaml    # JSON Schema для валидации
+menu_config: menu_data.yaml      # правила типов/ролей/контролов/навигации
+output_flattern: output/flatterned.json   # дамп плоского списка (отладка)
+generation_files: files.yaml     # какие шаблоны какие файлы создают
+```
+
+### Дерево меню: `menu/menu.yaml`
+
+```yaml
+config:
+  version: "1.0"
+  default_navigate: limit
+  default_control: position
+  default_branch_navigate: cyclic
+  root_navigate: cyclic
+  output_directory: ./output/    # куда генерируются C-файлы
+  include_files: [pulse_config.h]
+
+menu:
+  - id: start                    # узел задаётся через id + title
+    title: Start
+    type: string                 # тип данных (см. правила ниже)
+    role: fixed                  # роль: simple / factor / fixed / callback
+    values: [Start, Started]     # фиксированный набор значений
+    default_idx: 0
+    navigate: cyclic             # cyclic или limit
+
+  - id: settings
+    title: Settings
+    navigate: limit
+    items:                       # вложенные элементы → подменю
+      - id: hi_delay
+        title: Delay
+        type: udword
+        role: factor
+        default: 10
+        min: 10
+        max: 10000
+        factors: [1, 10, 100, 1000]   # множители для роли factor
+```
+
+### Правила типов/ролей/контролов: `config/menu_data.yaml`
+
+```yaml
+types:
+  ubyte: {c_type: uint8_t}
+  string: {c_type: "const char*"}
+
+roles:
+  simple: [byte, ubyte, word, uword, dword, udword]
+  fixed: [string, byte, ubyte, word, uword, dword, udword]
+  factor: [byte, ubyte, word, uword, dword, udword]
+  callback: [callback]
+
+navigation_rules:
+  position:
+    allowed_navigate: [limit, cyclic]
+    default: limit
+```
+
+### Генерация файлов: `config/files.yaml`
+
+```yaml
+templates_path: ./templates/     # где лежат Jinja2-шаблоны
+files:
+  handle.h.jinja: include/menu.h
+  handle.c.jinja: menu.c
+  context.h.jinja: include/menu_context.h
+  context.c.jinja: menu_context.c
+  # ... каждый шаблон соответствует одному генерируемому C-файлу
+```
+
+## Поля узла
+
+Узел дерева меню может содержать:
+
+| Поле | Назначение |
+|------|------------|
+| `id` | Уникальный идентификатор узла |
+| `title` | Текст на дисплее |
+| `type` | Тип данных: `byte`, `ubyte`, `word`, `uword`, `dword`, `udword`, `string`, `callback` |
+| `role` | Поведение: `simple`, `factor`, `fixed`, `callback` |
+| `min` / `max` / `step` | Числовой диапазон для `simple` / `factor` |
+| `default` | Значение по умолчанию |
+| `factors` | Множители для роли `factor` |
+| `values` / `default_idx` | Фиксированный набор значений для роли `fixed` |
+| `controls` | Контролы энкодера: `click`, `position` |
+| `navigate` | Навигация: `cyclic`, `limit` |
+| `items` | Дочерние узлы (подменю) |
+| `click_cb`, `position_cb`, `double_click_cb`, `long_click_cb`, `event_cb`, `draw_value_cb` | Пользовательские callbacks |
+
+Если callback **не указан**, он генерируется автоматически
+(например, `menu_draw_{type}_{role}_value_cb` для отрисовки,
+`{type}_{role}_{control}_{navigate}_cb` для обработки).
+
+## Генерируемые файлы
+
+Генератор создаёт полный C-модуль:
+
+- `menu_context.h/c` — контекст меню и основные структуры
+- `menu_type.h/c` — типы данных и enum'ы
+- `menu_data_*.h/c` — конфигурация данных, контекст, значения и имена
+- `menu_tree.h/c` — дерево меню со связями навигации
+- `menu_value.h/c` — функции доступа к значениям
+- `menu_navigate.h/c` — функции навигации
+- `menu_edit.h/c` — функции редактирования
+- `menu_draw.h/c` — функции отрисовки
+- `menu_name.h/c` — поиск имён узлов
+- `menu.h/c` — верхнеуровневый вход
+
+## Интернационализация (i18n / gettext)
+
+Все пользовательские сообщения переведены на **gettext (Babel)**; основной язык —
+**английский**.
 
 Язык выбирается через переменную окружения `MENU_PROCESSOR_LANG`:
 
 ```bash
-# Английский (по умолчанию, исходные сообщения)
-python -X utf8 generator.py
+# Английский (по умолчанию)
+python -X utf8 generate_menu.py
 
 # Русский (используется каталог locale/ru)
 set MENU_PROCESSOR_LANG=ru
-python -X utf8 generator.py
+python -X utf8 generate_menu.py
 ```
 
-Если каталог переводов отсутствует, язык не найден или переменная не задана —
-используются исходные английские сообщения (fallback).
+Если каталог переводов отсутствует или язык неизвестен, используется английский (fallback).
 
-### Структура каталогов
+## Документация
 
-```
-locale/
-├── messages.pot                      # Шаблон извлечённых сообщений
-└── ru/
-    └── LC_MESSAGES/
-        ├── messages.po               # Переводы (редактируется вручную)
-        └── messages.mo               # Скомпилированный каталог (используется в рантайме)
-```
-
-### Рабочий процесс перевода
-
-После изменения сообщений в коде (`_("...")` или `ngettext`) обновите каталоги:
-
-```bash
-# 1. Извлечение сообщений в messages.pot
-python -m babel.messages.frontend extract -F babel.cfg -k _ -k ngettext:1,2 -o locale/messages.pot .
-
-# 2. Обновление существующего каталога (например, ru)
-python -m babel.messages.frontend update -i locale/messages.pot -d locale -l ru
-
-# 3. Компиляция каталогов в .mo
-python -m babel.messages.frontend compile -d locale
-```
-
-Для нового языка создайте каталог с нуля:
-
-```bash
-python -m babel.messages.frontend init -i locale/messages.pot -d locale -l <код_языка>
-```
-
-> **Примечание:** в исходном коде внутри `_()` используйте обычные строки с
-> `{placeholders}` и `.format(...)`, а не f-строки — Babel корректно извлекает
-> только обычные строковые литералы.
-
+| Документ | Язык |
+|----------|------|
+| [docs/architect.md](docs/architect.md) | 🇬🇧 Architecture overview & recommendations |
+| [docs/architect_ru.md](docs/architect_ru.md) | 🇷🇺 Обзор архитектуры и рекомендации |
+| [docs/changes.md](docs/changes.md) | 🇬🇧 Changelog |
+| [docs/changes_ru.md](docs/changes_ru.md) | 🇷🇺 Журнал изменений |

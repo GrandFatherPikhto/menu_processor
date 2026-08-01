@@ -1,12 +1,12 @@
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
-from i18n import _
-from menu_data import MenuData, ControlType
-from managers.callback_manager import CallbackManager
-from managers.function_info import FunctionInfo
+from ..i18n import _
+from ..menu_data import MenuData, ControlType
+from .callback_manager import CallbackManager
+from .function_info import FunctionInfo
 
 class NodeControlManager:
-    """Менеджер для управления контролами узла и генерации автоматических функций"""
+    """Manager for node controls and automatic function generation."""
     
     def __init__(self, node_id: str, node_type: str, node_role: str, node_c_type: str, 
                  original_node: Dict[str, Any], menu_data: MenuData, 
@@ -20,27 +20,27 @@ class NodeControlManager:
         self._callback_manager = callback_manager
         self._node_navigate = node_navigate
         
-        # Конфигурация контролов из JSON
+        # Control configuration from JSON
         self._controls_config = original_node.get("controls")
         self._controls = []
         
-        # Инициализация контролов
+        # Initialize controls
         self._init_controls()
 
     def _init_controls(self):
-        """Инициализация контролов на основе роли, правил MenuData и конфигурации узла"""
+        """Initializes controls based on the role, MenuData rules and node configuration."""
         if self._node_type is None or self._node_role is None:
             return
             
         self._controls = []
         
-        # Если заданы пользовательские callback'ы, игнорируем автоматические контролы для них
+        # If custom callbacks are set, skip automatic controls for them
         use_auto_click = self._callback_manager.click_cb is None
         use_auto_position = self._callback_manager.position_cb is None
         
         # print(f"DEBUG {self._node_id}: use_auto_click={use_auto_click}, use_auto_position={use_auto_position}")
         
-        # Для role=factor всегда используем оба контрола, если не заданы пользовательские callback'ы
+        # For the factor role always use both controls, unless custom callbacks are set
         if self._node_role == "factor":
             controls_to_check = []
             if use_auto_click:
@@ -49,7 +49,7 @@ class NodeControlManager:
                 controls_to_check.append(ControlType.POSITION)
             # print(f"DEBUG {self._node_id}: factor role, controls_to_check={[c.value for c in controls_to_check]}")
         else:
-            # Для других ролей: если указаны controls в узле, используем их, иначе оба
+            # For other roles: if controls are specified in the node, use them, otherwise both
             if self._controls_config:
                 controls_to_check = [ControlType(ctrl) for ctrl in self._controls_config]
             else:
@@ -57,7 +57,7 @@ class NodeControlManager:
             
             # print(f"DEBUG {self._node_id}: non-factor role, controls_config={self._controls_config}, controls_to_check={[c.value for c in controls_to_check]}")
             
-            # Фильтруем контролы в соответствии с пользовательскими callback'ами
+            # Filter controls according to custom callbacks
             if not use_auto_click and ControlType.CLICK in controls_to_check:
                 controls_to_check.remove(ControlType.CLICK)
             if not use_auto_position and ControlType.POSITION in controls_to_check:
@@ -65,7 +65,7 @@ class NodeControlManager:
         
         # print(f"DEBUG {self._node_id}: final controls_to_check={[c.value for c in controls_to_check]}")
         
-        # Обрабатываем каждый контроль
+        # Process each control
         auto_click_info = None
         auto_position_info = None
         
@@ -84,11 +84,11 @@ class NodeControlManager:
                     "required": control_config["required"]
                 })
                 
-                # Генерируем имя функции и сохраняем информацию
+                # Generate the function name and store the information
                 function_name = self._generate_function_name(control_type, control_config)
                 auto_info = {
                     "name": function_name,
-                    "navigate": control_config["navigate"].value,  # 'cyclic' или 'limit'
+                    "navigate": control_config["navigate"].value,  # 'cyclic' or 'limit'
                     "purpose": control_config["purpose"],
                     "control_type": control_type.value
                 }
@@ -102,55 +102,55 @@ class NodeControlManager:
         
         # print(f"DEBUG {self._node_id}: calling set_auto_functions with click={auto_click_info}, position={auto_position_info}")
         
-        # Устанавливаем автоматические функции в CallbackManager с дополнительной информацией
+        # Set automatic functions in the CallbackManager with additional information
         self._callback_manager.set_auto_functions(auto_click_info, auto_position_info)
 
     def _generate_function_name(self, control: ControlType, control_config: Dict) -> str:
-        """Генерирует имя функции в соответствии с правилами"""
+        """Generates the function name according to the rules."""
         base_name = f"{self._node_type}_{self._node_role}"
         
-        # Специальный случай для factor роли при изменении индекса
+        # Special case for the factor role when changing the index
         if self._node_role == "factor" and control_config["purpose"] == "change_factor_index":
             name = f"{base_name}_{control.value}_{control_config['navigate'].value}_factor"
         else:
             name = f"{base_name}_{control.value}_{control_config['navigate'].value}"
         
-        # Добавляем постфикс _cb для автоматических функций
+        # Add the _cb suffix for automatic functions
         return name + "_cb"
 
-    # Свойства для доступа к контролам
+    # Properties for accessing controls
     @property
     def controls(self) -> List[Dict]:
-        """Список контролов узла"""
+        """List of node controls."""
         return self._controls
 
     @property
     def controls_config(self) -> Optional[List[str]]:
-        """Конфигурация контролов из JSON"""
+        """Control configuration from JSON."""
         return self._controls_config
 
     @property
     def has_controls(self) -> bool:
-        """Имеет ли узел контролы"""
+        """Whether the node has controls."""
         return len(self._controls) > 0
 
     @property
     def required_controls(self) -> List[Dict]:
-        """Обязательные контролы"""
+        """Required controls."""
         return [control for control in self._controls if control.get("required", False)]
 
     @property
     def has_required_controls(self) -> bool:
-        """Имеет ли узел обязательные контролы"""
+        """Whether the node has required controls."""
         return any(control.get("required", False) for control in self._controls)
 
-    # Свойства для доступа к функциям
+    # Properties for accessing functions
     # @property
     # def all_function_infos(self) -> List[Dict[str, Any]]:
-    #     """Все возможные функции обработки для этого узла с полной информацией"""
+    #     """All possible handler functions for this node with full information"""
     #     infos = []
         
-    #     # Добавляем информацию из автоматических функций
+    #     # Add information from automatic functions
     #     auto_funcs = self._callback_manager.auto_functions_info
     #     # print(f"DEBUG all_function_infos for {self._node_id}: auto_funcs = {auto_funcs}")
         
@@ -170,10 +170,10 @@ class NodeControlManager:
 
     @property
     def all_function_infos(self) -> List[Dict[str, Any]]:
-        """Все возможные функции обработки для этого узла с полной информацией"""
+        """All possible handler functions for this node with full information."""
         infos = []
         
-        # Автоматические функции через dataclass
+        # Automatic functions via dataclass
         for auto_func in self._callback_manager.auto_functions_info:
             function_info = FunctionInfo.create_auto(
                 self._node_id, self._node_type, self._node_role, self._node_c_type,
@@ -182,10 +182,10 @@ class NodeControlManager:
             )
             infos.append(asdict(function_info))
         
-        # Пользовательские функции через dataclass
+        # Custom functions via dataclass
         for cb_type, cb_info in self._callback_manager.defined_callback_infos.items():
             if cb_info and cb_info["custom"]:
-                # Проверяем, нет ли дублирования с автоматическими функциями
+                # Check whether it duplicates automatic functions
                 if not any(info["name"] == cb_info["name"] for info in infos):
                     function_info = FunctionInfo.create_custom(
                         self._node_id, self._node_type, self._node_role, self._node_c_type,
@@ -194,16 +194,16 @@ class NodeControlManager:
                     infos.append(asdict(function_info))
         
         return infos        
-        # Добавляем пользовательские callback'и (кроме тех, что уже есть в auto_functions_info)
+        # Add custom callbacks (except those already in auto_functions_info)
         for cb_type, cb_info in self._callback_manager.defined_callback_infos.items():
             if cb_info and cb_info["custom"]:
-                # Проверяем, нет ли уже этой функции в auto_functions_info
+                # Check whether this function already exists in auto_functions_info
                 existing_func = next((f for f in infos if f["name"] == cb_info["name"]), None)
                 if not existing_func:
-                    # ИСПРАВЛЕНИЕ: безопасное извлечение категории
+                    # FIX: safe extraction of the category
                     category_value = None
                     if cb_info.get("category"):
-                        # Если category - это словарь, берем name, если строка - используем как есть
+                        # If category is a dict, take its name; if it is a string, use it as-is
                         if isinstance(cb_info["category"], dict):
                             category_value = cb_info["category"].get("name")
                         else:
@@ -216,10 +216,10 @@ class NodeControlManager:
                         "navigate": cb_info.get("navigate"),
                         "purpose": cb_info.get("purpose", "user_defined"),
                         "source": "custom",
-                        # ДОБАВЛЯЕМ type и role из cb_info
+                        # ADD type and role from cb_info
                         "type": cb_info.get("type"),
                         "role": cb_info.get("role"),
-                        "category": category_value  # Используем безопасно извлеченное значение
+                        "category": category_value  # Use the safely extracted value
                     })
         
         # print(f"DEBUG all_function_infos for {self._node_id}: result = {[info['name'] for info in infos]}")
@@ -227,12 +227,12 @@ class NodeControlManager:
 
     @property
     def detailed_function_infos(self) -> Dict[str, Dict[str, Any]]:
-        """Детальная информация о всех функциях, сгруппированная по именам"""
+        """Detailed information about all functions, grouped by name."""
         return {info["name"]: info for info in self.all_function_infos}
 
-    # Методы для проверки обязательных функций
+    # Methods for checking required functions
     def validate_required_functions(self) -> List[Dict[str, str]]:
-        """Проверяет, что все обязательные функции сгенерированы"""
+        """Checks that all required functions are generated."""
         missing_functions = []
         
         for control in self._controls:
@@ -253,7 +253,7 @@ class NodeControlManager:
         return missing_functions
 
     def get_control_summary(self) -> Dict[str, Any]:
-        """Сводка по контролам для отладки"""
+        """Control summary for debugging."""
         return {
             "node_id": self._node_id,
             "type": self._node_type,
@@ -307,6 +307,6 @@ class NodeControlManager:
                 name=self._callback_manager.effective_draw_value_cb, source=source))
 
     def __repr__(self):
-        """Строковое представление для отладки"""
+        """String representation for debugging."""
         return (f"NodeControlManager({self._node_id}, controls={len(self._controls)}, "
                 f"functions={len(self.all_function_infos)})")

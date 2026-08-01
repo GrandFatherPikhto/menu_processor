@@ -1,5 +1,5 @@
-# Список шаблонов и соответствующих выходных файлов.
-# Пути в "files" объединяются с output_directory из меню (menu.yaml).
+# List of templates and their corresponding output files.
+# Paths in "files" are joined with output_directory from the menu (menu.yaml).
 templates_path: ./templates/
 files:
   handle.h.jinja: include/menu.h

@@ -3,12 +3,12 @@ import json
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 
-from common import load_json_data, save_json_data
-from i18n import _
-from menu_config import MenuConfig, ConfigError
+from .common import load_json_data, save_json_data
+from .i18n import _
+from .menu_config import MenuConfig, ConfigError
 
 class ParserError(Exception):
-    """Выбрасывается при ошибках валидации меню"""
+    """Raised when menu validation fails."""
     def __init__(self, errors: List[str]):
         super().__init__("Menu validation failed")
         self.errors = errors
@@ -23,37 +23,37 @@ class MenuValidator:
 
     def validate(self, menu_data: Dict = None) -> Dict[str, List[str]]:
         """
-        Полная валидация древовидного меню
-        
+        Full validation of the menu tree.
+
         Returns:
-            Dict[str, List[str]]: Ошибки по ID элементов
+            Dict[str, List[str]]: errors grouped by element ID.
         """
         menu = self._config.menu_data if menu_data is None else menu_data
 
         errors = {}
 
-        # Валидация JSON Schema
+        # JSON Schema validation
         try:
             self._validator.validate(menu)
         except ValidationError as e:
             errors["schema"] = [_("Schema validation failed: {message}").format(message=e.message)]
             return errors
         
-        # Рекурсивная валидация элементов
+        # Recursive validation of the elements
         self._validate_tree(menu.get("menu", []), [], errors)
         
         return errors
 
     def _validate_tree(self, items: List[Dict], path: List[str], errors: Dict[str, List[str]]):
-        """Рекурсивная валидация дерева меню"""
+        """Recursively validates the menu tree."""
         for item in items:
             current_path = path + [item['id']]
             item_errors = []
             
-            # Валидация элемента
+            # Validate the element
             item_errors.extend(self._validate_item(item))
             
-            # Рекурсивная валидация детей
+            # Recursively validate children
             if 'items' in item:
                 self._validate_tree(item['items'], current_path, errors)
             
@@ -61,7 +61,7 @@ class MenuValidator:
                 errors['->'.join(current_path)] = item_errors
 
     def _validate_item(self, item: Dict) -> List[str]:
-        """Валидация отдельного элемента меню"""
+        """Validates a single menu item."""
         errors = []
 
         if item.get("id") not in self._ids:
@@ -77,15 +77,15 @@ class MenuValidator:
         if 'items' not in item and 'type' not in item:
             errors.append(_("Leaf element must have 'type'"))
         
-        # Валидация типа данных
+        # Validate the data type
         if 'type' in item:
             errors.extend(self._validate_data_type(item))
         
-        # Валидация значений
+        # Validate the default value
         if 'default' in item:
             errors.extend(self._validate_default_value(item))
         
-        # Валидация факторов и значений
+        # Validate factors and values
         if 'factors' in item:
             errors.extend(self._validate_factors(item))
         if 'values' in item:

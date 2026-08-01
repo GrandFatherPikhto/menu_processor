@@ -1,5 +1,5 @@
-# Правила типов данных, ролей, контролов и навигации меню.
-# (эквивалент бывшего menu_data.json)
+# Rules for data types, roles, controls and menu navigation.
+# (equivalent of the former menu_data.json)
 
 types:
   byte: {c_type: int8_t}

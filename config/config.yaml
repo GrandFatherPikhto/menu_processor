@@ -1,7 +1,0 @@
-# Основной конфигурационный файл генератора меню.
-# Пути указываются относительно данного файла (каталог config/).
-menu: ../menu/menu.yaml
-menu_schema: menu_schema.yaml
-menu_config: menu_data.yaml
-output_flattern: ../output/flatterned.json
-generation_files: files.yaml

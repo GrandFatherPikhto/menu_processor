@@ -1,12 +1,12 @@
 from typing import Dict, List, Optional, Any
 import json
 
-from i18n import _
-from flat_node import FlatNode
-from menu_validator import MenuValidator
-from menu_config import MenuConfig, ConfigError
-from menu_data import MenuData
-from base_flat_node import BaseFlatNode
+from .i18n import _
+from .flat_node import FlatNode
+from .menu_validator import MenuValidator
+from .menu_config import MenuConfig, ConfigError
+from .menu_data import MenuData
+from .base_flat_node import BaseFlatNode
 
 class FlattenerError(Exception):
     """Exception for configuration errors."""
@@ -14,7 +14,7 @@ class FlattenerError(Exception):
         super().__init__(message)
 
 class MenuFlattener:
-    """Преобразует дерево меню в плоскую структуру с настраиваемыми циклическими связями"""
+    """Flattens a menu tree into a flat structure with configurable cyclic links."""
     
     def __init__(self, config: MenuConfig):
         self.flat_nodes: List[FlatNode] = []
@@ -23,7 +23,7 @@ class MenuFlattener:
         self._menu_data = MenuData(self._config)
         
     def flatten(self, menu_tree: List[Dict[str, Any]] | None = None) -> List[BaseFlatNode]:
-        """Преобразует дерево в плоский список с установленными связями"""
+        """Flattens the tree into a flat list with established links."""
         self.flat_nodes.clear()
         self.node_dict.clear()
 
@@ -34,7 +34,7 @@ class MenuFlattener:
         if menu is None:
             raise FlattenerError(_("Menu tree is empty!"))
 
-        # Создаем корневую ноду как BaseFlatNode
+        # Create the root node as a BaseFlatNode
         self.root_node = BaseFlatNode({
                 "id": "root",
                 "title": "root", 
@@ -48,13 +48,13 @@ class MenuFlattener:
         self.flat_nodes.append(self.root_node)
         self.node_dict['root'] = self.root_node
         
-        # Рекурсивный обход дерева (остается без изменений)
+        # Recursively traverse the tree
         self._process_node(self.root_node, None, menu)
 
-        # Применяем правила навигации для ветвей
+        # Apply navigation rules for branches
         self._apply_branch_navigation_rules()
         
-        # Создаем циклические связи
+        # Create cyclic links
         self._make_cyclic_links()
         
         return self.flat_nodes
@@ -69,17 +69,17 @@ class MenuFlattener:
                 print("🔧 " + _("Set navigate='{navigate}' for parent branch {id} (default_branch_navigate)").format(navigate=node.navigate, id=node.id))
 
     def _make_cyclic_links(self):
-        """Замыкает циклические связи для sibling'ов на основе настроек родителей"""
+        """Closes cyclic links for siblings based on parent settings."""
         processed_parents = set()
         
         for node in self.flat_nodes:
             parent = node.parent
             
-            # Пропускаем если нет родителя или родитель уже обработан
+            # Skip if there is no parent or the parent was already processed
             if not parent or parent.id in processed_parents:
                 continue
                 
-            # Обрабатываем только если у родителя navigate = cyclic и есть дети
+            # Process only if the parent has navigate=cyclic and children
             if parent.navigate == "cyclic" and parent.children:
                 processed_parents.add(parent.id)
                 self._create_cyclic_siblings(parent)
@@ -92,48 +92,48 @@ class MenuFlattener:
         first_child = parent.children[0]
         last_child = parent.children[-1]
         
-        # Замыкаем циклические связи
+        # Close the cyclic links
         first_child._prev_sibling = last_child
         last_child._next_sibling = first_child
         
         print(f"🔁 {_('Created cyclic links for children of parent {id} (first<->last)').format(id=parent.id)}")
 
-    def _process_node(self, parent: Optional[FlatNode], prev_sibling: Optional[FlatNode], 
+    def _process_node(self, parent: Optional[FlatNode], prev_sibling: Optional[FlatNode],
                      nodes: List[Dict[str, Any]]) -> Optional[FlatNode]:
-        """Рекурсивно обрабатывает узлы и устанавливает связи"""
+        """Recursively processes nodes and establishes links."""
         last_node = None
         
         for i, node_data in enumerate(nodes):
-            # Создаем плоский узел (используем обновленный FlatNode)
+            # Create a flat node (using the updated FlatNode)
             flat_node = FlatNode(node_data, self._config, self._menu_data)
 
-            # Устанавливаем значения по умолчанию для навигации
+            # Set default navigation values
             if flat_node.navigate is None:
                 flat_node.navigate = self._config.default_navigate
 
             self.flat_nodes.append(flat_node)
             self.node_dict[flat_node.id] = flat_node
             
-            # Устанавливаем связи через navigation_manager
+            # Establish links through the navigation manager
             flat_node.parent = parent
-            flat_node.prev_sibling = prev_sibling  # Используем свойство, которое делегирует к navigation_manager
+            flat_node.prev_sibling = prev_sibling  # Uses the property that delegates to the navigation manager
             
-            # Устанавливаем next_sibling для предыдущего sibling'а
+            # Set next_sibling for the previous sibling
             if prev_sibling:
-                prev_sibling.next_sibling = flat_node  # Используем свойство, которое делегирует к navigation_manager
+                prev_sibling.next_sibling = flat_node  # Uses the property that delegates to the navigation manager
             
-            # Добавляем к родительским детям
+            # Add to the parent's children
             if parent:
                 parent.children.append(flat_node)
                 if not parent.first_child:
                     parent.first_child = flat_node
                 parent.last_child = flat_node
             
-            # Обрабатываем детей, если есть
+            # Process children if present
             if 'items' in node_data and node_data['items']:
                 self._process_children(flat_node, node_data['items'])
             
-            # Обновляем указатели для следующей итерации
+            # Update the pointers for the next iteration
             prev_sibling = flat_node
             last_node = flat_node
         
@@ -149,40 +149,40 @@ class MenuFlattener:
                 print("🔧 " + _("Set navigate='{navigate}' for branch {id}").format(navigate=node.navigate, id=node.id))
 
     def _process_children(self, parent: FlatNode, children_data: List[Dict[str, Any]]):
-        """Обрабатывает дочерние узлы"""
+        """Processes the child nodes."""
         prev_sibling = None
         
         for child_data in children_data:
             flat_child = FlatNode(child_data, self._config, self._menu_data)
 
-            # Устанавливаем значения по умолчанию
+            # Set default values
             if flat_child.navigate is None:
                 flat_child.navigate = self._config.default_navigate
 
             self.flat_nodes.append(flat_child)
             self.node_dict[flat_child.id] = flat_child
             
-            # Устанавливаем связи через navigation_manager
+            # Establish links through the navigation manager
             flat_child.parent = parent
-            flat_child.prev_sibling = prev_sibling  # Используем свойство
+            flat_child.prev_sibling = prev_sibling  # Uses the property
             
             if prev_sibling:
-                prev_sibling.next_sibling = flat_child  # Используем свойство
+                prev_sibling.next_sibling = flat_child  # Uses the property
             
-            # Добавляем к родительским детям
+            # Add to the parent's children
             parent.children.append(flat_child)
             if not parent.first_child:
                 parent.first_child = flat_child
             parent.last_child = flat_child
             
-            # Рекурсивно обрабатываем детей детей
+            # Recursively process grandchildren
             if 'items' in child_data and child_data["items"]:
                 self._process_children(flat_child, child_data["items"])
             
             prev_sibling = flat_child
     
     def get_node_by_id(self, node_id: str) -> Optional[FlatNode]:
-        """Возвращает узел по ID"""
+        """Returns a node by its ID."""
         return self.node_dict.get(node_id)
     
     def print_sibling_chain(self, node_id: str, count: int = 5):
@@ -259,7 +259,7 @@ def main(config_file: str):
         print(f"❌ {e}")
         return 1
     # except Exception as e:
-    #     print(f"💥 Неожиданная ошибка: {e}")
+    #     print(f"💥 Unexpected error: {e}")
     #     return 1
     
 if __name__ == "__main__":

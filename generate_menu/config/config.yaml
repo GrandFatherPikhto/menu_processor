@@ -1,0 +1,7 @@
+# Main configuration file of the menu generator.
+# Paths are relative to this file (the config/ directory).
+menu: ../menu/menu.yaml
+menu_schema: menu_schema.yaml
+menu_config: menu_data.yaml
+output_flattern: output/flatterned.json
+generation_files: files.yaml

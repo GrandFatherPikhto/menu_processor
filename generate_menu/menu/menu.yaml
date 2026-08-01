@@ -1,4 +1,4 @@
-# Дерево меню (эквивалент бывшего menu.json).
+# Menu tree (equivalent of the former menu.json).
 
 config:
   version: "1.0"
@@ -7,7 +7,7 @@ config:
   default_control: position
   default_branch_navigate: cyclic
   root_navigate: cyclic
-  # Директория, куда генерируются C-файлы (относительно корня проекта).
+  # Directory where C files are generated (relative to the project root).
   output_directory: ./output/
   include_files:
     - pulse_config.h

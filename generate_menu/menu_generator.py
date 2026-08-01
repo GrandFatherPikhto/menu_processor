@@ -3,14 +3,14 @@ import logging
 import json
 import os
 from pathlib import Path
-from jinja2 import Environment, FileSystemLoader, Environment, Template, TemplateSyntaxError, UndefinedError, TemplateError
+from jinja2 import Environment, FileSystemLoader, Template, TemplateSyntaxError, UndefinedError, TemplateError
 from jinja2.ext import Extension, debug
 from typing import Dict, Set, List, Optional, Any
-from common import load_json_data
-from i18n import _
 
-from menu_processor import MenuProcessor
-from menu_config import MenuConfig
+from .i18n import _
+
+from .menu_processor import MenuProcessor
+from .menu_config import MenuConfig
 
 class MenuGenerator:
     def __init__(self, config_json):

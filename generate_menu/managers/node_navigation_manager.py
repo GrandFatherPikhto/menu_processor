@@ -1,21 +1,21 @@
 from __future__ import annotations
 from typing import Optional, List, Dict, Any
-from i18n import _
+from ..i18n import _
 
 class NodeNavigationManager:
-    """Менеджер для управления навигационными связями и циклической логикой"""
+    """Manager for navigation links and cyclic logic."""
     
     def __init__(self, node: 'BaseFlatNode'):
         self._node = node
         
-        # Сырые навигационные связи (устанавливаются MenuFlattener)
+        # Raw navigation links (set by the MenuFlattener)
         self._prev_sibling: Optional['BaseFlatNode'] = None
         self._next_sibling: Optional['BaseFlatNode'] = None
 
-    # Установка сырых связей
+    # Setting raw links
     @property
     def prev_sibling(self) -> Optional['BaseFlatNode']:
-        """Сырая ссылка на предыдущего sibling'а"""
+        """Raw reference to the previous sibling."""
         return self._prev_sibling
 
     @prev_sibling.setter
@@ -24,24 +24,24 @@ class NodeNavigationManager:
 
     @property
     def next_sibling(self) -> Optional['BaseFlatNode']:
-        """Сырая ссылка на следующего sibling'а"""
+        """Raw reference to the next sibling."""
         return self._next_sibling
 
     @next_sibling.setter
     def next_sibling(self, value: Optional['BaseFlatNode']):
         self._next_sibling = value
 
-    # Вычисляемые свойства с учетом циклической навигации
+    # Computed properties with cyclic navigation support
     @property
     def effective_prev_sibling(self) -> Optional['BaseFlatNode']:
-        """Предыдущий sibling с учетом циклической навигации родителя"""
+        """Previous sibling considering the parent's cyclic navigation."""
         if self._prev_sibling:
             return self._prev_sibling
         
-        # Если навигация циклическая и есть родитель с детьми
-        if (self._node.parent and self._node.parent.navigate == 'cyclic' and 
+        # If navigation is cyclic and the parent has children
+        if (self._node.parent and self._node.parent.navigate == 'cyclic' and
             self._node.parent.children and len(self._node.parent.children) > 1):
-            # Первый элемент ссылается на последний
+            # The first element references the last one
             if self._node == self._node.parent.children[0]:
                 return self._node.parent.children[-1]
         
@@ -49,14 +49,14 @@ class NodeNavigationManager:
 
     @property
     def effective_next_sibling(self) -> Optional['BaseFlatNode']:
-        """Следующий sibling с учетом циклической навигации родителя"""
+        """Next sibling considering the parent's cyclic navigation."""
         if self._next_sibling:
             return self._next_sibling
         
-        # Если навигация циклическая и есть родитель с детьми
-        if (self._node.parent and self._node.parent.navigate == 'cyclic' and 
+        # If navigation is cyclic and the parent has children
+        if (self._node.parent and self._node.parent.navigate == 'cyclic' and
             self._node.parent.children and len(self._node.parent.children) > 1):
-            # Последний элемент ссылается на первый
+            # The last element references the first one
             if self._node == self._node.parent.children[-1]:
                 return self._node.parent.children[0]
         
@@ -64,22 +64,22 @@ class NodeNavigationManager:
 
     @property
     def has_cyclic_siblings(self) -> bool:
-        """Имеет ли узел циклические связи с sibling'ами"""
+        """Whether the node has cyclic links with its siblings."""
         return (self._node.parent is not None and 
                 self._node.parent.navigate == 'cyclic' and 
                 len(self._node.parent.children) > 1)
 
-    # Свойства структуры дерева
+    # Tree structure properties
     @property
     def sibling_count(self) -> int:
-        """Количество sibling'ов (включая себя)"""
+        """Number of siblings (including this node)."""
         if not self._node.parent:
             return 1
         return len(self._node.parent.children) if self._node.parent.children else 1
     
     @property
     def sibling_index(self) -> int:
-        """Индекс текущего sibling'а (0-based)"""
+        """Index of the current sibling (0-based)."""
         if not self._node.parent or not self._node.parent.children:
             return 0
         for i, sibling in enumerate(self._node.parent.children):
@@ -89,22 +89,22 @@ class NodeNavigationManager:
 
     @property
     def is_first_child(self) -> bool:
-        """Является ли узел первым ребенком у родителя"""
+        """Whether the node is the first child of its parent."""
         return self.sibling_index == 0
 
     @property
     def is_last_child(self) -> bool:
-        """Является ли узел последним ребенком у родителя"""
+        """Whether the node is the last child of its parent."""
         return self.sibling_index == self.sibling_count - 1
 
     @property
     def is_only_child(self) -> bool:
-        """Является ли узел единственным ребенком"""
+        """Whether the node is the only child."""
         return self.sibling_count == 1
 
-    # Навигационные утилиты
+    # Navigation utilities
     def get_sibling_chain(self, count: int = 5) -> List['BaseFlatNode']:
-        """Возвращает цепочку sibling'ов для демонстрации навигации"""
+        """Returns a chain of siblings to demonstrate navigation."""
         chain = []
         current = self._node
         visited = set()
@@ -124,7 +124,7 @@ class NodeNavigationManager:
         return chain
 
     def get_navigation_info(self) -> Dict[str, Any]:
-        """Информация о навигации узла для отладки"""
+        """Navigation information about the node for debugging."""
         parent_navigate = self._node.parent.navigate if self._node.parent else None
         
         return {
@@ -143,7 +143,7 @@ class NodeNavigationManager:
         }
 
     def print_navigation_debug(self):
-        """Печатает отладочную информацию о навигации"""
+        """Prints navigation debug information."""
         info = self.get_navigation_info()
         print(_("Navigation debug for {id}:").format(id=self._node.id))
         print("  " + _("Parent navigate: {value}").format(value=info['parent_navigate']))
@@ -158,7 +158,7 @@ class NodeNavigationManager:
         print("  " + _("Effective next: {value}").format(value=info['effective_next_sibling']))
 
     def __repr__(self):
-        """Строковое представление для отладки"""
+        """String representation for debugging."""
         cyclic_flag = "🔁" if self.has_cyclic_siblings else "➡️"
         return (f"NodeNavigationManager({self._node.id}, {cyclic_flag}, "
                 f"siblings={self.sibling_index + 1}/{self.sibling_count})")

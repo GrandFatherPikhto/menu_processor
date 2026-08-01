@@ -1,8 +1,8 @@
 from typing import Dict, Any, Set, List, Optional
 from pathlib import Path
 
-from common import load_config_file, ConfigLoadError
-from i18n import _
+from .common import load_config_file, ConfigLoadError
+from .i18n import _
 
 class ConfigError(Exception):
     """Exception for configuration errors."""
@@ -146,7 +146,6 @@ def main(json_file: str):
     try:
         config = MenuConfig(json_file)
         print(f"✅ {_('Configuration loaded successfully')}")
-        print(config.templates_path)
         print(f"{_('Wrap By Name')}: {config.wrap_by_name_functions}")
         print(f"{_('Include Files')}: {config.include_files}")
         

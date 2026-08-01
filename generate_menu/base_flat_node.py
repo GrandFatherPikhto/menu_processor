@@ -1,23 +1,23 @@
 from typing import Dict, List, Optional, Set, Any
-from menu_config import MenuConfig
-from menu_data import MenuData
-from managers.node_data_manager import NodeDataManager
-from managers.node_control_manager import NodeControlManager
-from managers.node_navigation_manager import NodeNavigationManager
-from managers.callback_manager import CallbackManager
+from .menu_config import MenuConfig
+from .menu_data import MenuData
+from .managers.node_data_manager import NodeDataManager
+from .managers.node_control_manager import NodeControlManager
+from .managers.node_navigation_manager import NodeNavigationManager
+from .managers.callback_manager import CallbackManager
 
 class BaseFlatNode:
-    """Базовый класс узла - композиция менеджеров для различных аспектов"""
+    """Base node class - composition of managers for various aspects."""
     
     def __init__(self, original_node: Dict[str, Any], config: MenuConfig, menu_data: MenuData):
         self._original_node = original_node
         self._menu_config = config
         self._menu_data = menu_data
         
-        # Создаем менеджер данных
+        # Create the data manager
         self._data_manager = NodeDataManager(original_node, menu_data)
         
-        # Создаем CallbackManager
+        # Create the CallbackManager
         self._callback_manager = CallbackManager(
             original_node, 
             self._data_manager.type, 
@@ -26,27 +26,27 @@ class BaseFlatNode:
             menu_data
         )
         
-        # Базовые свойства навигации
+        # Basic navigation properties
         self._navigate = original_node.get("navigate", None)
         
-        # Конфигурация контролов из JSON
+        # Control configuration from JSON
         self._controls_config = original_node.get("controls")
 
-        # Создаем менеджер навигации
+        # Create the navigation manager
         self._navigation_manager = NodeNavigationManager(self)
 
-        # Создаем менеджер контролов (пока пустой, будет инициализирован в наследниках)
+        # Create the control manager (empty for now, initialized in subclasses)
         self._control_manager: Optional[NodeControlManager] = None
 
-        # Навигационные связи (инициализируются позже MenuFlattener'ом)
+        # Navigation links (initialized later by the MenuFlattener)
         self.parent: Optional["BaseFlatNode"] = None
         self.children: List["BaseFlatNode"] = []
         self.first_child: Optional["BaseFlatNode"] = None
         self.last_child: Optional["BaseFlatNode"] = None
 
-    # Инициализация менеджера контролов (будет вызвана в наследниках)
+    # Initialize the control manager (called by subclasses)
     def _init_control_manager(self):
-        """Инициализация менеджера контролов"""
+        """Initializes the control manager."""
         if self._data_manager.type is None or self._data_manager.role is None:
             return
             
@@ -61,7 +61,7 @@ class BaseFlatNode:
             node_navigate=self._navigate
         )
 
-    # Делегирование свойств данных NodeDataManager'у
+    # Delegate data properties to the NodeDataManager
     @property
     def id(self) -> str:
         return self._original_node["id"]
@@ -146,7 +146,7 @@ class BaseFlatNode:
     def c_str_values(self) -> Optional[str]:
         return self._data_manager.c_str_values
 
-    # Делегирование свойств контролов NodeControlManager'у
+    # Delegate control properties to the NodeControlManager
     @property
     def controls(self) -> List[Dict]:
         if self._control_manager is None:
@@ -169,7 +169,7 @@ class BaseFlatNode:
             return {}
         return self._control_manager.detailed_function_infos
 
-    # Делегирование свойств навигации NodeNavigationManager'у
+    # Delegate navigation properties to the NodeNavigationManager
     @property
     def prev_sibling(self) -> Optional['BaseFlatNode']:
         return self._navigation_manager.effective_prev_sibling
@@ -210,7 +210,7 @@ class BaseFlatNode:
     def is_only_child(self) -> bool:
         return self._navigation_manager.is_only_child
 
-    # Делегирование свойств CallbackManager'у
+    # Delegate properties to the CallbackManager
     @property
     def callback_manager(self) -> CallbackManager:
         return self._callback_manager
@@ -260,7 +260,7 @@ class BaseFlatNode:
     def has_custom_callbacks(self) -> bool:
         return self._callback_manager.has_custom_callbacks
 
-    # Базовые свойства навигации
+    # Basic navigation properties
     @property
     def navigate(self) -> Optional[str]:
         return self._navigate
@@ -269,52 +269,52 @@ class BaseFlatNode:
     def navigate(self, value: str):
         self._navigate = value
 
-    # Базовые свойства структуры дерева
+    # Basic tree structure properties
     @property
     def is_leaf(self) -> bool:
-        """Является ли узел листом (не имеет детей)"""
+        """Whether the node is a leaf (has no children)."""
         return not self.children
 
     @property
     def is_branch(self) -> bool:
-        """Является ли узел ветвью (имеет детей)"""
+        """Whether the node is a branch (has children)."""
         return bool(self.children)
 
-    # Методы для доступа к менеджерам
+    # Methods for accessing the managers
     @property
     def data_manager(self) -> NodeDataManager:
-        """Доступ к менеджеру данных"""
+        """Access to the data manager."""
         return self._data_manager
 
     @property
     def control_manager(self) -> Optional[NodeControlManager]:
-        """Доступ к менеджеру контролов"""
+        """Access to the control manager."""
         return self._control_manager
 
     @property
     def navigation_manager(self) -> NodeNavigationManager:
-        """Доступ к менеджеру навигации"""
+        """Access to the navigation manager."""
         return self._navigation_manager
 
     def validate_data(self) -> List[str]:
-        """Валидация данных узла"""
+        """Validates node data."""
         errors = []
         errors.extend(self._data_manager.validate_numeric_range())
         errors.extend(self._data_manager.validate_fixed_values())
         return errors
 
     def validate_required_functions(self) -> List[Dict[str, str]]:
-        """Проверяет, что все обязательные функции сгенерированы"""
+        """Checks that all required functions are generated."""
         if self._control_manager is None:
             return []
         return self._control_manager.validate_required_functions()
 
     def get_data_summary(self) -> Dict[str, Any]:
-        """Сводка данных узла"""
+        """Node data summary."""
         return self._data_manager.get_data_summary()
 
     def get_control_summary(self) -> Dict[str, Any]:
-        """Сводка по контролам"""
+        """Control summary."""
         if self._control_manager is None:
             return {
                 "node_id": self.id,
@@ -325,21 +325,21 @@ class BaseFlatNode:
         return self._control_manager.get_control_summary()
 
     def get_navigation_info(self) -> Dict[str, Any]:
-        """Информация о навигации узла"""
+        """Node navigation information."""
         return self._navigation_manager.get_navigation_info()
 
     def print_control_info(self):
-        """Печатает информацию о контролах"""
+        """Prints control information."""
         if self._control_manager is not None:
             self._control_manager.print_control_info()
 
     def print_navigation_debug(self):
-        """Печатает отладочную информацию о навигации"""
+        """Prints debug navigation information."""
         self._navigation_manager.print_navigation_debug()
 
-    # Базовые утилиты для отладки
+    # Basic utilities for debugging
     def __repr__(self):
-        """Упрощенное строковое представление"""
+        """Simplified string representation."""
         tree_flag = "📁"
         match self.role:
             case "simple":

@@ -1,5 +1,5 @@
-# JSON Schema (draft-07) для валидации дерева меню (menu.yaml).
-# Записан в YAML для единообразия; jsonschema работает с dict.
+# JSON Schema (draft-07) for validating the menu tree (menu.yaml).
+# Written in YAML for consistency; jsonschema works with dict.
 
 $schema: "http://json-schema.org/draft-07/schema#"
 type: object
@@ -15,33 +15,33 @@ $defs:
   controlType:
     type: string
     enum: [click, position]
-    description: Тип управления элементами
+    description: Element control type
   navigateType:
     type: string
     enum: [cyclic, limit]
-    description: Тип навигации между элементами
+    description: Navigation type between elements
   dataType:
     type: string
     enum: [byte, ubyte, word, uword, dword, udword, float, string, callback]
-    description: Типы данных
+    description: Data types
   roleType:
     type: string
     enum: [simple, factor, fixed, callback]
-    description: "Управление данными: простое, факторное, фиксированный набор, функция обратного вызова"
+    description: "Data management: simple, factor, fixed set, callback function"
   outputDirectory:
     type: string
-    description: Директория, в которую генерируются *.c и *.h файлы из шаблонов
+    description: Directory where *.c and *.h files are generated from templates
   includeFiles:
     type: array
     items:
       type: string
-    description: Список файлов для включения в сгенерированный menu_data_config.c
+    description: List of files to include in the generated menu_data_config.c
   wrapByNameFunctions:
     type: boolean
-    description: Сделать функции-обёртки для получения данных по имени ноды
+    description: Generate wrapper functions to get data by node name
   enableNodeNames:
     type: boolean
-    description: Делать статический список имён узлов меню для отладки
+    description: Build a static list of menu node names for debugging
   configItems:
     type: object
     properties:
@@ -87,27 +87,27 @@ $defs:
           $ref: '#/$defs/controlType'
         minItems: 1
         uniqueItems: true
-        description: Список разрешённых типов управления для элемента
+        description: List of allowed control types for the element
       navigate:
         $ref: '#/$defs/navigateType'
       click_cb:
         type: string
-        description: Пользовательская функция обработки клика
+        description: Custom click handler function
       position_cb:
         type: string
-        description: Пользовательская функция обработки позиции энкодера
+        description: Custom encoder position handler function
       double_click_cb:
         type: string
-        description: Пользовательская функция обработки двойного клика
+        description: Custom double-click handler function
       long_click_cb:
         type: string
-        description: Пользовательская функция обработки долгого клика
+        description: Custom long-click handler function
       event_cb:
         type: string
-        description: Пользовательская функция обработки событий меню
+        description: Custom menu event handler function
       draw_value_cb:
         type: string
-        description: Пользовательская функция отрисовки значения
+        description: Custom value drawing function
       default:
         type: [number, string]
       min:

@@ -1,11 +1,11 @@
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
-from menu_data import MenuData, ControlType
-from managers.callback_manager import CallbackManager
+from ..menu_data import MenuData, ControlType
+from .callback_manager import CallbackManager
 
 @dataclass
 class FunctionInfo:
-    """Dataclass для хранения информации о функции"""
+    """Dataclass for storing function information."""
     name: str
     node_id: str
     event_type: str
@@ -20,7 +20,7 @@ class FunctionInfo:
     @classmethod
     def create_auto(cls, node_id: str, node_type: str, node_role: str, node_c_type: str,
                    name: str, event_type: str, navigate: str, purpose: str):
-        """Фабричный метод для автоматических функций"""
+        """Factory method for automatic functions."""
         return cls(
             name=name,
             node_id=node_id,
@@ -37,7 +37,7 @@ class FunctionInfo:
     @classmethod
     def create_custom(cls, node_id: str, node_type: str, node_role: str, node_c_type: str,
                      cb_info: Dict[str, Any]):
-        """Фабричный метод для пользовательских функций"""
+        """Factory method for custom functions."""
         category = cls._extract_category(cb_info)
         return cls(
             name=cb_info["name"],
@@ -54,7 +54,7 @@ class FunctionInfo:
     
     @staticmethod
     def _extract_category(cb_info: Dict[str, Any]) -> Optional[str]:
-        """Безопасно извлекает категорию"""
+        """Safely extracts the category."""
         if not cb_info.get("category"):
             return None
         category_data = cb_info["category"]

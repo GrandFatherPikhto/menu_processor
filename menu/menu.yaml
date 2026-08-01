@@ -1,141 +1,164 @@
-# Menu tree (equivalent of the former menu.json).
-
 config:
-  version: "1.0"
-  author: "Embedded Team"
+  version: '1.0'
+  author: Embedded Team
   default_navigate: limit
   default_control: position
   default_branch_navigate: cyclic
   root_navigate: cyclic
-  # Directory where C files are generated (relative to the project root).
   output_directory: ./output/
   include_files:
-    - pulse_config.h
+  - pulse_config.h
   wrap_by_name_functions: true
   enable_node_names: true
-
 menu:
-  - id: start
-    title: Start
-    type: string
-    role: fixed
-    values: [Start, Started]
-    default_idx: 0
-    navigate: cyclic
-
-  - id: regimes
-    title: Regimes
-    type: string
-    role: fixed
-    values: [Simple, Strong, Quality]
-    controls: [position]
-    navigate: cyclic
-    default_idx: 2
-
-  - id: version
-    title: Firmware version
+- id: start
+  title: Start
+  type: string
+  role: fixed
+  values:
+  - Start
+  - Started
+  default_idx: 0
+  navigate: cyclic
+- id: regimes
+  title: Regimes
+  type: string
+  role: fixed
+  values:
+  - Simple
+  - Strong
+  - Quality
+  controls:
+  - position
+  navigate: cyclic
+  default_idx: 2
+- id: version
+  title: Firmware version
+  type: callback
+  role: callback
+  draw_value_cb: draw_version_cb
+- id: settings
+  title: Settings
+  navigate: limit
+  items:
+  - id: pwm_frequency
+    title: PWM Frequency
     type: callback
     role: callback
-    draw_value_cb: draw_version_cb
-
-  - id: settings
-    title: Settings
-    navigate: limit
+    draw_value_cb: pwm_frequency_display_cb
+    position_cb: pwm_frequency_change_cb
+  - id: hi_channel
+    title: Hi Channel
     items:
-      - id: pwm_frequency
-        title: PWM Frequency
-        type: callback
-        role: callback
-        draw_value_cb: pwm_frequency_display_cb
-        position_cb: pwm_frequency_change_cb
-
-      - id: hi_channel
-        title: Hi Channel
-        items:
-          - id: hi_on
-            title: Hi On/Off
-            type: string
-            role: fixed
-            navigate: cyclic
-            values: ["Off", "On"]
-            default_idx: 1
-            event_cb: my_event_cb
-          - id: hi_delay
-            title: Delay
-            type: udword
-            role: factor
-            default: 10
-            min: 10
-            max: 10000
-            factors: [1, 10, 100, 1000]
-          - id: hi_duration
-            title: Duration
-            type: udword
-            role: factor
-            default: 10
-            min: 10
-            max: 10000
-            factors: [1, 10, 100, 1000]
-            default_idx: 2
-          - id: hi_pwm_on
-            title: PWM On/Off
-            type: string
-            role: fixed
-            navigate: cyclic
-            values: ["Off", "On"]
-            default_idx: 0
-            event_cb: my_event_cb
-          - id: hi_duty
-            title: PWM Duty
-            type: ubyte
-            role: simple
-            step: 1
-            controls: [position]
-            default: 30
-            min: 0
-            max: 95
-
-      - id: lo_channel
-        title: Lo Channel
-        items:
-          - id: lo_on
-            title: Lo On/Off
-            type: string
-            role: fixed
-            navigate: cyclic
-            values: ["Off", "On"]
-            default_idx: 1
-            event_cb: my_event_cb
-          - id: lo_delay
-            title: Delay
-            type: udword
-            role: factor
-            default: 10
-            min: 10
-            max: 10000
-            factors: [1, 10, 100, 1000]
-          - id: lo_duration
-            title: Duration
-            type: udword
-            role: factor
-            default: 10
-            min: 10
-            max: 10000
-            factors: [1, 10, 100, 1000]
-          - id: lo_pwm_on
-            title: PWM On/Off
-            type: string
-            role: fixed
-            navigate: cyclic
-            values: ["Off", "On"]
-            default_idx: 0
-            event_cb: my_event_cb
-          - id: lo_duty
-            title: PWM Duty
-            type: ubyte
-            controls: [position]
-            role: simple
-            step: 1
-            default: 30
-            min: 0
-            max: 95
+    - id: hi_on
+      title: Hi On/Off
+      type: string
+      role: fixed
+      navigate: cyclic
+      values:
+      - 'Off'
+      - 'On'
+      default_idx: 1
+      event_cb: my_event_cb
+    - id: hi_delay
+      title: Delay
+      type: udword
+      role: factor
+      default: 10
+      min: 10
+      max: 10000
+      factors:
+      - 1
+      - 10
+      - 100
+      - 1000
+    - id: hi_duration
+      title: Duration
+      type: udword
+      role: factor
+      default: 10
+      min: 10
+      max: 10000
+      factors:
+      - 1
+      - 10
+      - 100
+      - 1000
+      default_idx: 2
+    - id: hi_pwm_on
+      title: PWM On/Off
+      type: string
+      role: fixed
+      navigate: cyclic
+      values:
+      - 'Off'
+      - 'On'
+      default_idx: 0
+      event_cb: my_event_cb
+    - id: hi_duty
+      title: PWM Duty
+      type: ubyte
+      role: simple
+      step: 1
+      controls:
+      - position
+      default: 30
+      min: 0
+      max: 95
+  - id: lo_channel
+    title: Lo Channel
+    items:
+    - id: lo_on
+      title: Lo On/Off
+      type: string
+      role: fixed
+      navigate: cyclic
+      values:
+      - 'Off'
+      - 'On'
+      default_idx: 1
+      event_cb: my_event_cb
+    - id: lo_delay
+      title: Delay
+      type: udword
+      role: factor
+      default: 10
+      min: 10
+      max: 10000
+      factors:
+      - 1
+      - 10
+      - 100
+      - 1000
+    - id: lo_duration
+      title: Duration
+      type: udword
+      role: factor
+      default: 10
+      min: 10
+      max: 10000
+      factors:
+      - 1
+      - 10
+      - 100
+      - 1000
+    - id: lo_pwm_on
+      title: PWM On/Off
+      type: string
+      role: fixed
+      navigate: cyclic
+      values:
+      - 'Off'
+      - 'On'
+      default_idx: 0
+      event_cb: my_event_cb
+    - id: lo_duty
+      title: PWM Duty
+      type: ubyte
+      controls:
+      - position
+      role: simple
+      step: 1
+      default: 30
+      min: 0
+      max: 95

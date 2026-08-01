@@ -21,6 +21,7 @@ to be compiled into your firmware.
   - [Type / role / control rules](#type--role--control-rules-configmenudatayaml)
   - [Generation files](#generation-files-configfilesyaml)
 - [Node reference](#node-reference)
+- [GUI](#gui)
 - [Generated files](#generated-files)
 - [Internationalization (i18n / gettext)](#internationalization-i18n--gettext)
 - [Tests](#tests)
@@ -214,6 +215,24 @@ If a callback is **not** specified, it is generated automatically
 (e.g. `menu_draw_{type}_{role}_value_cb` for drawing, `{type}_{role}_{control}_{navigate}_cb`
 for handling).
 
+## GUI
+
+For editing the menu tree without hand-writing YAML, an optional PyQt6 GUI is
+available:
+
+```bash
+python gui.py
+```
+
+It's a thin wrapper around the same pipeline described above — a tree view plus a
+property form for the selected node (which fields appear depends on the node's
+`type`/`role`, following the same rules from `config/menu_data.yaml`), an explicit
+**Validate** button, and a **Generate C files** button that runs the real
+`MenuGenerator` on a background thread. A log panel at the bottom shows everything
+the backend already logs, with search and copy. See [docs/gui.md](docs/gui.md) for
+the full walkthrough, including how it keeps `config/config.yaml` untouched while
+generating.
+
 ## Generated files
 
 The generator produces a full C module:
@@ -263,6 +282,8 @@ python -m pytest -q
 |----------|----------|
 | [docs/architect.md](docs/architect.md) | 🇬🇧 Architecture overview & recommendations |
 | [docs/architect_ru.md](docs/architect_ru.md) | 🇷🇺 Обзор архитектуры и рекомендации |
+| [docs/gui.md](docs/gui.md) | 🇬🇧 GUI (PyQt6): layout, actions, design notes |
+| [docs/gui_ru.md](docs/gui_ru.md) | 🇷🇺 GUI (PyQt6): раскладка, действия, особенности реализации |
 | [docs/jinja_templates.md](docs/jinja_templates.md) | 🇬🇧 Generated C code: architecture & integration |
 | [docs/jinja_templates_ru.md](docs/jinja_templates_ru.md) | 🇷🇺 Генерируемый C-код: архитектура и встраивание |
 | [docs/tests.md](docs/tests.md) | 🇬🇧 Unit & smoke tests (`tests/`) |

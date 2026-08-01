@@ -191,6 +191,23 @@ files:
 (например, `menu_draw_{type}_{role}_value_cb` для отрисовки,
 `{type}_{role}_{control}_{navigate}_cb` для обработки).
 
+## GUI
+
+Для редактирования дерева меню без ручного правки YAML доступен опциональный
+PyQt6-интерфейс:
+
+```bash
+python gui.py
+```
+
+Это тонкая обёртка над тем же конвейером, что описан выше — дерево меню плюс форма
+свойств выбранного узла (набор полей зависит от `type`/`role` узла, по тем же
+правилам из `config/menu_data.yaml`), явная кнопка **Validate** и кнопка
+**Generate C files**, запускающая настоящий `MenuGenerator` в фоновом потоке. Внизу —
+панель логов со всем, что и так пишет backend, с поиском и копированием. Полное
+описание — в [docs/gui_ru.md](docs/gui_ru.md), включая то, как GUI не трогает
+`config/config.yaml` при генерации.
+
 ## Генерируемые файлы
 
 Генератор создаёт полный C-модуль:
@@ -241,6 +258,8 @@ python -m pytest -q
 |----------|------|
 | [docs/architect.md](docs/architect.md) | 🇬🇧 Architecture overview & recommendations |
 | [docs/architect_ru.md](docs/architect_ru.md) | 🇷🇺 Обзор архитектуры и рекомендации |
+| [docs/gui.md](docs/gui.md) | 🇬🇧 GUI (PyQt6): layout, actions, design notes |
+| [docs/gui_ru.md](docs/gui_ru.md) | 🇷🇺 GUI (PyQt6): раскладка, действия, особенности реализации |
 | [docs/jinja_templates.md](docs/jinja_templates.md) | 🇬🇧 Generated C code: architecture & integration |
 | [docs/jinja_templates_ru.md](docs/jinja_templates_ru.md) | 🇷🇺 Генерируемый C-код: архитектура и встраивание |
 | [docs/tests.md](docs/tests.md) | 🇬🇧 Unit & smoke tests (`tests/`) |

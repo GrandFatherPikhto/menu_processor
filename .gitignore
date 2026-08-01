@@ -54,4 +54,8 @@ ehthumbs.db             # Windows
 # Generated C sources and JSON artifacts (produced by generate_menu.py)
 output/
 
+# GUI-owned shadow config and per-machine window/session settings
+config/.gui_config.yaml
+gui_settings.json
+
 init.sh

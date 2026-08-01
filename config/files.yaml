@@ -1,0 +1,30 @@
+# Список шаблонов и соответствующих выходных файлов.
+# Пути в "files" объединяются с output_directory из меню (menu.yaml).
+templates_path: ./templates/
+files:
+  handle.h.jinja: include/menu.h
+  handle.c.jinja: menu.c
+  context.h.jinja: include/menu_context.h
+  context.c.jinja: menu_context.c
+  name.h.jinja: include/menu_name.h
+  name.c.jinja: menu_name.c
+  draw.h.jinja: include/menu_draw.h
+  draw.c.jinja: menu_draw.c
+  config.h.jinja: include/menu_config.h
+  type.h.jinja: include/menu_type.h
+  data_tree.h.jinja: include/menu_data_tree.h
+  data_tree.c.jinja: menu_data_tree.c
+  data_config.h.jinja: include/menu_data_config.h
+  data_config.c.jinja: menu_data_config.c
+  data_context.h.jinja: include/menu_data_context.h
+  data_context.c.jinja: menu_data_context.c
+  data_value.h.jinja: include/menu_data_value.h
+  data_value.c.jinja: menu_data_value.c
+  data_name.h.jinja: include/menu_data_name.h
+  data_name.c.jinja: menu_data_name.c
+  tree.h.jinja: include/menu_tree.h
+  value.h.jinja: include/menu_value.h
+  navigate.h.jinja: include/menu_navigate.h
+  navigate.c.jinja: menu_navigate.c
+  edit.h.jinja: include/menu_edit.h
+  edit.c.jinja: menu_edit.c

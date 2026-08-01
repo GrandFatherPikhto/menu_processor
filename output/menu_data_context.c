@@ -1,0 +1,12 @@
+#include "menu_data_context.h"
+#include "menu_context.h"
+
+static menu_context_t *s_context = 0;
+
+menu_context_t *menu_data_get_context(void) {
+    return s_context;
+}
+
+void menu_data_set_context(menu_context_t *ctx) {
+    s_context = ctx;
+}

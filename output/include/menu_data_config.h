@@ -1,0 +1,12 @@
+#ifndef MENU_DATA_CONFIG_H
+#define MENU_DATA_CONFIG_H
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+
+#include "menu_type.h"
+
+const menu_node_config_t *menu_data_get_config(void);
+
+#endif /* MENU_DATA_CONFIG_H */

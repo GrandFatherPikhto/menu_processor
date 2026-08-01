@@ -1,0 +1,15 @@
+#ifndef MENU_NAVIGATE_H
+#define MENU_NAVIGATE_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "menu_type.h"
+
+menu_id_t menu_navigate_get_sibling(menu_context_t *ctx, menu_id_t id, int8_t delta);
+void menu_navigate_handle_position(menu_context_t *ctx, menu_id_t id, int8_t delta);
+void menu_navigate_handle_enter(menu_context_t *ctx, menu_id_t id);
+void menu_navigate_handle_back(menu_context_t *ctx, menu_id_t id);
+void menu_navigate_go_to(menu_context_t *ctx, menu_id_t id);
+
+#endif /* MENU_NAVIGATE_H */

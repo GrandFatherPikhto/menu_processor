@@ -1,0 +1,28 @@
+#include "menu_context.h"
+#include "menu_tree.h"
+#include "menu_config.h"
+#include "menu_value.h"
+#include "menu_data_tree.h"
+#include "menu_data_config.h"
+#include "menu_data_name.h"
+#include "menu_data_value.h"
+#include "menu_data_context.h"
+
+void menu_context_init(menu_context_t *ctx) {
+
+    if (ctx == NULL)
+        return;
+
+    ctx->nodes = menu_data_get_tree();
+    ctx->configs = menu_data_get_config();
+    ctx->values = menu_data_get_values();
+    
+    ctx->names = menu_data_get_node_names();
+    ctx->previous = MENU_ID_COUNT;
+    ctx->current = menu_data_get_first_id();
+    ctx->dirty = false;
+    ctx->update = false;
+    ctx->state = MENU_STATE_NAVIGATION;
+
+    menu_data_set_context(ctx);
+}

@@ -1,0 +1,153 @@
+# JSON Schema (draft-07) для валидации дерева меню (menu.yaml).
+# Записан в YAML для единообразия; jsonschema работает с dict.
+
+$schema: "http://json-schema.org/draft-07/schema#"
+type: object
+properties:
+  config:
+    $ref: '#/$defs/configItems'
+  menu:
+    type: array
+    items:
+      $ref: '#/$defs/menuItem'
+required: [menu, config]
+$defs:
+  controlType:
+    type: string
+    enum: [click, position]
+    description: Тип управления элементами
+  navigateType:
+    type: string
+    enum: [cyclic, limit]
+    description: Тип навигации между элементами
+  dataType:
+    type: string
+    enum: [byte, ubyte, word, uword, dword, udword, float, string, callback]
+    description: Типы данных
+  roleType:
+    type: string
+    enum: [simple, factor, fixed, callback]
+    description: "Управление данными: простое, факторное, фиксированный набор, функция обратного вызова"
+  outputDirectory:
+    type: string
+    description: Директория, в которую генерируются *.c и *.h файлы из шаблонов
+  includeFiles:
+    type: array
+    items:
+      type: string
+    description: Список файлов для включения в сгенерированный menu_data_config.c
+  wrapByNameFunctions:
+    type: boolean
+    description: Сделать функции-обёртки для получения данных по имени ноды
+  enableNodeNames:
+    type: boolean
+    description: Делать статический список имён узлов меню для отладки
+  configItems:
+    type: object
+    properties:
+      version:
+        type: string
+        pattern: '^\d+\.\d+$'
+      author:
+        type: string
+        minLength: 1
+      default_navigate:
+        $ref: '#/$defs/navigateType'
+      default_control:
+        $ref: '#/$defs/controlType'
+      root_navigate:
+        $ref: '#/$defs/navigateType'
+      default_branch_navigate:
+        $ref: '#/$defs/navigateType'
+      output_directory:
+        $ref: '#/$defs/outputDirectory'
+      include_files:
+        $ref: '#/$defs/includeFiles'
+      wrap_by_name_functions:
+        $ref: '#/$defs/wrapByNameFunctions'
+      enable_node_names:
+        $ref: '#/$defs/enableNodeNames'
+    additionalProperties: false
+  menuItem:
+    type: object
+    properties:
+      id:
+        type: string
+        pattern: '^[a-zA-Z0-9_]+$'
+      title:
+        type: string
+        minLength: 1
+      type:
+        $ref: '#/$defs/dataType'
+      role:
+        $ref: '#/$defs/roleType'
+      controls:
+        type: array
+        items:
+          $ref: '#/$defs/controlType'
+        minItems: 1
+        uniqueItems: true
+        description: Список разрешённых типов управления для элемента
+      navigate:
+        $ref: '#/$defs/navigateType'
+      click_cb:
+        type: string
+        description: Пользовательская функция обработки клика
+      position_cb:
+        type: string
+        description: Пользовательская функция обработки позиции энкодера
+      double_click_cb:
+        type: string
+        description: Пользовательская функция обработки двойного клика
+      long_click_cb:
+        type: string
+        description: Пользовательская функция обработки долгого клика
+      event_cb:
+        type: string
+        description: Пользовательская функция обработки событий меню
+      draw_value_cb:
+        type: string
+        description: Пользовательская функция отрисовки значения
+      default:
+        type: [number, string]
+      min:
+        type: number
+      max:
+        type: number
+      step:
+        type: number
+        minimum: 0
+      values:
+        type: array
+        items:
+          type: [string, number]
+        minItems: 1
+      default_idx:
+        type: integer
+        minimum: 0
+      factors:
+        type: array
+        items:
+          type: number
+        minItems: 1
+      str_true:
+        type: string
+      str_false:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/menuItem'
+    additionalProperties: false
+    required: [id, title]
+    oneOf:
+      - properties:
+          items:
+            type: array
+            minItems: 1
+        required: [items]
+        not:
+          required: [type, role]
+      - required: [type, role]
+        not:
+          required: [items]

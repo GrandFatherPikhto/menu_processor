@@ -177,4 +177,4 @@ def main(config_file: str):
         return 1
 
 if __name__ == "__main__":
-    main('./config/config.json')
+    main('./config/config.yaml')

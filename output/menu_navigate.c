@@ -1,0 +1,107 @@
+#include "menu_navigate.h"
+#include "menu_config.h"
+#include "menu_tree.h"
+#include "menu_value.h"
+#include "menu_context.h"
+#include "menu_draw.h"
+#include "menu_name.h"
+
+#include <stdio.h>
+
+void menu_navigate_handle_position(menu_context_t *ctx, menu_id_t id, int8_t delta) {
+    if (ctx->state == MENU_STATE_NAVIGATION) {
+        menu_id_t sibling_id = menu_navigate_get_sibling(ctx, id, delta);
+        menu_navigate_go_to(ctx, sibling_id);
+    } else if (ctx->state == MENU_STATE_EDIT) {
+        if (ctx->configs[id].position_cb != NULL) {
+            ctx->configs[id].position_cb(ctx, id, delta);
+        }
+
+        if (ctx->configs[id].event_cb != NULL) {
+            ctx->configs[id].event_cb(ctx, id, MENU_EVENT_CHANGE_VALUE);
+        }
+    }
+}
+
+void menu_navigate_handle_enter(menu_context_t *ctx, menu_id_t id) {
+    if (ctx == NULL || id >= MENU_ID_COUNT)
+        return;
+
+    if (ctx->nodes[id].child == MENU_ID_COUNT) {
+        if (ctx->state == MENU_STATE_NAVIGATION) {
+            ctx->state = MENU_STATE_EDIT;
+            ctx->dirty = true;
+            if (ctx->configs[id].event_cb != NULL) {
+                ctx->configs[id].event_cb(ctx, id, MENU_EVENT_START_EDIT);
+            }
+        } else if (ctx->state == MENU_STATE_EDIT) {
+            if (ctx->configs[id].click_cb) {
+                ctx->configs[id].click_cb(ctx, id);
+            }
+            ctx->dirty = true;
+        }
+    } else {
+        menu_id_t target_id = ctx->nodes[id].child;
+        if (target_id != MENU_ID_COUNT)
+            menu_navigate_go_to(ctx, target_id);
+    }
+}
+
+void menu_navigate_handle_back(menu_context_t *ctx, menu_id_t id) {
+    if (ctx == NULL || id >= MENU_ID_COUNT)
+        return;
+
+    if (ctx->nodes[id].child == MENU_ID_COUNT) {
+        if (ctx->state == MENU_STATE_EDIT) {
+            ctx->state = MENU_STATE_NAVIGATION;
+            ctx->dirty = true;
+            if(ctx->configs[id].event_cb != NULL) {
+                ctx->configs[id].event_cb(ctx, id, MENU_EVENT_STOP_EDIT);
+            }
+        } else if (ctx->state == MENU_STATE_NAVIGATION) {
+            menu_id_t target_id = ctx->nodes[id].parent;
+            if (target_id != MENU_ID_COUNT)
+                menu_navigate_go_to(ctx, target_id);
+        }
+    }
+}
+
+void menu_navigate_go_to(menu_context_t *ctx, menu_id_t id) {
+    if (ctx == NULL || id >= MENU_ID_COUNT)
+        return;
+    if (id == ctx->current)
+        return;
+
+    if (ctx->configs[id].event_cb != NULL) {
+        ctx->configs[id].event_cb(ctx, ctx->current, MENU_EVENT_UNFOCUSED);
+    }
+
+    ctx->previous = ctx->current;
+    ctx->current = id;
+
+    if (ctx->configs[id].event_cb != NULL) {
+        ctx->configs[id].event_cb(ctx, ctx->current, MENU_EVENT_FOCUSED);
+    }
+    ctx->dirty = true;
+}
+
+menu_id_t menu_navigate_get_sibling(menu_context_t *ctx, menu_id_t id, int8_t delta) {
+    
+    if (delta == 0 || id >= MENU_ID_COUNT) return MENU_ID_COUNT;
+
+    bool is_back = delta > 0;
+    int8_t steps = is_back ? delta : -delta;
+    
+    menu_id_t current_id = id;
+
+    for (int8_t i = 0; i < steps; i++) {
+        menu_id_t next_id = is_back ? ctx->nodes[current_id].prev : ctx->nodes[current_id].next;
+        
+        if (next_id == MENU_ID_COUNT) {
+            return current_id; // Останавливаемся на последнем валидном пункте
+        }
+        current_id = next_id;
+    }
+
+    return current_id;
+}

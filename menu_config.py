@@ -1,6 +1,7 @@
-import json
 from typing import Dict, Any, Set, List, Optional
 from pathlib import Path
+
+from common import load_config_file, ConfigLoadError
 
 class ConfigError(Exception):
     """Исключение для ошибок конфигурации"""
@@ -16,14 +17,13 @@ class MenuConfig:
     def __init__(self, file_path: str):
         self._generation_files = {}
         self._config_path = Path(file_path)
-        self._main_config = self._load_json_file(self._config_path, "основной конфиг")
-        
+        self._main_config = self._load_data_file(self._config_path, "основной конфиг")
+
         self._menu_schema = self._load_required_file("menu_schema", "схема меню")
         self._menu_data = self._load_required_file("menu", "данные меню")
         self._menu_config = self._menu_data.get("config")
         self._menu_tree = self._menu_data.get("menu")
         self._data_config = self._load_required_file("menu_config", "данные и роли элементов меню")
-        self._output_directory = self._data_config.get("output_directory")
         self._generation_config = self._load_required_file("generation_files", "данные и роли элементов меню")
         self._generation_files = self._generation_config.get("files")
         self._templates_path = self._generation_config.get("templates_path")
@@ -36,28 +36,14 @@ class MenuConfig:
         
         # Создаем путь относительно основного конфиг-файла
         file_path = self._config_path.parent / file_path_str
-        return self._load_json_file(file_path, description)
-        
-    def _load_json_file(self, file_path: Path, description: str) -> Dict[str, Any]:
-        """Загружает и валидирует JSON файл"""
+        return self._load_data_file(file_path, description)
+
+    def _load_data_file(self, file_path: Path, description: str) -> Dict[str, Any]:
+        """Загружает конфигурационный файл (JSON или YAML)"""
         try:
-            if not file_path.exists():
-                raise ConfigError(f"Файл не найден", file_path)
-            
-            with open(file_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            
-            if not isinstance(data, dict):
-                raise ConfigError(f"JSON должен быть объектом, а не {type(data).__name__}", file_path)
-                
-            return data
-            
-        except json.JSONDecodeError as e:
-            raise ConfigError(f"Ошибка формата JSON: {e}", file_path)
-        except PermissionError:
-            raise ConfigError("Нет прав для чтения файла", file_path)
-        except Exception as e:
-            raise ConfigError(f"Ошибка загрузки: {e}", file_path)
+            return load_config_file(file_path)
+        except ConfigLoadError as e:
+            raise ConfigError(str(e)) from e
         
     def _check_file_path(self, file_path: Path):
         if not file_path.exists():
@@ -122,7 +108,6 @@ class MenuConfig:
         generation_files = {}
         if self.output_directory is not None:
             output_directory = Path(self.output_directory)
-            print(output_directory)
             if self._generation_files is not None:
                 for template, output in self._generation_files.items():
                     generation_files[template] = output_directory / output
@@ -173,4 +158,4 @@ def main(json_file: str):
     return 0
 
 if __name__ == "__main__":
-    exit(main("./config/config.json"))
+    exit(main("./config/config.yaml"))

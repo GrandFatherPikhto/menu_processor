@@ -1,0 +1,29 @@
+#ifndef MENU_CONTEXT_H
+#define MENU_CONTEXT_H
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+
+#include "menu_type.h"
+
+typedef struct menu_context {
+    menu_id_t current;
+    menu_id_t previous;
+    menu_state_t state;
+    bool dirty;
+    bool update;
+
+    menu_node_value_t *values; ///< Неконстантный массив в динамической памяти. Изменяемые значения листьев
+    const menu_node_config_t *configs; ///< Константный массив свойств (конфигураций) листьев
+    const menu_node_t *nodes; ///< Константный массив всех нод -- дерево меню
+    const menu_node_name_t *names; ///< Текстовые название ID меню
+
+    // Буферы для отрисовки (можно вынести в draw модуль)
+    char title_buf[LCD_STRING_LEN];
+    char value_buf[LCD_STRING_LEN];
+} menu_context_t;
+
+void menu_context_init(menu_context_t *ctx);
+
+#endif /* MENU_CONTEXT_H */

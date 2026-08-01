@@ -580,4 +580,4 @@ def main(config_name: str) -> int:
 
 
 if __name__ == "__main__":
-    main("./config/config.json")
+    main("./config/config.yaml")

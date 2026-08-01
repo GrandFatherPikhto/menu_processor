@@ -1,0 +1,12 @@
+#ifndef MENU_DATA_NAME_H
+#define MENU_DATA_NAME_H
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+
+#include "menu_type.h"
+
+const menu_node_name_t *menu_data_get_node_names(void);
+
+#endif /* MENU_DATA_NAME_H */

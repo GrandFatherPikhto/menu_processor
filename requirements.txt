@@ -9,3 +9,6 @@ referencing==0.37.0
 rpds-py==2026.6.3
 typing_extensions==4.16.0
 babel==2.18.0
+
+# Test / development dependencies
+pytest==9.1.1

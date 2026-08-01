@@ -20,7 +20,7 @@ class ProcessorError(Exception):
         super().__init__(message)
 
 
-class MenuProcessor:
+class MenuCraft:
     """Orchestrates the menu pipeline: load → validate → flatten.
 
     Derived menu data (functions, categories, leaves, callbacks, ...) is

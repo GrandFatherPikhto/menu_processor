@@ -15,7 +15,7 @@ from jinja2 import (
 
 from .i18n import _
 from .menu_config import MenuConfig
-from .menu_processor import MenuProcessor
+from .menucraft import MenuCraft
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 class MenuGenerator:
     """Generates C source files from the Jinja2 templates."""
 
-    def __init__(self, config_json, processor: Optional[MenuProcessor] = None):
-        self._processor = processor if processor is not None else MenuProcessor(config_json)
+    def __init__(self, config_json, processor: Optional[MenuCraft] = None):
+        self._processor = processor if processor is not None else MenuCraft(config_json)
         self._config: MenuConfig = self._processor.config
         self._env = Environment(
             loader=FileSystemLoader(str(self._config.templates_path)),

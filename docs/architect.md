@@ -16,14 +16,14 @@ config/config.yaml
   → MenuValidator         — JSON Schema + custom validation of the tree
   → MenuFlattener         — expands the tree into a flat list + navigation links
   → FlatNode/BaseFlatNode — node built from a composition of managers
-  → MenuProcessor         — coordinator, aggregates data for the templates
+  → MenuCraft             — coordinator, aggregates data for the templates
   → MenuGenerator         — renders Jinja2 templates → C files
 ```
 
 ### Repository layout
 
 ```
-menu_processor/
+MenuCraft/
 ├── generate_menu.py              # Root entry point (chdirs into the package)
 ├── generate_menu/                # Python package
 │   ├── __init__.py
@@ -35,7 +35,7 @@ menu_processor/
 │   ├── menu_flattener.py         # tree → flat list, cyclic/limit navigation
 │   ├── base_flat_node.py         # BaseFlatNode (manager composition)
 │   ├── flat_node.py              # FlatNode (final node class)
-│   ├── menu_processor.py         # coordinator & aggregator
+│   ├── menucraft.py              # coordinator & aggregator
 │   ├── menu_generator.py         # Jinja2 rendering → C files
 │   ├── managers/
 │   │   ├── node_data_manager.py      # data: values, factors, types, categories
@@ -109,7 +109,7 @@ Exposes high-level properties used by templates and the processor
 - [`CallbackManager`](../generate_menu/managers/callback_manager.py:5) — auto vs custom callbacks, effective callback names, summaries.
 - [`FunctionInfo`](../generate_menu/managers/function_info.py:6) — dataclass describing a generated function; `create_auto` / `create_custom` factories.
 
-### 2.7 [`menu_processor.py`](../generate_menu/menu_processor.py:17) — `MenuProcessor`
+### 2.7 [`menucraft.py`](../generate_menu/menucraft.py:17) — `MenuCraft`
 
 Coordinator. Loads config, validates, flattens, then exposes many aggregation
 properties (`functions`, `categories`, `functions_by_event_type`,
@@ -159,8 +159,8 @@ generation_files: files.yaml
 
 ### 4.1 Critical / architectural
 
-#### 🔴 A1. "God-object" in `MenuProcessor`
-[`menu_processor.py`](../generate_menu/menu_processor.py:17) contains **20+ properties**, each of which
+#### 🔴 A1. "God-object" in `MenuCraft`
+[`menucraft.py`](../generate_menu/menucraft.py:17) contains **20+ properties**, each of which
 re-walks `_flat_nodes` and builds aggregated dicts (`functions`, `categories`,
 `functions_by_event_type`, `functions_by_navigation`, `functions_by_type_role`,
 `functions_by_type`, `functions_by_role`, `callback_summary_by_category`,
@@ -173,7 +173,7 @@ Problems:
 
 **Recommendation:** move aggregation into a separate `MenuDataAggregator` (or a set of
 functions) that walks the nodes once and caches results (`functools.cached_property`).
-This both simplifies [`MenuProcessor`](../generate_menu/menu_processor.py:17) and speeds up generation.
+This both simplifies [`MenuCraft`](../generate_menu/menucraft.py:17) and speeds up generation.
 
 #### 🔴 A2. Dead / unreachable code
 In [`managers/node_control_manager.py`](../generate_menu/managers/node_control_manager.py:172),
@@ -192,7 +192,7 @@ The whole code base relies on `print()` with emoji (including production paths).
 Output stays readable but becomes controllable (levels, files, disabling).
 
 #### 🔴 A4. Config: inconsistent keys and typos
-- `output_flattern` — a typo (`flatten`), mirrored in [`save_flattern_json`](../generate_menu/menu_processor.py:50).
+- `output_flattern` — a typo (`flatten`), mirrored in [`save_flattern_json`](../generate_menu/menucraft.py:50).
 - The `menu_config` key points at `menu_data.json` — confusion between "menu config" and
   "type/role rules".
 - `files.json` uses `templates_path` while some legacy files used `templates`.
@@ -209,7 +209,7 @@ hard-coded absolute paths (`/home/yevst/...`).
 and resolve all config paths relative to the project root (done for YAML configs).
 
 #### 🔴 A6. Side-effect constructors
-- [`MenuProcessor.__init__`](../generate_menu/menu_processor.py:18) performs all loading/validation/flattening and throws exceptions.
+- [`MenuCraft.__init__`](../generate_menu/menucraft.py:18) performs all loading/validation/flattening and throws exceptions.
 - [`MenuGenerator.__init__`](../generate_menu/menu_generator.py:16) immediately calls `_generate_code()`.
 
 **Recommendation:** constructors should only store dependencies; run methods explicitly
@@ -234,7 +234,7 @@ There are no tests (neither `pytest` nor `unittest`); debug `main()`s act as sub
 - e2e: full generation from a sample config → assert C files are produced.
 
 #### 🟡 B3. Cache aggregations
-Compute `MenuProcessor` derived properties once; especially relevant for large menu trees.
+Compute `MenuCraft` derived properties once; especially relevant for large menu trees.
 
 #### 🟡 B4. Remove validation duplication
 [`MenuValidator._validate_item`](../generate_menu/menu_validator.py:63) duplicates logic from
@@ -271,7 +271,7 @@ Type/role/control rules are not validated at all. Add a schema/validation for th
 | 🔴 P0 | Remove dead code & unreachable blocks | `node_control_manager.py`, `menu_flattener.py`, `menu_validator.py` |
 | 🔴 P1 | `logging` instead of `print()` | all modules |
 | 🔴 P1 | Fix typos & config keys | `menu_config.py`, `config/*` |
-| 🟡 P2 | Extract aggregation from `MenuProcessor` | new `aggregator.py` |
+| 🟡 P2 | Extract aggregation from `MenuCraft` | new `aggregator.py` |
 | 🟡 P2 | Single CLI with `argparse` | new `cli.py` |
 | 🟡 P2 | `pytest` tests | `tests/` |
 | 🟡 P3 | Unified validation, `pathlib`, typing | all modules |

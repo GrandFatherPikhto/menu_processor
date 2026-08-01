@@ -16,7 +16,7 @@ produced C sources and JSON artifacts actually appear on disk. They live in
   `generate_menu.py` script in a **subprocess**, exactly as a user would, and checks
   the exit code, the generated artifacts and i18n localization;
 - [`test_generation.py`](../test/integration/test_generation.py) — runs the full
-  pipeline **in-process** (`MenuGenerator` / `MenuProcessor`) and verifies the
+  pipeline **in-process** (`MenuGenerator` / `MenuCraft`) and verifies the
   generated C files and JSON dumps.
 
 Both suites reuse the shared fixtures from [`conftest.py`](../conftest.py).

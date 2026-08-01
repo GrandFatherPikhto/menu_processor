@@ -63,10 +63,10 @@ def test_processor_saves_flat_and_functions_json(monkeypatch, project_root):
     """save_flattern_json() and save_json_data() write the JSON artifacts."""
     monkeypatch.chdir(project_root)
 
-    from generate_menu.menu_processor import MenuProcessor
+    from generate_menu.menucraft import MenuCraft
     from generate_menu.common import save_json_data
 
-    processor = MenuProcessor("./config/config.yaml")
+    processor = MenuCraft("./config/config.yaml")
 
     output = project_root / "output"
     flat_path = output / "flatterned.json"

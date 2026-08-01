@@ -31,7 +31,7 @@ config/config.yaml
   → MenuValidator         JSON Schema + кастомная валидация дерева
   → MenuFlattener         дерево → плоский список + связи навигации
   → FlatNode/BaseFlatNode узел из композиции менеджеров
-  → MenuProcessor         координатор, агрегация данных для шаблонов
+  → MenuCraft             координатор, агрегация данных для шаблонов
   → MenuGenerator         рендер Jinja2-шаблонов → C-файлы
 ```
 
@@ -41,7 +41,7 @@ config/config.yaml
 ## Структура репозитория
 
 ```
-menu_processor/
+MenuCraft/
 ├── generate_menu.py              # ← запускается отсюда: единственная точка входа в корне
 ├── generate_menu/                # Python-пакет со всеми исходниками
 │   ├── cli.py                    # интерфейс командной строки (argparse)
@@ -53,7 +53,7 @@ menu_processor/
 │   ├── menu_flattener.py         # дерево → плоский список, связи навигации
 │   ├── base_flat_node.py         # базовый узел (композиция менеджеров)
 │   ├── flat_node.py              # финальный класс узла
-│   ├── menu_processor.py         # координатор (делегирует агрегатору)
+│   ├── menucraft.py              # координатор (делегирует агрегатору)
 │   ├── menu_data_aggregator.py   # кэшируемая агрегация
 │   ├── menu_generator.py         # рендер Jinja2 → C-файлы
 │   ├── locale/                   # gettext-каталоги (messages.pot, ru/...)

@@ -1,6 +1,6 @@
 """Aggregated menu data derived from the flattened node list.
 
-The aggregation logic was extracted from ``MenuProcessor`` so that the
+The aggregation logic was extracted from ``MenuCraft`` so that the
 processor stays focused on orchestration (loading configuration, validating,
 flattening, saving artifacts) while every derived menu structure (functions,
 categories, leaves, branches, callbacks, ...) lives in one dedicated place.

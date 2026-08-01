@@ -114,9 +114,9 @@ def _run(config_path: str, flat_only: bool, debug: bool) -> int:
     """Runs the pipeline: load → validate → flatten → generate → save JSON."""
     from .common import save_json_data
     from .menu_generator import MenuGenerator
-    from .menu_processor import MenuProcessor
+    from .menucraft import MenuCraft
 
-    processor = MenuProcessor(config_path)
+    processor = MenuCraft(config_path)
 
     if not processor.validate_required_functions():
         return 1

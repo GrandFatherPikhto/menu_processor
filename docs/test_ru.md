@@ -17,7 +17,7 @@
   пользователь, и проверяет код возврата, сгенерированные артефакты и локализацию
   i18n;
 - [`test_generation.py`](../test/integration/test_generation.py) — запускает полный
-  конвейер **в том же процессе** (`MenuGenerator` / `MenuProcessor`) и проверяет
+  конвейер **в том же процессе** (`MenuGenerator` / `MenuCraft`) и проверяет
   сгенерированные C-файлы и JSON-дампы.
 
 Оба набора используют общие фикстуры из [`conftest.py`](../conftest.py).

@@ -16,14 +16,14 @@ config/config.yaml
   → MenuValidator         — JSON Schema + кастомная валидация дерева
   → MenuFlattener         — разворачивание дерева в плоский список + связи
   → FlatNode/BaseFlatNode — узел из композиции менеджеров
-  → MenuProcessor         — координатор, агрегация данных для шаблонов
+  → MenuCraft             — координатор, агрегация данных для шаблонов
   → MenuGenerator         — рендер Jinja2 шаблонов → C-файлы
 ```
 
 ### Структура репозитория
 
 ```
-menu_processor/
+MenuCraft/
 ├── generate_menu.py              # Корневая точка входа (chdir в пакет)
 ├── generate_menu/                # Python-пакет
 │   ├── __init__.py
@@ -35,7 +35,7 @@ menu_processor/
 │   ├── menu_flattener.py         # дерево → плоский список, cyclic/limit навигация
 │   ├── base_flat_node.py         # BaseFlatNode (композиция менеджеров)
 │   ├── flat_node.py              # FlatNode (финальный класс узла)
-│   ├── menu_processor.py         # координатор и агрегатор
+│   ├── menucraft.py              # координатор и агрегатор
 │   ├── menu_generator.py         # рендер Jinja2 → C-файлы
 │   ├── managers/
 │   │   ├── node_data_manager.py      # данные: значения, множители, типы, категории
@@ -111,7 +111,7 @@ menu_processor/
 - [`CallbackManager`](../generate_menu/managers/callback_manager.py:5) — авто vs пользовательские callbacks, эффективные имена, сводки.
 - [`FunctionInfo`](../generate_menu/managers/function_info.py:6) — dataclass, описывающий генерируемую функцию; фабрики `create_auto` / `create_custom`.
 
-### 2.7 [`menu_processor.py`](../generate_menu/menu_processor.py:17) — `MenuProcessor`
+### 2.7 [`menucraft.py`](../generate_menu/menucraft.py:17) — `MenuCraft`
 
 Координатор. Загружает конфиг, валидирует, флаттенит, затем отдаёт множество
 агрегирующих свойств (`functions`, `categories`, `functions_by_event_type`,
@@ -161,8 +161,8 @@ generation_files: files.yaml
 
 ### 4.1 Критические / архитектурные
 
-#### 🔴 A1. «God-object» в `MenuProcessor`
-[`menu_processor.py`](../generate_menu/menu_processor.py:17) содержит **20+ свойств**, каждое из которых
+#### 🔴 A1. «God-object» в `MenuCraft`
+[`menucraft.py`](../generate_menu/menucraft.py:17) содержит **20+ свойств**, каждое из которых
 заново обходит `_flat_nodes` и собирает агрегированные словари (`functions`,
 `categories`, `functions_by_event_type`, `functions_by_navigation`,
 `functions_by_type_role`, `functions_by_type`, `functions_by_role`,
@@ -176,7 +176,7 @@ generation_files: files.yaml
 
 **Рекомендация:** вынести агрегацию в отдельный `MenuDataAggregator` (или серию
 функций), который один раз обходит узлы и кэширует результат
-(`functools.cached_property`). Это упростит [`MenuProcessor`](../generate_menu/menu_processor.py:17)
+(`functools.cached_property`). Это упростит [`MenuCraft`](../generate_menu/menucraft.py:17)
 и ускорит генерацию.
 
 #### 🔴 A2. Мёртвый / недостижимый код
@@ -196,7 +196,7 @@ generation_files: files.yaml
 Вывод останется читаемым, но станет управляемым (уровни, файлы, отключение).
 
 #### 🔴 A4. Конфиг: неконсистентность ключей и опечатки
-- `output_flattern` — опечатка (`flatten`), она же в [`save_flattern_json`](../generate_menu/menu_processor.py:50).
+- `output_flattern` — опечатка (`flatten`), она же в [`save_flattern_json`](../generate_menu/menucraft.py:50).
 - Ключ `menu_config` указывает на `menu_data.json` — путаница между «конфигом меню» и «правилами типов/ролей».
 - `files.json` использует `templates_path`, а некоторые легаси-файлы — `templates`.
 - Ключ `menu` загружает дерево меню, а `menu_config` — правила данных.
@@ -212,7 +212,7 @@ generation_files: files.yaml
 `./output/` и резолвить все пути конфигов относительно корня проекта (сделано для YAML-конфигов).
 
 #### 🔴 A6. Конструкторы с побочными эффектами
-- [`MenuProcessor.__init__`](../generate_menu/menu_processor.py:18) выполняет всю загрузку/валидацию/флаттенинг и бросает исключения.
+- [`MenuCraft.__init__`](../generate_menu/menucraft.py:18) выполняет всю загрузку/валидацию/флаттенинг и бросает исключения.
 - [`MenuGenerator.__init__`](../generate_menu/menu_generator.py:16) сразу вызывает `_generate_code()`.
 
 **Рекомендация:** конструкторы должны только сохранять зависимости; рабочие методы
@@ -236,7 +236,7 @@ generation_files: files.yaml
 - e2e: полная генерация из sample-конфига → проверка создания C-файлов.
 
 #### 🟡 B3. Кэшировать агрегации
-Считать производные свойства `MenuProcessor` один раз; особенно актуально для больших деревьев.
+Считать производные свойства `MenuCraft` один раз; особенно актуально для больших деревьев.
 
 #### 🟡 B4. Убрать дублирование валидации
 [`MenuValidator._validate_item`](../generate_menu/menu_validator.py:63) дублирует логику из
@@ -273,7 +273,7 @@ generation_files: files.yaml
 | 🔴 P0 | Удалить dead code и недостижимые блоки | `node_control_manager.py`, `menu_flattener.py`, `menu_validator.py` |
 | 🔴 P1 | `logging` вместо `print()` | все модули |
 | 🔴 P1 | Исправить опечатки и ключи конфига | `menu_config.py`, `config/*` |
-| 🟡 P2 | Вынести агрегацию из `MenuProcessor` | новый `aggregator.py` |
+| 🟡 P2 | Вынести агрегацию из `MenuCraft` | новый `aggregator.py` |
 | 🟡 P2 | Единый CLI с `argparse` | новый `cli.py` |
 | 🟡 P2 | Тесты `pytest` | `tests/` |
 | 🟡 P3 | Единая валидация, `pathlib`, типизация | все модули |

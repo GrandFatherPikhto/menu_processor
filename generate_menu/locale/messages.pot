@@ -99,7 +99,7 @@ msgstr ""
 msgid "Unexpected error: {error}"
 msgstr ""
 
-#: menu_data.py:150 menu_flattener.py:241 menu_processor.py:21
+#: menu_data.py:150 menu_flattener.py:241 menucraft.py:21
 #: menu_validator.py:141
 #, python-brace-format
 msgid "Configuration {path} loaded successfully"
@@ -209,11 +209,11 @@ msgstr ""
 msgid "    - {id}: {count} children"
 msgstr ""
 
-#: menu_flattener.py:245 menu_processor.py:25 menu_validator.py:145
+#: menu_flattener.py:245 menucraft.py:25 menu_validator.py:145
 msgid "Configuration contains errors:"
 msgstr ""
 
-#: menu_flattener.py:252 menu_processor.py:32 menu_validator.py:151
+#: menu_flattener.py:252 menucraft.py:32 menu_validator.py:151
 msgid "and validated"
 msgstr ""
 
@@ -252,222 +252,222 @@ msgstr ""
 msgid "Error generating {path} file: {error}"
 msgstr ""
 
-#: menu_processor.py:27
+#: menucraft.py:27
 #, python-brace-format
 msgid "{id}:"
 msgstr ""
 
-#: menu_processor.py:30
+#: menucraft.py:30
 msgid "Configuration error"
 msgstr ""
 
-#: menu_processor.py:41
+#: menucraft.py:41
 msgid "Control summary:"
 msgstr ""
 
-#: menu_processor.py:86
+#: menucraft.py:86
 #, python-brace-format
 msgid "Flat menu saved to {path}"
 msgstr ""
 
-#: menu_processor.py:88
+#: menucraft.py:88
 #, python-brace-format
 msgid "Error saving flat menu: {error}"
 msgstr ""
 
-#: menu_processor.py:300
+#: menucraft.py:300
 msgid "Callback functions summary:"
 msgstr ""
 
-#: managers/callback_manager.py:257 menu_processor.py:304
+#: managers/callback_manager.py:257 menucraft.py:304
 msgid "Custom callbacks:"
 msgstr ""
 
-#: menu_processor.py:306
+#: menucraft.py:306
 #, python-brace-format
 msgid "{name} ({type}) -> {node_id}"
 msgstr ""
 
-#: menu_processor.py:309
+#: menucraft.py:309
 msgid "Custom callbacks: none"
 msgstr ""
 
-#: menu_processor.py:313
+#: menucraft.py:313
 msgid "Automatically generated functions:"
 msgstr ""
 
-#: menu_processor.py:315
+#: menucraft.py:315
 #, python-brace-format
 msgid "{name} ({source}) -> {node_id}"
 msgstr ""
 
-#: menu_processor.py:320
+#: menucraft.py:320
 #, python-brace-format
 msgid "Nodes with custom callbacks: {count}"
 msgstr ""
 
-#: menu_processor.py:322
+#: menucraft.py:322
 msgid "Nodes with custom callbacks: none"
 msgstr ""
 
-#: menu_processor.py:355
+#: menucraft.py:355
 msgid "Missing required functions:"
 msgstr ""
 
-#: menu_processor.py:357
+#: menucraft.py:357
 #, python-brace-format
 msgid "{node}: {control} ({purpose})"
 msgstr ""
 
-#: menu_processor.py:361
+#: menucraft.py:361
 msgid "All required functions are present"
 msgstr ""
 
-#: menu_processor.py:424
+#: menucraft.py:424
 msgid "Detailed callback functions summary:"
 msgstr ""
 
-#: menu_processor.py:432
+#: menucraft.py:432
 #, python-brace-format
 msgid "{type}:"
 msgstr ""
 
-#: menu_processor.py:433
+#: menucraft.py:433
 #, python-brace-format
 msgid "Total: {total} (🎛️ {custom} custom, ⚙️ {auto} automatic)"
 msgstr ""
 
-#: menu_processor.py:438
+#: menucraft.py:438
 #, python-brace-format
 msgid "{name} {flag} -> {node_id} ({category})"
 msgstr ""
 
-#: menu_processor.py:442 menu_processor.py:473
+#: menucraft.py:442 menucraft.py:473
 #, python-brace-format
 msgid "... and {count} more"
 msgstr ""
 
-#: menu_processor.py:445
+#: menucraft.py:445
 msgid "Categories summary:"
 msgstr ""
 
-#: menu_processor.py:450
+#: menucraft.py:450
 #, python-brace-format
 msgid "{category}:"
 msgstr ""
 
-#: menu_processor.py:454
+#: menucraft.py:454
 #, python-brace-format
 msgid "{type}: {count} (🎛️ {custom}, ⚙️ {auto})"
 msgstr ""
 
-#: menu_processor.py:459
+#: menucraft.py:459
 msgid "Detailed functions summary:"
 msgstr ""
 
-#: menu_processor.py:464
+#: menucraft.py:464
 #, python-brace-format
 msgid "{event} functions ({count}):"
 msgstr ""
 
-#: menu_processor.py:476
+#: menucraft.py:476
 msgid "Types and roles summary:"
 msgstr ""
 
-#: menu_processor.py:480
+#: menucraft.py:480
 #, python-brace-format
 msgid "{type_role}: {count} functions"
 msgstr ""
 
-#: menu_processor.py:527
+#: menucraft.py:527
 msgid "DEBUG INFO ABOUT FACTOR NODES:"
 msgstr ""
 
-#: menu_processor.py:530
+#: menucraft.py:530
 #, python-brace-format
 msgid "Factor nodes: {ids}"
 msgstr ""
 
-#: menu_processor.py:534
+#: menucraft.py:534
 #, python-brace-format
 msgid "Controls: {value}"
 msgstr ""
 
-#: menu_processor.py:535
+#: menucraft.py:535
 #, python-brace-format
 msgid "Navigate: {value}"
 msgstr ""
 
-#: managers/callback_manager.py:264 menu_processor.py:538
+#: managers/callback_manager.py:264 menucraft.py:538
 #, python-brace-format
 msgid "Auto click function: {name}"
 msgstr ""
 
-#: managers/callback_manager.py:266 menu_processor.py:539
+#: managers/callback_manager.py:266 menucraft.py:539
 #, python-brace-format
 msgid "Auto position function: {name}"
 msgstr ""
 
-#: menu_processor.py:540
+#: menucraft.py:540
 #, python-brace-format
 msgid "Auto click info: {value}"
 msgstr ""
 
-#: menu_processor.py:541
+#: menucraft.py:541
 #, python-brace-format
 msgid "Auto position info: {value}"
 msgstr ""
 
-#: menu_processor.py:543
+#: menucraft.py:543
 #, python-brace-format
 msgid "Auto functions info: {value}"
 msgstr ""
 
-#: menu_processor.py:544
+#: menucraft.py:544
 #, python-brace-format
 msgid "All function infos: {value}"
 msgstr ""
 
-#: menu_processor.py:554
+#: menucraft.py:554
 #, python-brace-format
 msgid "Required {type}: {name} (purpose: {purpose})"
 msgstr ""
 
-#: menu_processor.py:565
+#: menucraft.py:565
 msgid "Data summary for generator:"
 msgstr ""
 
-#: menu_processor.py:566
+#: menucraft.py:566
 #, python-brace-format
 msgid "Menu nodes: {count}"
 msgstr ""
 
-#: menu_processor.py:567
+#: menucraft.py:567
 #, python-brace-format
 msgid "Categories: {count}"
 msgstr ""
 
-#: menu_processor.py:568
+#: menucraft.py:568
 #, python-brace-format
 msgid "Functions: {count}"
 msgstr ""
 
-#: menu_processor.py:569
+#: menucraft.py:569
 #, python-brace-format
 msgid "Leafs: {count}"
 msgstr ""
 
-#: menu_processor.py:570
+#: menucraft.py:570
 #, python-brace-format
 msgid "Branches: {count}"
 msgstr ""
 
-#: menu_processor.py:571
+#: menucraft.py:571
 #, python-brace-format
 msgid "Callback nodes: {count}"
 msgstr ""
 
-#: menu_processor.py:586
+#: menucraft.py:586
 #, python-brace-format
 msgid "Error: {error}"
 msgstr ""

@@ -2,7 +2,7 @@
 
 The aggregator derives all aggregated menu structures from the flattened
 node list and memoizes them with ``functools.cached_property``. These tests
-lock in that behaviour and verify that ``MenuProcessor`` delegates to the
+lock in that behaviour and verify that ``MenuCraft`` delegates to the
 very same aggregator object while keeping its public API intact.
 """
 
@@ -38,12 +38,12 @@ def test_aggregator_caches_results(menu_flattener):
 
 
 def test_processor_delegates_to_single_aggregator(monkeypatch, project_root):
-    """MenuProcessor exposes the aggregator and forwards every aggregation."""
+    """MenuCraft exposes the aggregator and forwards every aggregation."""
     monkeypatch.chdir(project_root)
 
-    from generate_menu.menu_processor import MenuProcessor
+    from generate_menu.menucraft import MenuCraft
 
-    processor = MenuProcessor("./config/config.yaml")
+    processor = MenuCraft("./config/config.yaml")
 
     # One aggregator instance for the whole processor lifetime.
     assert processor.data is processor._aggregator
@@ -61,10 +61,10 @@ def test_aggregator_matches_processor_results(monkeypatch, project_root):
     """The aggregator over the same nodes yields identical structures."""
     monkeypatch.chdir(project_root)
 
-    from generate_menu.menu_processor import MenuProcessor
+    from generate_menu.menucraft import MenuCraft
     from generate_menu.menu_data_aggregator import MenuDataAggregator
 
-    processor = MenuProcessor("./config/config.yaml")
+    processor = MenuCraft("./config/config.yaml")
     # Use the processor's own nodes so embedded FlatNode objects match by
     # identity and full-dict comparison is valid.
     aggregator = MenuDataAggregator(processor._flat_nodes)

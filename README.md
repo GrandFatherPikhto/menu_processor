@@ -54,7 +54,7 @@ config/config.yaml
   → MenuValidator         JSON Schema + custom validation of the tree
   → MenuFlattener         expands the tree into a flat list + navigation links
   → FlatNode/BaseFlatNode node built from a composition of managers
-  → MenuProcessor         coordinator, aggregates data for the templates
+  → MenuCraft             coordinator, aggregates data for the templates
   → MenuGenerator         renders Jinja2 templates → C files
 ```
 
@@ -64,7 +64,7 @@ The pipeline is fully data-driven: the same generator handles any menu — from 
 ## Repository layout
 
 ```
-menu_processor/
+MenuCraft/
 ├── generate_menu.py              # ← run this: the only entry point at the root
 ├── generate_menu/                # Python package with all sources
 │   ├── cli.py                    # command-line interface (argparse)
@@ -76,7 +76,7 @@ menu_processor/
 │   ├── menu_flattener.py         # tree → flat list, navigation links
 │   ├── base_flat_node.py         # base node (manager composition)
 │   ├── flat_node.py              # final node class
-│   ├── menu_processor.py         # coordinator (delegates to the aggregator)
+│   ├── menucraft.py              # coordinator (delegates to the aggregator)
 │   ├── menu_data_aggregator.py   # cached aggregations
 │   ├── menu_generator.py         # Jinja2 rendering → C files
 │   ├── locale/                   # gettext catalogs (messages.pot, ru/...)

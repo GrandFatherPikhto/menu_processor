@@ -11,7 +11,7 @@ def test_package_imports():
     from generate_menu.menu_data import ControlType, MenuData, NavigationType
     from generate_menu.menu_flattener import FlattenerError, MenuFlattener
     from generate_menu.menu_generator import MenuGenerator
-    from generate_menu.menu_processor import MenuProcessor
+    from generate_menu.menucraft import MenuCraft
     from generate_menu.menu_validator import MenuValidator, ParserError
     from generate_menu.flat_node import FlatNode
 
@@ -26,7 +26,7 @@ def test_package_imports():
             FlattenerError,
             MenuFlattener,
             MenuGenerator,
-            MenuProcessor,
+            MenuCraft,
             MenuValidator,
             ParserError,
             FlatNode,

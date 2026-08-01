@@ -49,7 +49,7 @@ pytest (сейчас **54 теста, все проходят**).
 | [`test_validator.py`](../tests/test_validator.py) | Schema + кастомная валидация: дубликаты id, правила веток/листьев, значения по умолчанию вне диапазона, границы индексов values/factors, вложенные пути ошибок (`parent->child`), идемпотентность `validate()`. |
 | [`test_flattener.py`](../tests/test_flattener.py) | Флаттенинг и связи: количество узлов, флаги корневой ветки, `get_node_by_id`, флаги листа/ветки, циклические vs limit sibling'ы, явный vs умолчательный `navigate`, пустое меню → только root. |
 | [`test_menu_data.py`](../tests/test_menu_data.py) | Правила типов/ролей/контролов/навигации: enum'ы, `c_type()`, роли, `get_controls_for_type`, правила навигации и значения по умолчанию, `get_control_config`. |
-| [`test_menu_data_aggregator.py`](../tests/test_menu_data_aggregator.py) | `MenuDataAggregator` (пункт плана P2/A1): построение из flat-узлов, мемоизация `cached_property`, делегирование `MenuProcessor` единому агрегатору, идентичность результатов. |
+| [`test_menu_data_aggregator.py`](../tests/test_menu_data_aggregator.py) | `MenuDataAggregator` (пункт плана P2/A1): построение из flat-узлов, мемоизация `cached_property`, делегирование `MenuCraft` единому агрегатору, идентичность результатов. |
 | [`test_i18n.py`](../tests/test_i18n.py) | gettext/Babel: язык по умолчанию английский, `get_language()` из `MENU_PROCESSOR_LANG`, английские сообщения без перевода, русский каталог применяется в отдельном подпроцессе. |
 
 ## 4. Запуск модульного набора

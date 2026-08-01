@@ -47,7 +47,7 @@ The suite is split into:
 | [`test_validator.py`](../tests/test_validator.py) | Schema + custom validation: duplicate ids, branch/leaf rules, out-of-range defaults, values/factor index bounds, nested error paths (`parent->child`), idempotence of `validate()`. |
 | [`test_flattener.py`](../tests/test_flattener.py) | Flattening and links: node count, root branch flags, `get_node_by_id`, leaf/branch flags, cyclic vs limit siblings, explicit vs default `navigate`, empty menu → root only. |
 | [`test_menu_data.py`](../tests/test_menu_data.py) | Type/role/control/navigation rules: enums, `c_type()` mapping, roles, `get_controls_for_type`, navigation rules/defaults, `get_control_config`. |
-| [`test_menu_data_aggregator.py`](../tests/test_menu_data_aggregator.py) | `MenuDataAggregator` (plan P2/A1): builds from flat nodes, `cached_property` memoization, `MenuProcessor` delegation to a single aggregator, identical results. |
+| [`test_menu_data_aggregator.py`](../tests/test_menu_data_aggregator.py) | `MenuDataAggregator` (plan P2/A1): builds from flat nodes, `cached_property` memoization, `MenuCraft` delegation to a single aggregator, identical results. |
 | [`test_i18n.py`](../tests/test_i18n.py) | gettext/Babel: default language English, `get_language()` from `MENU_PROCESSOR_LANG`, English identity, Russian catalog applied in a fresh subprocess. |
 
 ## 4. Running the unit suite

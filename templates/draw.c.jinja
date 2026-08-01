@@ -29,6 +29,22 @@ bool menu_draw_update(menu_context_t *ctx, menu_id_t id) {
     ctx->update = true;
 }
 
+/* Длина одной строки дисплея: LCD_STRING_LEN — общий буфер на LCD_NUM_STRINGS строк. */
+#define MENU_LINE_LEN (LCD_STRING_LEN / LCD_NUM_STRINGS)
+
+/* Дописывает маркер состояния ('>' — навигация, '*' — редактирование) в правый край строки. */
+static void menu_draw_line_marker(menu_context_t *ctx) {
+    int len = (int)strlen(ctx->value_buf);
+    if (len > MENU_LINE_LEN - 1) {
+        len = MENU_LINE_LEN - 1;
+    }
+    while (len < MENU_LINE_LEN - 1) {
+        ctx->value_buf[len++] = ' ';
+    }
+    ctx->value_buf[len] = (char)(ctx->state == MENU_STATE_EDIT ? '*' : '>');
+    ctx->value_buf[len + 1] = '\0';
+}
+
 {% for function_name, function_info in functions.items() if function_info.event_type == "draw_value" %}
 {% if function_info.role == "simple" %}
 {% include "draw_simple.c.jinja" %}

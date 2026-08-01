@@ -1,32 +1,16 @@
 void {{function_name}}(menu_context_t *ctx, menu_id_t id) {
     uint8_t idx = ctx->values[id].data.{{function_info.category}}.idx;
     {{function_info.c_type}} value = ctx->values[id].data.{{function_info.category}}.value;
-    {{function_info.c_type}} max = ctx->configs[id].data.{{function_info.category}}.max;
     {{function_info.c_type}} factor = ctx->configs[id].data.{{function_info.category}}.factors[idx];
 
 {% if function_info.type in ["byte", "word", "dword"] %}
-    int len = snprintf(NULL, 0, "%d (x%d)", value, factor);
-    snprintf(ctx->value_buf, LCD_STRING_LEN, "%d (x%d)%*c",
-        value,
-        factor,
-        15 - len > 0 ? 15 - len : 0,
-        ctx->state == MENU_STATE_EDIT ? '*' : '>'
-    );
+    snprintf(ctx->value_buf, LCD_STRING_LEN, "%d (x%d)", value, factor);
+    menu_draw_line_marker(ctx);
 {% elif function_info.type in ["ubyte", "uword", "udword"]%}
-    int len = snprintf(NULL, 0, "%u (x%u)", value, factor);
-    snprintf(ctx->value_buf, LCD_STRING_LEN, "%u (x%u)%*c",
-        value,
-        factor,
-        15 - len > 0 ? 15 - len : 0,
-        ctx->state == MENU_STATE_EDIT ? '*' : '>'
-    );
+    snprintf(ctx->value_buf, LCD_STRING_LEN, "%u (x%u)", value, factor);
+    menu_draw_line_marker(ctx);
 {% elif function_info.type == "float" %}
-    int len = snprintf(NULL, 0, "%2.2f (x%2.2)", value, factor);
-    snprintf(ctx->value_buf, LCD_STRING_LEN, "%2.2f (x%2.2f)%*c",
-        value,
-        factor,
-        15 - len > 0 ? 15 - len : 0,
-        ctx->state == MENU_STATE_EDIT ? '*' : '>'
-    );
+    snprintf(ctx->value_buf, LCD_STRING_LEN, "%2.2f (x%2.2f)", value, factor);
+    menu_draw_line_marker(ctx);
 {% endif %}
 }

@@ -2,32 +2,17 @@ void {{function_name}}(menu_context_t *ctx, menu_id_t id) {
     uint8_t idx  = ctx->values[id].data.{{function_info.category}}.idx;
     {{function_info.c_type}} value = ctx->configs[id].data.{{function_info.category}}.values[idx];
 {% if function_info.type in ["byte", "word", "dword"] %}
-    int len = snprintf(NULL, 0, "%d", value);
-    snprintf(ctx->value_buf, LCD_STRING_LEN, "%d%*c",
-        value,
-        15 - len > 0 ? 15 - len : 0,
-        ctx->state == MENU_STATE_EDIT ? '*' : '>'
-    );
+    snprintf(ctx->value_buf, LCD_STRING_LEN, "%d", value);
+    menu_draw_line_marker(ctx);
 {% elif function_info.type in ["ubyte", "uword", "udword"]%}
-    int len = snprintf(NULL, 0, "%u", value);
-    snprintf(ctx->value_buf, LCD_STRING_LEN, "%u%*c",
-        value,
-        15 - len > 0 ? 15 - len : 0,
-        ctx->state == MENU_STATE_EDIT ? '*' : '>'
-    );
+    snprintf(ctx->value_buf, LCD_STRING_LEN, "%u", value);
+    menu_draw_line_marker(ctx);
 {% elif function_info.type == "float" %}
-    int len = snprintf(NULL, 0, "%2.2f", value);
-    snprintf(ctx->value_buf, LCD_STRING_LEN, "%2.2f%*c",
-        value,
-        15 - len > 0 ? 15 - len : 0,
-        ctx->state == MENU_STATE_EDIT ? '*' : '>'
-    );
+    snprintf(ctx->value_buf, LCD_STRING_LEN, "%2.2f", value);
+    menu_draw_line_marker(ctx);
 {% elif function_info.type == "string" %}
-    int len = snprintf(NULL, 0, "%s", value);
-    snprintf(ctx->value_buf, LCD_STRING_LEN, "%s%*c",
-        value,
-        15 - len > 0 ? 15 - len : 0,
-        ctx->state == MENU_STATE_EDIT ? '*' : '>'
-    );
+    strncpy(ctx->value_buf, value, LCD_STRING_LEN - 1);
+    ctx->value_buf[LCD_STRING_LEN - 1] = '\0';
+    menu_draw_line_marker(ctx);
 {% endif %}{# type #}
 }
